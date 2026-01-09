@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if cotizacion %}Editar{% else %}Nueva{% endif %} Cotización - INAIR</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+    <style>
+        .form-section {
+            background: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 15px;
+        }
+
+        .form-section h3 {
+            margin: 0 0 12px 0;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 8px;
+            color: #d20000;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 10px;
+        }
+
+        .form-group label {
+            font-size: 12px;
+            margin-bottom: 4px;
+            display: block;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            padding: 8px 10px;
+            font-size: 13px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 8px;
+            font-size: 12px;
+        }
+
+        .items-table th,
+        .items-table td {
+            border: 1px solid #ddd;
+            padding: 6px;
+            text-align: left;
+        }
+
+        .items-table th {
+            background-color: #1a1a2e;
+            color: white;
+            font-size: 11px;
+        }
+
+        .items-table input {
+            width: 100%;
+            padding: 4px 6px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+
+        .totals-area {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 12px;
+        }
+
+        .totals-table {
+            width: 280px;
+        }
+
+        .totals-table td {
+            padding: 4px;
+            text-align: right;
+            font-size: 13px;
+        }
+
+        .totals-table input {
+            text-align: right;
+            font-weight: bold;
+        }
+
+        .btn-remove {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn-remove:hover {
+            background: #c82333;
+        }
+
+        .autocomplete-container {
+            position: relative;
+        }
+
+        .autocomplete-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .autocomplete-results.show {
+            display: block;
+        }
+
+        .autocomplete-item {
+            padding: 8px 10px;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+            font-size: 12px;
+        }
+
+        .autocomplete-item:hover {
+            background: #f0f0f0;
+        }
+
+        .autocomplete-item .part-number {
+            font-weight: bold;
+            color: #d20000;
+        }
+
+        .autocomplete-item .stock {
+            font-size: 10px;
+            color: #666;
+        }
+
+        .autocomplete-item .stock.in-stock {
+            color: green;
+        }
+
+        .autocomplete-item .stock.no-stock {
+            color: orange;
+        }
+
+        .btn-alta {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 10px;
+            margin-left: 5px;
+        }
+
+        .btn-alta:hover {
+            background: #218838;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="admin-container">
+        <div class="admin-header">
+            <h1>{% if cotizacion %}✏️ Editar{% else %}📄 Nueva{% endif %} Cotización</h1>
+            <div class="user-info">
+                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="history.back()">Atrás</button>
+                <a href="{{ url_for('admin_cotizaciones') }}" class="btn btn-secondary btn-sm">← Volver</a>
+            </div>
+        </div>
+
+        <form method="POST" id="cotizacionForm">
+            {% if deal_id %}
+            <input type="hidden" name="deal_id" value="{{ deal_id }}">
+            {% endif %}
+
+            <div class="form-section">
+                <h3>📋 Información General</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Folio</label>
+                        <input type="text" name="folio" id="folioInput"
+                            value="{{ cotizacion.folio if cotizacion else next_folio }}" readonly
+                            style="background: #f0f0f0; font-weight: bold; color: #d20000;">
+                    </div>
+                    <div class="form-group">
+                        <label>Fecha *</label>
+                        <input type="date" name="fecha" value="{{ cotizacion.fecha if cotizacion else '' }}" required
+                            id="fechaInput">
+                    </div>
+                    <div class="form-group">
+                        <label>Vigencia</label>
+                        <input type="text" name="vigencia"
+                            value="{{ cotizacion.vigencia if cotizacion else '30 días' }}">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Moneda</label>
+                        <select name="moneda" id="monedaSelect" onchange="convertCurrency()">
+                            <option value="USD" {% if cotizacion and cotizacion.moneda=='USD' %}selected{% elif not
+                                cotizacion %}selected{% endif %}>USD</option>
+                            <option value="MXN" {% if cotizacion and cotizacion.moneda=='MXN' %}selected{% endif %}>MXN
+                            </option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Tipo de Cambio</label>
+                        <input type="number" step="0.01" name="tipo_cambio" id="tipoCambioInput"
+                            value="{{ cotizacion.tipo_cambio if cotizacion else '1.0' }}">
+                    </div>
+                    <div class="form-group" style="display:flex; align-items:flex-end;">
+                        <button type="button" class="btn btn-secondary btn-sm" onclick="applyConversion()"
+                            title="Convertir todos los precios usando el tipo de cambio">💱 Convertir Precios</button>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Sucursal</label>
+                        <select name="sucursal" id="sucursalSelect" onchange="updateFolio()">
+                            <option value="Tijuana" {% if cotizacion and cotizacion.sucursal=='Tijuana' %}selected{%
+                                elif not cotizacion %}selected{% endif %}>Tijuana</option>
+                            <option value="Mexicali" {% if cotizacion and cotizacion.sucursal=='Mexicali' %}selected{%
+                                endif %}>Mexicali</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Cotizador (Elaboró)</label>
+                        <select name="cotizador_id" id="cotizadorSelect">
+                            <option value="">-- Seleccionar --</option>
+                            {% for user in users %}
+                            <option value="{{ user.id }}" {% if cotizacion and cotizacion.cotizador_id==user.id
+                                %}selected{% endif %}>
+                                {{ user.username }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3>👤 Datos del Cliente</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Seleccionar Cliente</label>
+                        <select id="clienteSelect" name="cliente_id" onchange="fillClientInfo(true)">
+                            <option value="">-- Manual --</option>
+                            {% for client in clients %}
+                            <option value="{{ client.id }}" data-nombre="{{ client.nombre }}"
+                                data-direccion="{{ client.direccion }}" data-telefono="{{ client.telefono }}"
+                                data-contacto="{{ client.contacto }}" {% if cotizacion and
+                                cotizacion.cliente_id==client.id %}selected {% elif pre_cliente and
+                                pre_cliente.id==client.id %}selected{% endif %}>
+                                {{ client.nombre }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Nombre Cliente *</label>
+                        <input type="text" name="cliente_nombre" id="cliente_nombre"
+                            value="{{ cotizacion.cliente_nombre if cotizacion else (pre_cliente.nombre if pre_cliente else '') }}"
+                            required>
+                    </div>
+                    <div class="form-group">
+                        <label>RFC</label>
+                        <input type="text" name="cliente_rfc" id="cliente_rfc"
+                            value="{{ cotizacion.cliente_rfc if cotizacion else '' }}" readonly
+                            style="background:#f5f5f5;">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Atención a</label>
+                        <div id="atencion_container" style="display: flex; gap: 8px; align-items: center;">
+                            <select id="atencion_select" style="flex: 0 0 200px; height:38px; padding:8px;"
+                                onchange="onContactSelect(this)">
+                                <option value="">-- Seleccionar contacto --</option>
+                            </select>
+                            <span style="color: #666;">o</span>
+                            <input type="text" name="atencion_a" id="atencion_a"
+                                value="{{ cotizacion.atencion_a if cotizacion else '' }}"
+                                placeholder="Escribir manualmente"
+                                style="flex: 1; padding:8px; height:38px;">
+                        </div>
+                    </div>
+                    <div class="form-group" style="grid-column: span 2;">
+                        <label>Dirección</label>
+                        <input type="text" name="cliente_direccion" id="cliente_direccion"
+                            value="{{ cotizacion.cliente_direccion if cotizacion else '' }}">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Teléfono</label>
+                        <input type="text" name="cliente_telefono" id="cliente_telefono"
+                            value="{{ cotizacion.cliente_telefono if cotizacion else '' }}">
+                    </div>
+                    <div class="form-group" style="grid-column: span 2;">
+                        <label>Referencia / Asunto</label>
+                        <input type="text" name="referencia" value="{{ cotizacion.referencia if cotizacion else '' }}"
+                            placeholder="Ej: IA-TS01906-FILTROS">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3>📦 Partidas
+                    <a href="{{ url_for('admin_almacen') }}" target="_blank" class="btn-alta"
+                        title="Agregar producto al Almacén">+ Alta en Almacén</a>
+                </h3>
+                <table class="items-table" id="itemsTable">
+                    <thead>
+                        <tr>
+                            <th style="width: 35px;">#</th>
+                            <th style="width: 55px;">Cant.</th>
+                            <th style="width: 55px;">Unidad</th>
+                            <th style="width: 120px;">No. Parte</th>
+                            <th>Descripción</th>
+                            <th style="width: 80px;">Entrega</th>
+                            <th style="width: 85px;">P. Unitario</th>
+                            <th style="width: 85px;">Importe</th>
+                            <th style="width: 35px;"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if cotizacion and cotizacion['items'] %}
+                        {% for item in cotizacion['items'] %}
+                        <tr>
+                            <td><input type="number" name="item_linea[]" value="{{ item.linea }}" readonly
+                                    style="background:#f5f5f5;"></td>
+                            <td><input type="number" step="0.01" name="item_cantidad[]" value="{{ item.cantidad }}"
+                                    oninput="onQtyChange(this)"></td>
+                            <td><input type="text" name="item_unidad[]" value="{{ item.unidad }}" class="unidad-input">
+                            </td>
+                            <td class="autocomplete-container">
+                                <input type="text" name="item_parte[]" value="{{ item.numero_parte }}"
+                                    class="parte-input" oninput="searchProducto(this)" autocomplete="off">
+                                <div class="autocomplete-results"></div>
+                            </td>
+                            <td><input type="text" name="item_descripcion[]" value="{{ item.descripcion }}"
+                                    class="descripcion-input"></td>
+                            <td><input type="text" name="item_tiempo[]" value="{{ item.tiempo_entrega_item }}"
+                                    class="tiempo-input"></td>
+                            <td><input type="number" step="0.01" name="item_precio[]" value="{{ item.precio_unitario }}"
+                                    oninput="calculateRow(this)"></td>
+                            <td><input type="number" step="0.01" name="item_importe[]" value="{{ item.importe }}"
+                                    readonly class="row-importe" style="background:#f5f5f5;"></td>
+                            <td><button type="button" class="btn-remove" onclick="removeRow(this)">&times;</button></td>
+                        </tr>
+                        {% endfor %}
+                        {% else %}
+                        <tr>
+                            <td><input type="number" name="item_linea[]" value="1" readonly style="background:#f5f5f5;">
+                            </td>
+                            <td><input type="number" step="0.01" name="item_cantidad[]" value="1"
+                                    oninput="onQtyChange(this)"></td>
+                            <td><input type="text" name="item_unidad[]" value="PZA" class="unidad-input"></td>
+                            <td class="autocomplete-container">
+                                <input type="text" name="item_parte[]" placeholder="Buscar..." class="parte-input"
+                                    oninput="searchProducto(this)" autocomplete="off">
+                                <div class="autocomplete-results"></div>
+                            </td>
+                            <td><input type="text" name="item_descripcion[]" placeholder="Descripción..."
+                                    class="descripcion-input"></td>
+                            <td><input type="text" name="item_tiempo[]" value="4-6 semanas" class="tiempo-input"></td>
+                            <td><input type="number" step="0.01" name="item_precio[]" value="0"
+                                    oninput="calculateRow(this)"></td>
+                            <td><input type="number" step="0.01" name="item_importe[]" value="0" readonly
+                                    class="row-importe" style="background:#f5f5f5;"></td>
+                            <td><button type="button" class="btn-remove" onclick="removeRow(this)">&times;</button></td>
+                        </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+                <button type="button" class="btn btn-secondary btn-sm" onclick="addRow()" style="margin-top: 10px;">+
+                    Agregar Partida</button>
+
+                <div class="totals-area">
+                    <table class="totals-table">
+                        <tr>
+                            <td>Subtotal:</td>
+                            <td><input type="number" step="0.01" name="subtotal" id="subtotal" readonly
+                                    value="{{ cotizacion.subtotal if cotizacion else '0.00' }}"
+                                    style="background:#f5f5f5;"></td>
+                        </tr>
+                        <tr>
+                            <td>IVA:</td>
+                            <td>
+                                <select name="iva_porcentaje" id="iva_porcentaje" onchange="calculateTotals()"
+                                    style="width:100%; padding:8px;">
+                                    <option value="0.16" {% if cotizacion and cotizacion.iva_porcentaje|float==0.16
+                                        %}selected{% elif not cotizacion %}selected{% endif %}>16% (General)</option>
+                                    <option value="0.08" {% if cotizacion and cotizacion.iva_porcentaje|float==0.08
+                                        %}selected{% endif %}>8% (Frontera)</option>
+                                    <option value="0" {% if cotizacion and cotizacion.iva_porcentaje|float==0
+                                        %}selected{% endif %}>0% (Exento)</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>IVA Monto:</td>
+                            <td><input type="number" step="0.01" name="iva_monto" id="iva_monto" readonly
+                                    value="{{ cotizacion.iva_monto if cotizacion else '0.00' }}"
+                                    style="background:#f5f5f5;"></td>
+                        </tr>
+                        <tr style="font-size: 1.1em; color: #d20000;">
+                            <td><strong>Total:</strong></td>
+                            <td><input type="number" step="0.01" name="total" id="total" readonly
+                                    value="{{ cotizacion.total if cotizacion else '0.00' }}"
+                                    style="background:#f5f5f5; font-size: 1.1em; color: #d20000;"></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3>📝 Condiciones Comerciales</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Tiempo de Entrega General</label>
+                        <input type="text" name="tiempo_entrega"
+                            value="{{ cotizacion.tiempo_entrega if cotizacion else 'Sujeto a existencias' }}">
+                    </div>
+                    <div class="form-group">
+                        <label>Condiciones de Pago</label>
+                        <input type="text" name="condiciones_pago"
+                            value="{{ cotizacion.condiciones_pago if cotizacion else '15 días' }}">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Notas Adicionales</label>
+                    <textarea name="notas" rows="2"
+                        placeholder="Notas adicionales...">{{ cotizacion.notas if cotizacion else '' }}</textarea>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px; font-size: 1em;">💾 Guardar
+                Cotización</button>
+        </form>
+    </div>
+
+    <script>
+        var isEditMode = {{ 'true' if cotizacion else 'false' }};
+        var previousCurrency = document.getElementById('monedaSelect').value;
+
+        function convertCurrency() {
+            // Just update the tracked currency, don't auto-convert
+        }
+
+        function applyConversion() {
+            var currentCurrency = document.getElementById('monedaSelect').value;
+            var tipoCambio = parseFloat(document.getElementById('tipoCambioInput').value) || 1;
+
+            if (tipoCambio <= 0) {
+                alert('Por favor ingrese un tipo de cambio válido mayor a 0');
+                return;
+            }
+
+            var precioInputs = document.querySelectorAll('input[name="item_precio[]"]');
+
+            if (currentCurrency === 'MXN' && previousCurrency === 'USD') {
+                precioInputs.forEach(function (input) {
+                    var precio = parseFloat(input.value) || 0;
+                    input.value = (precio * tipoCambio).toFixed(2);
+                });
+                alert('Precios convertidos de USD a MXN (x' + tipoCambio + ')');
+            } else if (currentCurrency === 'USD' && previousCurrency === 'MXN') {
+                precioInputs.forEach(function (input) {
+                    var precio = parseFloat(input.value) || 0;
+                    input.value = (precio / tipoCambio).toFixed(2);
+                });
+                alert('Precios convertidos de MXN a USD (/' + tipoCambio + ')');
+            } else {
+                alert('No hay conversión necesaria. La moneda actual y anterior son iguales.');
+                return;
+            }
+
+            previousCurrency = currentCurrency;
+            document.querySelectorAll('input[name="item_precio[]"]').forEach(function (input) {
+                calculateRow(input);
+            });
+        }
+
+        function updateFolio() {
+            if (isEditMode) return;
+            var sucursal = document.getElementById('sucursalSelect').value;
+            fetch('/api/cotizaciones/next-folio?sucursal=' + encodeURIComponent(sucursal))
+                .then(function (r) { return r.json(); })
+                .then(function (data) {
+                    document.getElementById('folioInput').value = data.folio;
+                });
+        }
+
+        function fillClientInfo(fetchContacts) {
+            var select = document.getElementById('clienteSelect');
+            var option = select.options[select.selectedIndex];
+            var clientId = option.value;
+
+            if (clientId) {
+                // Fetch full client details from API (includes RFC, contactos, etc.)
+                fetch('/api/cliente/' + clientId)
+                    .then(function (r) { 
+                        if (!r.ok) {
+                            throw new Error('Error al cargar información del cliente');
+                        }
+                        return r.json(); 
+                    })
+                    .then(function (data) {
+                        // Fill basic client info
+                        document.getElementById('cliente_nombre').value = data.nombre || '';
+                        document.getElementById('cliente_direccion').value = data.direccion || '';
+                        document.getElementById('cliente_telefono').value = data.telefono || '';
+                        document.getElementById('cliente_rfc').value = data.rfc || '';
+
+                        // Load contacts if requested
+                        if (fetchContacts) {
+                            // Get all contacts (main contact + additional contacts)
+                            var allContacts = [];
+                            
+                            // Add main contact if exists
+                            if (data.contacto) {
+                                allContacts.push({ nombre: data.contacto, puesto: '' });
+                            }
+                            
+                            // Add additional contacts if they exist
+                            if (data.contactos && Array.isArray(data.contactos)) {
+                                allContacts = allContacts.concat(data.contactos);
+                            }
+                            
+                            updateContactsDropdown(allContacts);
+                            
+                            // Auto-select first contact if atencion_a is empty
+                            if (allContacts.length > 0 && !document.getElementById('atencion_a').value) {
+                                document.getElementById('atencion_a').value = allContacts[0].nombre;
+                            }
+                        }
+                    })
+                    .catch(function (error) {
+                        console.error('Error loading client info:', error);
+                        // Fallback to data-attributes if API fails
+                        document.getElementById('cliente_nombre').value = option.dataset.nombre || '';
+                        document.getElementById('cliente_direccion').value = option.dataset.direccion || '';
+                        document.getElementById('cliente_telefono').value = option.dataset.telefono || '';
+                        
+                        if (fetchContacts && option.dataset.contacto) {
+                            updateContactsDropdown([{ nombre: option.dataset.contacto, puesto: '' }]);
+                        }
+                    });
+            } else {
+                // Clear all fields if no client selected
+                document.getElementById('cliente_nombre').value = '';
+                document.getElementById('cliente_direccion').value = '';
+                document.getElementById('cliente_telefono').value = '';
+                document.getElementById('cliente_rfc').value = '';
+                document.getElementById('atencion_a').value = '';
+                var selectEl = document.getElementById('atencion_select');
+                if (selectEl) {
+                    selectEl.innerHTML = '<option value="">-- Seleccionar contacto --</option>';
+                    selectEl.value = '';
+                }
+            }
+        }
+
+        function updateContactsDropdown(contacts) {
+            var selectEl = document.getElementById('atencion_select');
+            
+            // Limpiar y agregar opción por defecto
+            selectEl.innerHTML = '<option value="">-- Seleccionar contacto --</option>';
+
+            if (contacts && contacts.length > 0) {
+                contacts.forEach(function (c) {
+                    var opt = document.createElement('option');
+                    opt.value = c.nombre;
+                    opt.textContent = c.nombre + (c.puesto ? ' (' + c.puesto + ')' : '');
+                    selectEl.appendChild(opt);
+                });
+            }
+        }
+
+        function onContactSelect(sel) {
+            // Cuando se selecciona del dropdown, actualizar el input
+            if (sel.value) {
+                document.getElementById('atencion_a').value = sel.value;
+            }
+        }
+
+        var searchTimeout;
+        function searchProducto(input) {
+            clearTimeout(searchTimeout);
+            var query = input.value.trim();
+            var resultsDiv = input.nextElementSibling;
+
+            if (query.length < 2) {
+                resultsDiv.classList.remove('show');
+                return;
+            }
+
+            searchTimeout = setTimeout(function () {
+                fetch('/api/almacen/buscar-producto?q=' + encodeURIComponent(query))
+                    .then(function (r) { return r.json(); })
+                    .then(function (productos) {
+                        if (productos.length === 0) {
+                            resultsDiv.innerHTML = '<div class="autocomplete-item">No encontrado</div>';
+                        } else {
+                            var html = '';
+                            for (var i = 0; i < productos.length; i++) {
+                                var p = productos[i];
+                                html += '<div class="autocomplete-item" onclick="selectProducto(this)" data-producto=\'' + JSON.stringify(p) + '\'>';
+                                html += '<span class="part-number">' + p.numero_parte + '</span> - ' + p.descripcion;
+                                html += '<br><span class="stock ' + (p.stock >= 1 ? 'in-stock' : 'no-stock') + '">';
+                                html += 'Stock: ' + p.stock + ' | Entrega: ' + p.tiempo_entrega + '</span></div>';
+                            }
+                            resultsDiv.innerHTML = html;
+                        }
+                        resultsDiv.classList.add('show');
+                    });
+            }, 300);
+        }
+
+        function selectProducto(element) {
+            var producto = JSON.parse(element.getAttribute('data-producto'));
+            var row = element.closest('tr');
+            row.querySelector('.parte-input').value = producto.numero_parte;
+            row.querySelector('.descripcion-input').value = producto.descripcion;
+            row.querySelector('.tiempo-input').value = producto.tiempo_entrega;
+            var unidadInput = row.querySelector('.unidad-input');
+            if (unidadInput) {
+                unidadInput.value = producto.unidad || 'PZA';
+            }
+            row.setAttribute('data-stock', producto.stock);
+            element.parentElement.classList.remove('show');
+            checkDeliveryTime(row);
+        }
+
+        function checkDeliveryTime(row) {
+            var stock = parseFloat(row.getAttribute('data-stock')) || 0;
+            var qty = parseFloat(row.querySelector('input[name="item_cantidad[]"]').value) || 0;
+            var tiempoInput = row.querySelector('.tiempo-input');
+
+            if (qty <= stock) {
+                tiempoInput.value = '1-3 días';
+            } else {
+                tiempoInput.value = '4-6 semanas';
+            }
+        }
+
+        function onQtyChange(input) {
+            var row = input.closest('tr');
+            checkDeliveryTime(row);
+            calculateRow(input);
+        }
+
+        function calculateRow(input) {
+            var row = input.closest('tr');
+            var cantidad = parseFloat(row.querySelector('input[name="item_cantidad[]"]').value) || 0;
+            var precio = parseFloat(row.querySelector('input[name="item_precio[]"]').value) || 0;
+            var importe = cantidad * precio;
+            row.querySelector('input[name="item_importe[]"]').value = importe.toFixed(2);
+            calculateTotals();
+        }
+
+        function calculateTotals() {
+            var importes = document.querySelectorAll('input[name="item_importe[]"]');
+            var subtotal = 0;
+            importes.forEach(function (input) {
+                subtotal += parseFloat(input.value) || 0;
+            });
+
+            var ivaPorcentaje = parseFloat(document.getElementById('iva_porcentaje').value) || 0;
+            var ivaMonto = subtotal * ivaPorcentaje;
+            var total = subtotal + ivaMonto;
+
+            document.getElementById('subtotal').value = subtotal.toFixed(2);
+            document.getElementById('iva_monto').value = ivaMonto.toFixed(2);
+            document.getElementById('total').value = total.toFixed(2);
+        }
+
+        function addRow() {
+            var tbody = document.querySelector('#itemsTable tbody');
+            var rows = tbody.querySelectorAll('tr');
+            var newLineNum = rows.length + 1;
+
+            var newRow = document.createElement('tr');
+            newRow.innerHTML = `
+                <td><input type="number" name="item_linea[]" value="${newLineNum}" readonly style="background:#f5f5f5;"></td>
+                <td><input type="number" step="0.01" name="item_cantidad[]" value="1" oninput="onQtyChange(this)"></td>
+                <td><input type="text" name="item_unidad[]" value="PZA" class="unidad-input"></td>
+                <td class="autocomplete-container">
+                    <input type="text" name="item_parte[]" placeholder="Buscar..." class="parte-input" oninput="searchProducto(this)" autocomplete="off">
+                    <div class="autocomplete-results"></div>
+                </td>
+                <td><input type="text" name="item_descripcion[]" placeholder="Descripción..." class="descripcion-input"></td>
+                <td><input type="text" name="item_tiempo[]" value="4-6 semanas" class="tiempo-input"></td>
+                <td><input type="number" step="0.01" name="item_precio[]" value="0" oninput="calculateRow(this)"></td>
+                <td><input type="number" step="0.01" name="item_importe[]" value="0" readonly class="row-importe" style="background:#f5f5f5;"></td>
+                <td><button type="button" class="btn-remove" onclick="removeRow(this)">&times;</button></td>
+            `;
+            tbody.appendChild(newRow);
+        }
+
+        function removeRow(btn) {
+            var tbody = document.querySelector('#itemsTable tbody');
+            if (tbody.querySelectorAll('tr').length > 1) {
+                btn.closest('tr').remove();
+                renumberRows();
+                calculateTotals();
+            }
+        }
+
+        function renumberRows() {
+            var rows = document.querySelectorAll('#itemsTable tbody tr');
+            rows.forEach(function (row, index) {
+                row.querySelector('input[name="item_linea[]"]').value = index + 1;
+            });
+        }
+
+        // Close autocomplete on click outside
+        document.addEventListener('click', function (e) {
+            if (!e.target.classList.contains('parte-input')) {
+                document.querySelectorAll('.autocomplete-results').forEach(function (el) {
+                    el.classList.remove('show');
+                });
+            }
+        });
+
+        // Set today's date if empty
+        document.addEventListener('DOMContentLoaded', function () {
+            var fechaInput = document.getElementById('fechaInput');
+            if (!fechaInput.value) {
+                fechaInput.value = new Date().toISOString().split('T')[0];
+            }
+            // Fill client info if pre-selected
+            if (document.getElementById('clienteSelect').value) {
+                fillClientInfo(true);
+            }
+            calculateTotals();
+        });
+    </script>
+</body>
+
+</html>

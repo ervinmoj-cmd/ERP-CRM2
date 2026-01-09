@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Requisiciones - Compras</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+    <style>
+        body { background: #f8f9fa; }
+        .page-container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        table { width: 100%; border-collapse: collapse; background: white; }
+        th, td { padding: 10px; border-bottom: 1px solid #eee; text-align: left; }
+        th { background: #f8f9fa; }
+        .btn { padding: 6px 10px; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; }
+        .btn-primary { background: #007bff; color: white; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-success { background: #28a745; color: white; }
+        .badge { padding: 4px 8px; border-radius: 10px; font-size: 12px; }
+        .badge.open { background: #fff3cd; color: #856404; }
+        .badge.in_progress { background: #d1ecf1; color: #0c5460; }
+        .badge.ordered { background: #cfe2ff; color: #084298; }
+        .badge.received { background: #d4edda; color: #155724; }
+    </style>
+</head>
+<body>
+    <div class="page-container">
+        <div style="display:flex; justify-content: space-between; align-items:center; margin-bottom: 20px;">
+            <div>
+                <h1>🧾 Requisiciones</h1>
+                <p class="text-muted">Faltantes generados desde OCu</p>
+            </div>
+            <div>
+                <a href="{{ url_for('admin_compras') }}" class="btn btn-secondary">← Compras</a>
+            </div>
+        </div>
+
+        <table id="reqTable">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Fecha</th>
+                    <th>Cliente</th>
+                    <th>OCu</th>
+                    <th>Parte</th>
+                    <th>Descripción</th>
+                    <th>Cant. faltante</th>
+                    <th>Estado</th>
+                    <th>Notas</th>
+                    <th>Documentos</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td colspan="11" style="text-align:center; padding: 20px;">Cargando...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        function loadReqs() {
+            fetch("/api/purchase_requisitions")
+                .then(r => r.json())
+                .then(data => {
+                    const tb = document.querySelector("#reqTable tbody");
+                    tb.innerHTML = "";
+                    if (!data.success || !data.requisitions || data.requisitions.length === 0) {
+                        tb.innerHTML = '<tr><td colspan="11" style="text-align:center; padding: 20px;">Sin requisiciones</td></tr>';
+                        return;
+                    }
+                    
+                    // Obtener ocu_id de URL si viene de notificación
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const highlightOcuId = urlParams.get('ocu_id');
+                    
+                    data.requisitions.forEach(req => {
+                        const tr = document.createElement("tr");
+                        const isHighlighted = highlightOcuId && req.ocu_id == highlightOcuId;
+                        if (isHighlighted) {
+                            tr.style.backgroundColor = '#fff3cd';
+                            tr.style.borderLeft = '4px solid #ffc107';
+                        }
+                        
+                        // Construir enlaces a documentos
+                        let documentosHtml = '<div style="display:flex; flex-direction:column; gap:4px;">';
+                        if (req.cotizacion_id) {
+                            documentosHtml += `<a href="/admin/cotizaciones/pdf/${req.cotizacion_id}" target="_blank" class="btn btn-sm" style="font-size:11px; padding:4px 8px;">📄 Cotización</a>`;
+                        }
+                        if (req.oc_cliente_file_path) {
+                            documentosHtml += `<a href="/static/${req.oc_cliente_file_path}" target="_blank" class="btn btn-sm" style="font-size:11px; padding:4px 8px;">📋 OC Cliente</a>`;
+                        }
+                        if (!req.cotizacion_id && !req.oc_cliente_file_path) {
+                            documentosHtml += '<span style="color:#999; font-size:11px;">Sin documentos</span>';
+                        }
+                        documentosHtml += '</div>';
+                        
+                        tr.innerHTML = `
+                            <td>${req.id}</td>
+                            <td>${req.created_at || ''}</td>
+                            <td>${req.cliente_nombre || ''}</td>
+                            <td>${req.folio_ocu || ''} (OCu ${req.ocu_id || ''})</td>
+                            <td>${req.numero_parte || ''}</td>
+                            <td>${req.descripcion || ''}</td>
+                            <td>${req.cantidad || 0}</td>
+                            <td><span class="badge ${req.status || 'open'}">${req.status || 'open'}</span></td>
+                            <td>${req.notas || ''}</td>
+                            <td>${documentosHtml}</td>
+                            <td>
+                                <button class="btn btn-secondary" onclick="cambiarEstado(${req.id}, 'in_progress')">En proceso</button>
+                                <button class="btn btn-primary" onclick="cambiarEstado(${req.id}, 'ordered')">Orden colocada</button>
+                                <button class="btn btn-success" onclick="cambiarEstado(${req.id}, 'received')">Recibido</button>
+                            </td>
+                        `;
+                        tb.appendChild(tr);
+                    });
+                })
+                .catch(() => {
+                    document.querySelector("#reqTable tbody").innerHTML = '<tr><td colspan="11" style="text-align:center; padding: 20px;">Error al cargar</td></tr>';
+                });
+        }
+
+        function cambiarEstado(id, estado) {
+            const pathMap = {
+                'in_progress': 'marcar_en_proceso',
+                'ordered': 'marcar_orden_colocada',
+                'received': 'marcar_recibido'
+            };
+            fetch(`/api/purchase_requisitions/${id}/${pathMap[estado]}`, { method: 'POST' })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        loadReqs();
+                    } else {
+                        alert('No se pudo actualizar');
+                    }
+                })
+                .catch(err => alert('Error: ' + err.message));
+        }
+
+        document.addEventListener("DOMContentLoaded", loadReqs);
+    </script>
+</body>
+</html>
+

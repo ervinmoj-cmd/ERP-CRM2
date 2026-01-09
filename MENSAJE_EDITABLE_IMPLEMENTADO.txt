@@ -1,0 +1,530 @@
+╔══════════════════════════════════════════════════════════════╗
+║   ✅ MENSAJE EDITABLE INLINE IMPLEMENTADO                    ║
+╚══════════════════════════════════════════════════════════════╝
+
+Fecha: 09/12/2025
+Estado: ✅ COMPLETADO Y LISTO PARA USAR
+
+═══════════════════════════════════════════════════════════════
+
+🎯 LO QUE SE IMPLEMENTÓ
+═══════════════════════════════════════════════════════════════
+
+✅ 1. Campo editable DIRECTO en la vista del trato
+   └─ Sin necesidad de dar click en "Editar"
+   └─ Visible cuando hay cotizaciones vinculadas
+
+✅ 2. Mensaje precargado por defecto
+   └─ "Hola, buen día..."
+   └─ Sin mencionar el monto
+   └─ Profesional y amigable
+
+✅ 3. Edición en tiempo real
+   └─ Modifica el texto directamente
+   └─ Click en "💾 Guardar Mensaje"
+   └─ Confirmación visual "✅ Guardado"
+
+✅ 4. PDF unificado en email
+   └─ Mismo PDF que se ve en web
+   └─ Con términos y condiciones completos
+
+═══════════════════════════════════════════════════════════════
+
+📧 CONTENIDO DEL EMAIL
+═══════════════════════════════════════════════════════════════
+
+ESTRUCTURA DEL EMAIL:
+────────────────────────────────────────────────────────────────
+
+Asunto: Cotización T-XXXXX - [Nombre del Cliente]
+
+Cuerpo:
+┌──────────────────────────────────────────────────────┐
+│ Cotización T-XXXXX                                   │
+│                                                      │
+│ Estimado(a) [Nombre del Contacto],                  │
+│                                                      │
+│ [MENSAJE PERSONALIZADO DEL VENDEDOR]                │
+│ Ej:                                                  │
+│ Hola, buen día                                       │
+│                                                      │
+│ Adjunto encontrará la cotización solicitada.        │
+│                                                      │
+│ Quedamos a sus órdenes para cualquier duda o        │
+│ aclaración.                                          │
+│                                                      │
+│ Vigencia: 30 días                                    │
+│                                                      │
+│ Saludos cordiales,                                   │
+│ [FIRMA DEL VENDEDOR]                                 │
+│ Ej: ing. Ervin                                       │
+│ Ervin Moreno Jimenez                                 │
+│ Tel: (664) 250-0022                                  │
+│ emoreno@inair.com.mx                                 │
+│ www.inair.com.mx                                     │
+│                                                      │
+│ 📎 Adjunto: Cotizacion_T-XXXXX.pdf                  │
+└──────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════
+
+🖥️ INTERFAZ EN EL CRM
+═══════════════════════════════════════════════════════════════
+
+Cuando abres un trato que tiene cotizaciones, verás:
+
+┌──────────────────────────────────────────────────────┐
+│ 📊 Información del Trato                             │
+│ • Etapa, Valor, Cliente, etc.                        │
+└──────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────┐
+│ 👥 Cliente                                           │
+│ • Nombre, Contacto, Teléfono                         │
+│ • Email: emoreno@inair.com.mx                        │
+└──────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────┐
+│ 📄 Cotizaciones Vinculadas                           │
+│ • 📄 T-00012 - $0.00                                 │
+└──────────────────────────────────────────────────────┘
+
+┌══════════════════════════════════════════════════════┐
+║ 📧 Mensaje para el Cliente                          ║
+║                                                      ║
+║ ✍️ Firma del Vendedor:                              ║
+║ ┌────────────────────────────────────────────────┐ ║
+║ │ ing. Ervin                      [EDITABLE]     │ ║
+║ └────────────────────────────────────────────────┘ ║
+║                                                      ║
+║ 💬 Cuerpo del Mensaje:                              ║
+║ ┌────────────────────────────────────────────────┐ ║
+║ │ Hola, buen día                  [EDITABLE]     │ ║
+║ │                                                │ ║
+║ │ Adjunto encontrará la cotización solicitada.  │ ║
+║ │                                                │ ║
+║ │ Quedamos a sus órdenes para cualquier duda o  │ ║
+║ │ aclaración.                                    │ ║
+║ └────────────────────────────────────────────────┘ ║
+║                                                      ║
+║ [💾 Guardar Mensaje]  ✅ Guardado (aparece 3 seg)   ║
+└══════════════════════════════════════════════════════┘
+
+┌──────────────────────────────────────────────────────┐
+│ 📅 Actividades                                       │
+│ • No hay actividades registradas                     │
+└──────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════
+
+🚀 CÓMO USAR EL SISTEMA
+═══════════════════════════════════════════════════════════════
+
+PASO 1: Reinicia el servidor
+────────────────────────────────────────────────────────────────
+Ctrl+C
+python app.py
+
+PASO 2: Abre un trato con cotización vinculada
+────────────────────────────────────────────────────────────────
+• Ve al CRM
+• Click en cualquier trato que tenga cotización
+
+PASO 3: Verás la sección "📧 Mensaje para el Cliente"
+────────────────────────────────────────────────────────────────
+Con campos editables:
+• Firma del vendedor (precargado)
+• Mensaje personalizado (precargado)
+
+PASO 4: Modifica el mensaje si quieres
+────────────────────────────────────────────────────────────────
+Ejemplos:
+
+MENSAJE FORMAL:
+"Estimado cliente,
+
+Adjunto encontrará la cotización solicitada.
+
+Quedamos a la espera de sus comentarios."
+
+MENSAJE AMIGABLE:
+"¡Hola!
+
+Te envío la cotización que me solicitaste.
+
+Cualquier duda me avisas. ¡Saludos!"
+
+MENSAJE URGENTE:
+"Buenos días,
+
+Adjunto cotización urgente según lo conversado.
+
+Favor de confirmar a la brevedad."
+
+PASO 5: Guarda el mensaje
+────────────────────────────────────────────────────────────────
+• Click en "💾 Guardar Mensaje"
+• Verás "✅ Guardado" por 3 segundos
+• El mensaje queda guardado para ese trato
+
+PASO 6: Mueve a "Cotización enviada"
+────────────────────────────────────────────────────────────────
+• Arrastra el trato a esa columna
+• El email se envía con TU mensaje personalizado
+• El cliente lo recibe tal como lo escribiste
+
+═══════════════════════════════════════════════════════════════
+
+✅ VENTAJAS DEL SISTEMA
+═══════════════════════════════════════════════════════════════
+
+PARA EL VENDEDOR:
+• Edita el mensaje SIN abrir modal
+• Ve y edita en el mismo lugar
+• Guarda rápidamente
+• Personaliza por cliente
+• No pierde tiempo
+
+PARA EL CLIENTE:
+• Recibe mensaje personalizado
+• No hay plantilla genérica
+• Siente atención personalizada
+• Mejor experiencia
+
+PARA LA EMPRESA:
+• Comunicación más profesional
+• Cada vendedor adapta su estilo
+• Flexibilidad sin perder control
+• Mejor imagen corporativa
+
+═══════════════════════════════════════════════════════════════
+
+📊 FLUJO COMPLETO
+═══════════════════════════════════════════════════════════════
+
+COTIZADOR → VENDEDOR → CLIENTE
+
+1. COTIZADOR:
+   ├─ Genera cotización T-00012
+   ├─ Vincula a trato
+   └─ Mueve a "Cotizado"
+        ↓ (automático)
+
+2. VENDEDOR recibe trato:
+   ├─ Abre trato (vista, no editar)
+   ├─ Ve sección "📧 Mensaje para el Cliente"
+   ├─ Modifica mensaje si quiere:
+   │  "Hola Sr. López, aquí su cotización..."
+   ├─ Modifica firma:
+   │  "Ing. Ervin Moreno - Ventas"
+   ├─ Click "💾 Guardar Mensaje"
+   └─ Mueve trato a "Cotización enviada"
+        ↓ (automático)
+
+3. CLIENTE recibe:
+   ├─ Asunto: Cotización T-00012 - [Nombre]
+   ├─ Cuerpo: Mensaje personalizado del vendedor
+   ├─ Firma: ing. Ervin + contacto
+   └─ Adjunto: PDF completo con términos
+
+═══════════════════════════════════════════════════════════════
+
+🔧 CAMBIOS TÉCNICOS
+═══════════════════════════════════════════════════════════════
+
+1. templates/admin_crm_view.html
+   ├─ Agregada sección "📧 Mensaje para el Cliente"
+   ├─ Campos editables inline
+   ├─ Función guardarMensajeEmail()
+   └─ Solo visible si hay cotizaciones vinculadas
+
+2. app.py
+   ├─ Nuevo endpoint: /api/crm/deal/<id>/mensaje-email
+   ├─ Guarda firma y mensaje sin afectar otros datos
+   └─ Verificación de permisos incluida
+
+3. email_sender.py
+   ├─ Mensaje precargado por defecto
+   ├─ Sin mención del monto
+   ├─ Usa mensaje personalizado del trato
+   └─ Formato limpio y profesional
+
+═══════════════════════════════════════════════════════════════
+
+📝 MENSAJE PRECARGADO POR DEFECTO
+═══════════════════════════════════════════════════════════════
+
+Texto:
+────────────────────────────────────────────────────────────────
+Hola, buen día
+
+Adjunto encontrará la cotización solicitada.
+
+Quedamos a sus órdenes para cualquier duda o aclaración.
+────────────────────────────────────────────────────────────────
+
+Firma predeterminada:
+────────────────────────────────────────────────────────────────
+ing. Ervin
+────────────────────────────────────────────────────────────────
+
+EL VENDEDOR PUEDE MODIFICAR AMBOS según el cliente.
+
+═══════════════════════════════════════════════════════════════
+
+✅ COMPARACIÓN: ANTES VS AHORA
+═══════════════════════════════════════════════════════════════
+
+ANTES:
+❌ Tenías que dar click en "Editar Trato"
+❌ Abrir modal de edición
+❌ Buscar los campos
+❌ Modificar
+❌ Guardar
+❌ Cerrar modal
+❌ Volver a la vista
+
+AHORA:
+✅ Los campos están DIRECTAMENTE en la vista
+✅ Modificas en el mismo lugar
+✅ Un solo click para guardar
+✅ Confirmación visual inmediata
+✅ Más rápido y eficiente
+
+═══════════════════════════════════════════════════════════════
+
+🎯 EJEMPLOS DE USO POR SITUACIÓN
+═══════════════════════════════════════════════════════════════
+
+SITUACIÓN 1: Cliente nuevo (formal)
+────────────────────────────────────────────────────────────────
+Mensaje:
+"Estimado cliente,
+
+Es un placer saludarle. Adjunto encontrará la cotización 
+solicitada.
+
+Quedamos a sus órdenes para cualquier aclaración."
+
+SITUACIÓN 2: Cliente conocido (amigable)
+────────────────────────────────────────────────────────────────
+Mensaje:
+"¡Hola!
+
+Te envío la cotización que me pediste.
+
+Cualquier cosa me avisas. ¡Saludos!"
+
+SITUACIÓN 3: Cotización urgente
+────────────────────────────────────────────────────────────────
+Mensaje:
+"Buenos días,
+
+Adjunto la cotización urgente según lo conversado.
+
+Favor de confirmar lo antes posible."
+
+SITUACIÓN 4: Seguimiento
+────────────────────────────────────────────────────────────────
+Mensaje:
+"Hola,
+
+Como seguimiento a nuestra llamada, adjunto la cotización 
+actualizada.
+
+Quedo atento a tus comentarios."
+
+═══════════════════════════════════════════════════════════════
+
+🧪 CÓMO PROBAR AHORA
+═══════════════════════════════════════════════════════════════
+
+PASO 1: Reinicia el servidor ⚠️ IMPORTANTE
+────────────────────────────────────────────────────────────────
+Ctrl+C
+python app.py
+Espera a que diga "Running on..."
+
+PASO 2: Abre el trato
+────────────────────────────────────────────────────────────────
+• Ve al CRM
+• Click en "VENTA DE SERVICIOS TECNICOS"
+• La vista del trato se abre
+
+PASO 3: Verás la nueva sección
+────────────────────────────────────────────────────────────────
+📧 Mensaje para el Cliente
+
+Con dos campos editables:
+• ✍️ Firma del Vendedor: "ing. Ervin"
+• 💬 Cuerpo del Mensaje: "Hola, buen día..."
+
+PASO 4: Modifica si quieres
+────────────────────────────────────────────────────────────────
+Ejemplo:
+
+Firma: "Ing. Ervin Moreno - Ventas INAIR"
+
+Mensaje:
+"Hola, buen día
+
+Adjunto la cotización para el servicio de compresores.
+
+Quedamos atentos a sus comentarios."
+
+PASO 5: Guarda
+────────────────────────────────────────────────────────────────
+• Click "💾 Guardar Mensaje"
+• Verás "✅ Guardado" aparecer brevemente
+
+PASO 6: Mueve a "Cotización enviada"
+────────────────────────────────────────────────────────────────
+• Cierra la vista del trato
+• Arrastra el trato a "Cotización enviada"
+• El email se envía con TU mensaje
+
+PASO 7: Verifica en consola
+────────────────────────────────────────────────────────────────
+Deberías ver:
+✅ Email del cliente: emoreno@inair.com.mx ✅
+✅ Iniciando envío de email...
+✅ Email enviado exitosamente
+
+PASO 8: Revisa el email recibido
+────────────────────────────────────────────────────────────────
+Abre el email en emoreno@inair.com.mx y verifica:
+✅ El mensaje es el que escribiste
+✅ La firma es la que pusiste
+✅ PDF adjunto completo
+✅ Sin mención del monto en el cuerpo
+
+═══════════════════════════════════════════════════════════════
+
+✨ CARACTERÍSTICAS ESPECIALES
+═══════════════════════════════════════════════════════════════
+
+1. MENSAJE PRECARGADO INTELIGENTE
+   └─ Siempre hay un mensaje por defecto
+   └─ El vendedor no empieza desde cero
+   └─ Puede usar el predeterminado o modificarlo
+
+2. GUARDAR INDEPENDIENTE
+   └─ Guarda solo mensaje y firma
+   └─ No afecta otros datos del trato
+   └─ Más rápido que "Editar Trato"
+
+3. VISIBLE SOLO CUANDO NECESARIO
+   └─ Solo aparece si hay cotizaciones vinculadas
+   └─ Si no hay cotización, no estorba
+   └─ Interfaz limpia
+
+4. CONFIRMACIÓN VISUAL
+   └─ "✅ Guardado" aparece 3 segundos
+   └─ Feedback inmediato
+   └─ Usuario sabe que funcionó
+
+5. SALTOS DE LÍNEA AUTOMÁTICOS
+   └─ Escribe con Enter
+   └─ Se convierte automáticamente a <br> en HTML
+   └─ Email formateado correctamente
+
+═══════════════════════════════════════════════════════════════
+
+📁 ARCHIVOS MODIFICADOS
+═══════════════════════════════════════════════════════════════
+
+1. templates/admin_crm_view.html
+   ├─ Agregada sección "Mensaje para el Cliente"
+   ├─ Campos editables: firma y mensaje
+   ├─ Botón de guardar
+   ├─ Función JavaScript guardarMensajeEmail()
+   └─ Solo visible si hay cotizaciones
+
+2. app.py
+   ├─ Nuevo endpoint: /api/crm/deal/<id>/mensaje-email
+   ├─ Método: POST
+   ├─ Guarda firma_vendedor y mensaje_envio
+   └─ Verificación de permisos incluida
+
+3. email_sender.py
+   ├─ Mensaje precargado por defecto
+   ├─ Sin mención del monto
+   ├─ Formato limpio
+   └─ Usa mensaje del trato o default
+
+═══════════════════════════════════════════════════════════════
+
+⚠️ IMPORTANTE
+═══════════════════════════════════════════════════════════════
+
+1. DEBES REINICIAR EL SERVIDOR
+   └─ Los cambios NO funcionan sin reiniciar
+   └─ Ctrl+C y python app.py
+
+2. LA SECCIÓN SOLO APARECE SI HAY COTIZACIÓN
+   └─ Si no ves la sección "📧 Mensaje para el Cliente"
+   └─ Verifica que el trato tenga cotización vinculada
+
+3. GUARDA ANTES DE MOVER EL TRATO
+   └─ Modifica el mensaje
+   └─ Click "💾 Guardar Mensaje"
+   └─ Espera "✅ Guardado"
+   └─ Luego mueve a "Cotización enviada"
+
+4. VERIFICA LA CONSOLA DEL SERVIDOR
+   └─ Ahí ves si el email se envió
+   └─ Y con qué contenido
+
+═══════════════════════════════════════════════════════════════
+
+🎨 PERSONALIZACIÓN POR VENDEDOR
+═══════════════════════════════════════════════════════════════
+
+Cada vendedor puede tener su propio estilo:
+
+VENDEDOR A (Formal):
+────────────────────────────────────────────────────────────────
+Firma: "Ing. Juan Pérez - Gerente de Ventas"
+Mensaje: "Estimado cliente, adjunto cotización solicitada..."
+
+VENDEDOR B (Casual):
+────────────────────────────────────────────────────────────────
+Firma: "María González - Ventas"
+Mensaje: "¡Hola! Te envío la cotización que pediste..."
+
+VENDEDOR C (Técnico):
+────────────────────────────────────────────────────────────────
+Firma: "Ing. Carlos Ruiz - Especialista Técnico"
+Mensaje: "Adjunto cotización técnica según especificaciones..."
+
+═══════════════════════════════════════════════════════════════
+
+✅ RESUMEN
+═══════════════════════════════════════════════════════════════
+
+Lo que logramos:
+
+✅ Edición inline sin modales
+✅ Mensaje precargado profesional
+✅ Sin mención del monto
+✅ Guardado rápido
+✅ Confirmación visual
+✅ Personalización por trato
+✅ Cada vendedor su estilo
+✅ PDF unificado completo
+✅ Sistema robusto case-insensitive
+
+═══════════════════════════════════════════════════════════════
+
+🎉 SISTEMA COMPLETAMENTE FUNCIONAL
+═══════════════════════════════════════════════════════════════
+
+Solo reinicia el servidor y empieza a usarlo.
+
+El cliente recibirá emails personalizados con el PDF completo.
+
+═══════════════════════════════════════════════════════════════
+
+
+
+

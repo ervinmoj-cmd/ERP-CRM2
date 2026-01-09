@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Factura {{ factura.numero_factura }} - INAIR</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+    <style>
+        .factura-detalle {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .detalle-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+        }
+        .section-card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .info-row {
+            display: grid;
+            grid-template-columns: 150px 1fr;
+            padding: 12px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .info-label {
+            font-weight: 600;
+            color: #7f8c8d;
+        }
+        .info-value {
+            color: #2c3e50;
+        }
+        .badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .badge.pendiente {
+            background: #fff3cd;
+            color: #856404;
+        }
+        .badge.parcial {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        .badge.pagada {
+            background: #d4edda;
+            color: #155724;
+        }
+        .payment-item {
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid #27ae60;
+        }
+        .payment-form {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+        }
+        @media (max-width: 768px) {
+            .detalle-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+    <script>
+        function aplicarSalidaAlmacen() {
+            if (!confirm('¿Desea aplicar la salida de almacén para esta factura? Esta acción descontará el inventario de las refacciones.')) {
+                return;
+            }
+            
+            const facturaId = {{ factura.id }};
+            const btn = event.target;
+            btn.disabled = true;
+            btn.textContent = '⏳ Procesando...';
+            
+            fetch(`/api/facturas/${facturaId}/aplicar-salida-almacen`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    alert('✅ ' + data.message);
+                    location.reload();
+                } else {
+                    let errorMsg = 'Error al aplicar salida:\n';
+                    if (data.errors && data.errors.length > 0) {
+                        errorMsg += data.errors.join('\n');
+                    } else {
+                        errorMsg += data.error || 'Error desconocido';
+                    }
+                    alert('❌ ' + errorMsg);
+                    btn.disabled = false;
+                    btn.textContent = '📦 Aplicar Salida de Almacén';
+                }
+            })
+            .catch(err => {
+                alert('❌ Error de conexión: ' + err.message);
+                btn.disabled = false;
+                btn.textContent = '📦 Aplicar Salida de Almacén';
+            });
+        }
+    </script>
+</head>
+
+<body>
+    <div class="admin-container">
+        <div class="admin-header">
+            <h1>📄 Factura {{ factura.numero_factura }}</h1>
+            <div class="header-actions">
+                <a href="{{ url_for('admin_factura_pdf', id=factura.id) }}?preview=true" class="btn btn-primary" target="_blank">👁️ Vista Previa</a>
+                <a href="{{ url_for('admin_factura_pdf', id=factura.id) }}" class="btn btn-primary">📥 Descargar PDF</a>
+                {% if factura.pagos %}
+                <a href="{{ url_for('admin_complemento_pago_pdf', factura_id=factura.id) }}?preview=true" class="btn btn-success" target="_blank">👁️ Ver Complemento</a>
+                <a href="{{ url_for('admin_complemento_pago_pdf', factura_id=factura.id) }}" class="btn btn-success">📥 Descargar Complemento</a>
+                {% endif %}
+                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="history.back()">Atrás</button>
+                <a href="{{ url_for('admin_facturas') }}" class="btn btn-secondary btn-sm">← Volver</a>
+            </div>
+        </div>
+
+        <div class="factura-detalle">
+            <div class="detalle-grid">
+                <!-- Invoice Details -->
+                <div>
+                    <div class="section-card">
+                        <h2>Detalles de la Factura</h2>
+                        
+                        <div class="info-row">
+                            <div class="info-label">Estado:</div>
+                            <div class="info-value">
+                                <span class="badge {{ factura.estado_pago|lower }}">{{ factura.estado_pago }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="info-row">
+                            <div class="info-label">Cliente:</div>
+                            <div class="info-value">{{ factura.cliente_nombre }}</div>
+                        </div>
+                        
+                        {% if factura.cliente_rfc %}
+                        <div class="info-row">
+                            <div class="info-label">RFC:</div>
+                            <div class="info-value">{{ factura.cliente_rfc }}</div>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="info-row">
+                            <div class="info-label">Fecha Emisión:</div>
+                            <div class="info-value">{{ factura.fecha_emision }}</div>
+                        </div>
+                        
+                        {% if factura.fecha_vencimiento %}
+                        <div class="info-row">
+                            <div class="info-label">Fecha Vencimiento:</div>
+                            <div class="info-value">{{ factura.fecha_vencimiento }}</div>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="info-row">
+                            <div class="info-label">Subtotal:</div>
+                            <div class="info-value">${{ "%.2f"|format(factura.subtotal) }}</div>
+                        </div>
+                        
+                        <div class="info-row">
+                            <div class="info-label">IVA ({{ factura.iva_porcentaje }}%):</div>
+                            <div class="info-value">${{ "%.2f"|format(factura.iva_monto) }}</div>
+                        </div>
+                        
+                        <div class="info-row">
+                            <div class="info-label">Total:</div>
+                            <div class="info-value"><strong style="font-size: 1.2em;">${{ "%.2f"|format(factura.total) }}</strong></div>
+                        </div>
+                        
+                        <div class="info-row">
+                            <div class="info-label">Monto Pagado:</div>
+                            <div class="info-value" style="color: #27ae60;"><strong>${{ "%.2f"|format(factura.monto_pagado) }}</strong></div>
+                        </div>
+                        
+                        <div class="info-row">
+                            <div class="info-label">Saldo Pendiente:</div>
+                            <div class="info-value" style="color: #e74c3c;"><strong>${{ "%.2f"|format(factura.saldo_pendiente) }}</strong></div>
+                        </div>
+                        
+                        {% if factura.notas %}
+                        <div class="info-row">
+                            <div class="info-label">Notas:</div>
+                            <div class="info-value">{{ factura.notas }}</div>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Partidas Section -->
+                    {% if factura.partidas %}
+                    <div class="section-card" style="margin-top: 20px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                            <h2 style="margin: 0;">📋 Partidas</h2>
+                            {% if not salida_aplicada %}
+                            <button onclick="aplicarSalidaAlmacen()" class="btn" style="background: #e67e22; color: white; padding: 8px 16px; font-size: 0.9em;">📦 Aplicar Salida de Almacén</button>
+                            {% else %}
+                            <span class="btn" style="background: #27ae60; color: white; cursor: default; padding: 8px 16px; font-size: 0.9em;">✅ Salida Aplicada</span>
+                            {% endif %}
+                        </div>
+                        <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
+                            <thead>
+                                <tr style="background: #f8f9fa;">
+                                    <th style="padding: 10px; text-align: left; border-bottom: 2px solid #ddd;">Descripción</th>
+                                    <th style="padding: 10px; text-align: center; border-bottom: 2px solid #ddd;">Cantidad</th>
+                                    <th style="padding: 10px; text-align: right; border-bottom: 2px solid #ddd;">P. Unitario</th>
+                                    <th style="padding: 10px; text-align: right; border-bottom: 2px solid #ddd;">Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for p in factura.partidas %}
+                                <tr>
+                                    <td style="padding: 10px; border-bottom: 1px solid #eee;">
+                                        {{ p.descripcion }}
+                                        {% if p.codigo %}
+                                        <br><small style="color: #7f8c8d;">Código: {{ p.codigo }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td style="padding: 10px; text-align: center; border-bottom: 1px solid #eee;">{{ p.cantidad }}</td>
+                                    <td style="padding: 10px; text-align: right; border-bottom: 1px solid #eee;">${{ "%.2f"|format(p.precio_unitario) }}</td>
+                                    <td style="padding: 10px; text-align: right; border-bottom: 1px solid #eee;"><strong>${{ "%.2f"|format(p.subtotal) }}</strong></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        
+                        {% if salida_aplicada and movements %}
+                        <div style="margin-top: 20px; padding: 15px; background: #d4edda; border-radius: 8px; border-left: 4px solid #27ae60;">
+                            <h3 style="margin: 0 0 10px 0; color: #155724;">✅ Salida de Almacén Aplicada</h3>
+                            <table style="width: 100%; border-collapse: collapse;">
+                                <thead>
+                                    <tr style="background: #c3e6cb;">
+                                        <th style="padding: 8px; text-align: left; border: 1px solid #b8dacc;">Número de Parte</th>
+                                        <th style="padding: 8px; text-align: left; border: 1px solid #b8dacc;">Descripción</th>
+                                        <th style="padding: 8px; text-align: right; border: 1px solid #b8dacc;">Cantidad</th>
+                                        <th style="padding: 8px; text-align: left; border: 1px solid #b8dacc;">Fecha</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for mov in movements %}
+                                    <tr>
+                                        <td style="padding: 8px; border: 1px solid #b8dacc;">{{ mov.numero_parte }}</td>
+                                        <td style="padding: 8px; border: 1px solid #b8dacc;">{{ mov.refaccion_descripcion or '-' }}</td>
+                                        <td style="padding: 8px; text-align: right; border: 1px solid #b8dacc;">{{ mov.cantidad|abs }}</td>
+                                        <td style="padding: 8px; border: 1px solid #b8dacc;">{{ mov.fecha[:10] if mov.fecha else '-' }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Payments Section -->
+                <div>
+                    <div class="section-card">
+                        <h2>💳 Pagos Registrados</h2>
+                        
+                        {% if factura.pagos %}
+                            {% for pago in factura.pagos %}
+                            <div class="payment-item">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                                    <strong style="font-size: 1.1em;">${{ "%.2f"|format(pago.monto) }}</strong>
+                                    <span style="color: #7f8c8d; font-size: 0.9em;">{{ pago.fecha_pago }}</span>
+                                </div>
+                                {% if pago.metodo %}
+                                <div style="color: #7f8c8d; font-size: 0.85em;">Método: {{ pago.metodo }}</div>
+                                {% endif %}
+                                {% if pago.referencia %}
+                                <div style="color: #7f8c8d; font-size: 0.85em;">Ref: {{ pago.referencia }}</div>
+                                {% endif %}
+                                {% if pago.notas %}
+                                <div style="margin-top: 5px; font-size: 0.9em;">{{ pago.notas }}</div>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <p style="color: #95a5a6; text-align: center; padding: 20px;">
+                                No hay pagos registrados
+                            </p>
+                        {% endif %}
+
+                        <!-- Add Payment Form -->
+                        {% if factura.saldo_pendiente > 0 %}
+                        <div class="payment-form">
+                            <h3>Registrar Nuevo Pago</h3>
+                            <form method="POST" action="{{ url_for('admin_factura_agregar_pago', id=factura.id) }}">
+                                <div class="form-group">
+                                    <label for="fecha_pago">Fecha de Pago *</label>
+                                    <input type="date" id="fecha_pago" name="fecha_pago" value="{{ now().strftime('%Y-%m-%d') }}" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="monto">Monto *</label>
+                                    <input type="number" step="0.01" id="monto" name="monto" max="{{ factura.saldo_pendiente }}" placeholder="Máx: ${{ '%.2f'|format(factura.saldo_pendiente) }}" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="metodo">Método de Pago</label>
+                                    <select id="metodo" name="metodo">
+                                        <option value="">-- Seleccionar --</option>
+                                        <option value="Transferencia">Transferencia</option>
+                                        <option value="Efectivo">Efectivo</option>
+                                        <option value="Cheque">Cheque</option>
+                                        <option value="Tarjeta">Tarjeta</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="referencia">Referencia</label>
+                                    <input type="text" id="referencia" name="referencia">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="notas">Notas</label>
+                                    <textarea id="notas" name="notas" rows="2"></textarea>
+                                </div>
+                                
+                                <button type="submit" class="btn btn-primary" style="width: 100%;">Registrar Pago</button>
+                            </form>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+

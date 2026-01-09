@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de PI - INAIR</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+    <style>
+        .badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            color: white;
+        }
+
+        .badge-usd {
+            background-color: #28a745;
+        }
+
+        .badge-mxn {
+            background-color: #007bff;
+        }
+
+        /* Mobile Responsive Fixes */
+        @media (max-width: 768px) {
+            .admin-header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+                height: auto !important;
+            }
+
+            .user-info {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+                width: 100%;
+            }
+
+            .user-info .btn {
+                width: 100%;
+                margin: 0 !important;
+            }
+
+            /* Card Header Adjustments */
+            .card.p-3.shadow-sm {
+                display: flex;
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .card.p-3.shadow-sm h3 {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+                font-size: 1.5rem;
+                text-align: center;
+            }
+
+            .card.p-3.shadow-sm input#searchInput {
+                width: 100% !important;
+                margin-left: 0 !important;
+            }
+
+            .float-right {
+                float: none !important;
+                width: 100%;
+            }
+
+            .float-right .btn {
+                width: 100%;
+                display: block;
+            }
+
+            .table-responsive {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                margin-bottom: 20px;
+                border-radius: 8px;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            }
+
+            table {
+                min-width: 800px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="admin-container">
+        <div class="admin-header">
+            <h1>📑 Gestión de PI (Proforma Invoices)</h1>
+            <div class="user-info">
+                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="history.back()">Atrás</button>
+                <a href="{{ url_for('dashboard_redirect') }}" class="btn btn-secondary btn-sm">Volver al Panel</a>
+                <a href="{{ url_for('logout') }}" class="btn btn-danger btn-sm">Cerrar Sesión</a>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <div class="card p-3 shadow-sm">
+                <h3>Historial de PIs (V2) <input type="text" id="searchInput"
+                        placeholder="Buscar por folio o proveedor..." class="form-control d-inline-block w-auto ml-2">
+                </h3>
+                <div class="float-right">
+                    <a href="{{ url_for('admin_pi_nueva') }}" class="btn btn-primary">+ Nueva PI</a>
+                </div>
+            </div>
+
+            <div class="card mt-3 shadow-sm">
+                <div class="table-responsive">
+                    {% if pis %}
+                    <table class="table table-hover">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>FOLIO</th>
+                                <th>FECHA</th>
+                                <th>PROVEEDOR</th>
+                                <th>REFERENCIA</th>
+                                <th>TOTAL</th>
+                                <th>ACCIONES</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for pi in pis %}
+                            <!-- Calculate General Status -->
+                            {# Defensive check: Ensure items exists #}
+                            {# Access dictionary key 'items', not method .items() #}
+                            {% set items_list = pi['items'] if 'items' in pi else [] %}
+                            {% set total_items = items_list|length %}
+                            {% set received = 0 %}
+                            {% set cancelled = 0 %}
+                            {% for item in items_list %}
+                            {% if item.estatus == 'Recibido' %}{% set received = received + 1 %}{% endif %}
+                            {% if item.estatus == 'Cancelado' %}{% set cancelled = cancelled + 1 %}{% endif %}
+                            {% endfor %}
+
+                            {% set general_status = 'Pendiente' %}
+                            {% set status_color = '#6c757d' %} <!-- Grey -->
+
+                            {% if total_items > 0 %}
+                            {% if received == total_items %}
+                            {% set general_status = 'Completado' %}
+                            {% set status_color = '#28a745' %} <!-- Green -->
+                            {% elif received > 0 %}
+                            {% set general_status = 'Parcial' %}
+                            {% set status_color = '#ffc107' %} <!-- Yellow -->
+                            {% endif %}
+                            {% endif %}
+
+                            <!-- Summary Row -->
+                            <tr onclick="toggleDetails({{ pi.id }})" style="cursor: pointer;">
+                                <td><strong>{{ pi.folio }}</strong></td>
+                                <td>{{ pi.fecha }}</td>
+                                <td>{{ pi.proveedor_nombre }}</td>
+                                <td>{{ pi.referencia }}</td>
+                                <td>
+                                    ${{ "%.2f"|format(pi.total) }}
+                                    <span
+                                        class="badge {% if pi.moneda == 'USD' %}badge-usd{% else %}badge-mxn{% endif %}">{{pi.moneda
+                                        }}</span>
+                                </td>
+                                <td onclick="event.stopPropagation()">
+                                    <a href="{{ url_for('admin_pi_pdf', id=pi.id) }}" class="btn btn-sm btn-info"
+                                        target="_blank" title="Ver PDF (Vista Previa)">👁️ PDF</a>
+                                    <a href="{{ url_for('admin_pi_excel', id=pi.id) }}" class="btn btn-sm btn-success"
+                                        title="Descargar Excel">📊 CSV</a>
+                                    {% if can_edit %}
+                                    <a href="{{ url_for('admin_pi_editar', id=pi.id) }}"
+                                        class="btn btn-sm btn-primary">Editar</a>
+                                    <button class="btn btn-sm btn-outline-secondary"
+                                        onclick="deletePi({{ pi.id }}, '{{ pi.folio }}')">Eliminar</button>
+                                    {% endif %}
+                                </td>
+                            </tr>
+
+                            <!-- Details Row (Hidden) -->
+                            <tr id="details-{{ pi.id }}" style="display: none; background-color: #f9f9f9;">
+                                <td colspan="6">
+                                    <div style="padding: 10px 20px;">
+                                        <div
+                                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                                            <strong>Detalle de Partidas {% if items_list|length == 0 %}(Sin partidas){%
+                                                endif %}</strong>
+                                            {% if items_list|length > 0 %}
+                                            <div>
+                                                <button class="btn btn-sm btn-outline-success"
+                                                    onclick="updateAllItems({{ pi.id }}, 'Recibido')">Marcar Todo
+                                                    Recibido</button>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                        <table class="table table-sm"
+                                            style="margin-top: 5px; background: white; width: 100%;">
+                                            <thead style="background: #e9ecef;">
+                                                <tr>
+                                                    <th>Ln</th>
+                                                    <th>Parte</th>
+                                                    <th>Descripción</th>
+                                                    <th>Cantidad</th>
+                                                    <th>Estatus Actual</th>
+                                                    <th>Acciones</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for item in items_list %}
+                                                <tr onclick="event.stopPropagation()">
+                                                    <td>{{ item.linea }}</td>
+                                                    <td>{{ item.numero_parte }}</td>
+                                                    <td>{{ item.descripcion }}</td>
+                                                    <td>{{ item.cantidad }} {{ item.unidad }}</td>
+                                                    <td>
+                                                        {% if item.estatus == 'Recibido' %}
+                                                        <span class="badge"
+                                                            style="background-color: #28a745; color: white;">Recibido</span>
+                                                        {% elif item.estatus == 'En Tránsito' %}
+                                                        <span class="badge"
+                                                            style="background-color: #ffc107; color: black;">En
+                                                            Tránsito</span>
+                                                        {% elif item.estatus == 'Cancelado' %}
+                                                        <span class="badge"
+                                                            style="background-color: #dc3545; color: white;">Cancelado</span>
+                                                        {% else %}
+                                                        <span class="badge"
+                                                            style="background-color: #6c757d; color: white;">Pendiente</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td onclick="event.stopPropagation()">
+                                                        {% if user_puesto == 'Compras' %}
+                                                        <select
+                                                            onchange="updateItemStatus({{ item.id }}, this.value, {{ pi.id }})"
+                                                            onclick="event.stopPropagation()"
+                                                            class="form-control form-control-sm" style="width: 130px;">
+                                                            <option value="">Cambiar...</option>
+                                                            <option value="Pendiente" {% if item.estatus=='Pendiente'
+                                                                %}selected{% endif %}>Pendiente</option>
+                                                            <option value="En Tránsito" {% if
+                                                                item.estatus=='En Tránsito' %}selected{% endif %}>En
+                                                                Tránsito</option>
+                                                            <option value="Recibido" {% if item.estatus=='Recibido'
+                                                                %}selected{% endif %}>Recibido</option>
+                                                            <option value="Cancelado" {% if item.estatus=='Cancelado'
+                                                                %}selected{% endif %}>Cancelado</option>
+                                                        </select>
+                                                        {% else %}
+                                                        <span style="color: #6c757d; font-size: 12px;">Solo
+                                                            lectura</span>
+                                                        {% endif %}
+                                                    </td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <div class="empty-state">
+                        <div style="font-size: 64px; margin-bottom: 20px; opacity: 0.5;">📑</div>
+                        <h3>No hay PIs registradas</h3>
+                        <p>Crea la primera Proforma Invoice</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <script>
+                function toggleDetails(id) {
+                    const row = document.getElementById('details-' + id);
+                    if (row.style.display === 'none') {
+                        row.style.display = 'table-row';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                }
+
+                function deletePi(id, folio) {
+                    if (confirm(`¿Estás seguro de eliminar la PI "${folio}"?`)) {
+                        const form = document.createElement('form');
+                        form.method = 'POST';
+                        form.action = `/admin/pi/eliminar/${id}`;
+                        document.body.appendChild(form);
+                        form.submit();
+                    }
+                }
+
+
+
+                // New Features for Status Tracking
+                function updateItemStatus(itemId, newStatus, piId) {
+                    console.log('updateItemStatus called:', { itemId, newStatus, piId });
+                    if (!newStatus) {
+                        console.log('No status selected, returning');
+                        return; // Do nothing if placeholder selected
+                    }
+
+                    // Save which PI detail is currently open
+                    const openDetails = document.querySelector('[id^="details-"][style*="table-row"]');
+                    if (openDetails) {
+                        sessionStorage.setItem('openPiId', openDetails.id.replace('details-', ''));
+                        console.log('Saved openPiId:', openDetails.id.replace('details-', ''));
+                    }
+
+                    console.log('Sending fetch to:', `/api/pi/item/${itemId}/status`);
+                    fetch(`/api/pi/item/${itemId}/status`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ status: newStatus })
+                    })
+                        .then(response => {
+                            console.log('Response status:', response.status);
+                            return response.json();
+                        })
+                        .then(data => {
+                            console.log('Response data:', data);
+                            if (data.success) {
+                                console.log('Success! Reloading page...');
+                                location.reload(); // Reload to update UI and calculations
+                            } else {
+                                console.error('API returned error:', data.error);
+                                alert('Error al actualizar estatus: ' + data.error);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Fetch error:', error);
+                            alert('Error de conexión: ' + error.message);
+                        });
+                }
+
+                function updateAllItems(piId, status) {
+                    if (!confirm(`¿Marcar todas las partidas como "${status}"?`)) return;
+
+                    // Save which PI detail is currently open
+                    sessionStorage.setItem('openPiId', piId);
+
+                    fetch(`/api/pi/${piId}/status-all`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ status: status })
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                location.reload();
+                            } else {
+                                alert('Error al actualizar: ' + data.error);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('Error de conexión');
+                        });
+                }
+
+                function filterTable() {
+                    const searchInput = document.getElementById('searchInput').value.toLowerCase();
+                    const table = document.getElementById('piTable');
+                    const tr = table.getElementsByTagName('tr');
+
+                    for (let i = 1; i < tr.length; i++) {
+                        const tdFolio = tr[i].getElementsByTagName('td')[0];
+                        const tdProv = tr[i].getElementsByTagName('td')[2];
+
+                        if (tdFolio && tdProv) {
+                            const folioValue = tdFolio.textContent || tdFolio.innerText;
+                            const provValue = tdProv.textContent || tdProv.innerText;
+
+                            if (folioValue.toLowerCase().indexOf(searchInput) > -1 ||
+                                provValue.toLowerCase().indexOf(searchInput) > -1) {
+                                tr[i].style.display = "";
+                            } else {
+                                tr[i].style.display = "none";
+                            }
+                        }
+                    }
+                }
+
+                // Restore expanded state after page reload
+                window.addEventListener('DOMContentLoaded', function () {
+                    const openPiId = sessionStorage.getItem('openPiId');
+                    if (openPiId) {
+                        const detailsRow = document.getElementById('details-' + openPiId);
+                        if (detailsRow) {
+                            detailsRow.style.display = 'table-row';
+                        }
+                        // Clear the stored ID after restoring
+                        sessionStorage.removeItem('openPiId');
+                    }
+                });
+            </script>
+</body>
+
+</html>

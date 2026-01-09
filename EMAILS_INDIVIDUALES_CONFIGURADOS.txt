@@ -1,0 +1,239 @@
+╔══════════════════════════════════════════════════════════════╗
+║  ✅ SISTEMA DE EMAILS INDIVIDUALES POR USUARIO IMPLEMENTADO  ║
+╚══════════════════════════════════════════════════════════════╝
+
+Fecha de implementación: 09/12/2025
+
+═══════════════════════════════════════════════════════════════
+
+📧 ¿CÓMO FUNCIONA AHORA EL SISTEMA?
+═══════════════════════════════════════════════════════════════
+
+OPCIÓN 1: Emails desde cuenta propia del usuario ✅
+────────────────────────────────────────────────────
+• Cada usuario puede configurar su email corporativo
+• Los emails se envían desde el correo del usuario
+• Más profesional y personalizado
+
+OPCIÓN 2: Email centralizado (respaldo automático) ✅
+────────────────────────────────────────────────────
+• Si un usuario NO tiene email configurado
+• Se usa automáticamente: emoreno@inair.com.mx
+• El sistema NUNCA falla, siempre tiene respaldo
+
+═══════════════════════════════════════════════════════════════
+
+🎯 CONFIGURAR EMAILS INDIVIDUALES
+═══════════════════════════════════════════════════════════════
+
+PASO 1: Ir al panel de usuarios
+────────────────────────────────────────────────────────────────
+1. Como administrador: Ve a "Usuarios"
+2. Haz clic en "Editar" del usuario que quieres configurar
+
+PASO 2: Configurar SMTP del usuario
+────────────────────────────────────────────────────────────────
+En la sección "📧 Configuración SMTP" completa:
+
+✅ Email SMTP:
+   └─ Email corporativo: juan.perez@inair.com.mx
+   └─ Debe ser un email real de GoDaddy
+
+✅ Contraseña SMTP:
+   └─ Contraseña de ese email
+   └─ La misma que usas para entrar al webmail
+
+PASO 3: Guardar
+────────────────────────────────────────────────────────────────
+• Haz clic en "Guardar Cambios"
+• El usuario YA puede enviar emails desde su cuenta
+
+═══════════════════════════════════════════════════════════════
+
+👥 EJEMPLO DE CONFIGURACIÓN POR PUESTO
+═══════════════════════════════════════════════════════════════
+
+VENDEDORES:
+────────────────────────────────────────────────────────────────
+• Juan Pérez (vendedor1@inair.com.mx)
+• María González (vendedor2@inair.com.mx)
+→ Cada uno envía cotizaciones desde su email
+
+COTIZADORES:
+────────────────────────────────────────────────────────────────
+• Carlos Ruiz (cotizador@inair.com.mx)
+→ Envía desde su email
+
+GERENTES:
+────────────────────────────────────────────────────────────────
+• Ana López (gerente.ventas@inair.com.mx)
+→ Envía desde su email
+
+ADMINISTRADOR:
+────────────────────────────────────────────────────────────────
+• Enrique Moreno (emoreno@inair.com.mx) ✅ YA CONFIGURADO
+→ Email predeterminado del sistema
+
+═══════════════════════════════════════════════════════════════
+
+🔄 ¿CÓMO DECIDE EL SISTEMA QUÉ EMAIL USAR?
+═══════════════════════════════════════════════════════════════
+
+1. USUARIO CON EMAIL CONFIGURADO:
+   ┌─────────────────────────────────────┐
+   │ Usuario: Juan Pérez                 │
+   │ Email SMTP: juan@inair.com.mx ✅   │
+   │ Password SMTP: *********** ✅      │
+   └─────────────────────────────────────┘
+                   ↓
+   📧 Email se envía desde: juan@inair.com.mx
+
+2. USUARIO SIN EMAIL CONFIGURADO:
+   ┌─────────────────────────────────────┐
+   │ Usuario: María González             │
+   │ Email SMTP: (vacío) ❌             │
+   │ Password SMTP: (vacío) ❌          │
+   └─────────────────────────────────────┘
+                   ↓
+   📧 Email se envía desde: emoreno@inair.com.mx (respaldo)
+
+═══════════════════════════════════════════════════════════════
+
+📋 CASOS DE USO
+═══════════════════════════════════════════════════════════════
+
+CASO 1: Cotizaciones
+────────────────────────────────────────────────────────────────
+• Cotizador genera cotización
+• Vendedor mueve a "Cotización Enviada"
+• Sistema envía PDF desde el email del VENDEDOR
+• Cliente ve: "De: juan.perez@inair.com.mx"
+
+CASO 2: Reportes Técnicos (futuro)
+────────────────────────────────────────────────────────────────
+• Técnico termina reporte
+• Sistema envía PDF desde email del TÉCNICO
+• Cliente ve: "De: tecnico@inair.com.mx"
+
+CASO 3: Facturas (futuro)
+────────────────────────────────────────────────────────────────
+• Contador genera factura
+• Sistema envía desde email del CONTADOR
+• Cliente ve: "De: contador@inair.com.mx"
+
+═══════════════════════════════════════════════════════════════
+
+🔒 SEGURIDAD Y PRIVACIDAD
+═══════════════════════════════════════════════════════════════
+
+✅ Las contraseñas se guardan en la base de datos local
+✅ Solo el administrador puede configurar emails de usuarios
+✅ Cada usuario solo puede enviar desde su propia cuenta
+✅ Conexión SSL encriptada (puerto 465)
+✅ No se comparten credenciales entre usuarios
+
+⚠️ IMPORTANTE:
+   • Las contraseñas están en texto plano (por necesidad técnica)
+   • Solo el administrador tiene acceso a la base de datos
+   • Mantén backup seguro de la base de datos
+
+═══════════════════════════════════════════════════════════════
+
+🚀 PRÓXIMOS PASOS RECOMENDADOS
+═══════════════════════════════════════════════════════════════
+
+1. ✅ Configurar email de Enrique Moreno (YA HECHO)
+
+2. ⏳ Configurar emails de vendedores:
+   • Crear cuentas en GoDaddy si no existen
+   • Configurar en el panel de usuarios
+   • Probar envío de cotización
+
+3. ⏳ Configurar emails de otros puestos según necesidad:
+   • Cotizadores
+   • Técnicos
+   • Gerentes
+   • Contador
+
+4. ⏳ Documentar emails corporativos existentes
+
+═══════════════════════════════════════════════════════════════
+
+📊 VENTAJAS DEL SISTEMA
+═══════════════════════════════════════════════════════════════
+
+✅ Más profesional: Cliente ve quién le escribe realmente
+✅ Respuestas directas: El cliente responde al vendedor correcto
+✅ Trazabilidad: Se sabe quién envió cada email
+✅ Respaldo automático: Si falla, usa email predeterminado
+✅ Flexibilidad: Puedes configurar solo algunos usuarios
+✅ Sin duplicación: Un usuario = Un email
+✅ Escalable: Agrega usuarios cuando quieras
+
+═══════════════════════════════════════════════════════════════
+
+🧪 CÓMO PROBAR EL SISTEMA
+═══════════════════════════════════════════════════════════════
+
+TEST 1: Usuario CON email configurado
+────────────────────────────────────────────────────────────────
+1. Configura email SMTP de un vendedor
+2. Ese vendedor mueve trato a "Cotización Enviada"
+3. Revisa consola del servidor:
+   ✅ "Email enviado desde xxx@inair.com.mx (credenciales propias)"
+
+TEST 2: Usuario SIN email configurado
+────────────────────────────────────────────────────────────────
+1. NO configures email de un vendedor
+2. Ese vendedor mueve trato a "Cotización Enviada"
+3. Revisa consola del servidor:
+   ✅ "Email enviado desde emoreno@inair.com.mx (predeterminadas)"
+
+═══════════════════════════════════════════════════════════════
+
+❓ PREGUNTAS FRECUENTES
+═══════════════════════════════════════════════════════════════
+
+P: ¿Tengo que configurar TODOS los usuarios?
+R: NO. Solo configura los que necesiten enviar emails.
+
+P: ¿Qué pasa si el email de un usuario está mal configurado?
+R: El sistema usará automáticamente el email predeterminado.
+
+P: ¿Puedo cambiar el email predeterminado?
+R: Sí, edita email_sender.py líneas 14-15.
+
+P: ¿Los usuarios pueden ver sus propias contraseñas SMTP?
+R: NO. Solo el administrador puede configurarlas.
+
+P: ¿Necesito crear emails nuevos en GoDaddy?
+R: Solo si no existen. Usa los emails corporativos existentes.
+
+P: ¿Funciona con otros proveedores además de GoDaddy?
+R: Sí, pero debes cambiar el servidor SMTP en email_sender.py.
+
+═══════════════════════════════════════════════════════════════
+
+📞 SOPORTE
+═══════════════════════════════════════════════════════════════
+
+Para ayuda adicional:
+• Revisa la consola del servidor para mensajes de error
+• Verifica que el email existe en GoDaddy
+• Prueba el email en el webmail antes de configurarlo
+• Contacta al administrador de IT si necesitas crear emails
+
+═══════════════════════════════════════════════════════════════
+
+✅ SISTEMA LISTO PARA USAR
+═══════════════════════════════════════════════════════════════
+
+El sistema de emails individuales está implementado y funcionando.
+
+Puedes empezar a configurar usuarios inmediatamente.
+
+═══════════════════════════════════════════════════════════════
+
+
+
+

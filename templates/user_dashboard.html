@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Usuario - INAIR</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+    <style>
+        .welcome-message {
+            background: linear-gradient(135deg, #d20000, #ff4444);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+        }
+
+        .welcome-message h2 {
+            margin-bottom: 5px;
+        }
+
+        .welcome-message p {
+            opacity: 0.9;
+            margin: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="admin-container">
+        <div class="admin-header">
+            <h1>🏠 Panel de Usuario</h1>
+            <div class="user-info" style="display: flex; align-items: center; gap: 15px;">
+                <span>{{ session.user_nombre }} ({{ session.puesto or 'Usuario' }})</span>
+                {% include 'components/notifications_bell.html' %}
+                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="history.back()">Atrás</button>
+                <a href="{{ url_for('dashboard_redirect') }}" class="btn btn-secondary btn-sm">Volver al Panel</a>
+                <a href="{{ url_for('logout') }}" class="btn btn-danger btn-sm">Cerrar Sesión</a>
+            </div>
+        </div>
+
+        <div class="welcome-message">
+            <h2>Bienvenido, {{ session.user_nombre }}</h2>
+            <p>Accede a los módulos disponibles para tu puesto.</p>
+        </div>
+
+        <!-- Navigation Cards -->
+        <h2 style="margin-bottom: 20px; color: #2c3e50;">Módulos Disponibles</h2>
+        <div class="dashboard-grid">
+            {% if 'clientes' in permissions %}
+            <a href="{{ url_for('admin_clientes') }}" class="nav-card">
+                <div style="font-size: 48px; margin-bottom: 15px;">👥</div>
+                <h3>Clientes</h3>
+                <p>Ver clientes y contactos</p>
+            </a>
+            {% endif %}
+
+            {% if 'usuarios' in permissions %}
+            <a href="{{ url_for('admin_usuarios') }}" class="nav-card">
+                <div style="font-size: 48px; margin-bottom: 15px;">👤</div>
+                <h3>Usuarios</h3>
+                <p>Gestionar usuarios</p>
+            </a>
+            {% endif %}
+
+            {% if 'historial' in permissions %}
+            <a href="{{ url_for('admin_historial') }}" class="nav-card">
+                <div style="font-size: 48px; margin-bottom: 15px;">📋</div>
+                <h3>Historial de Servicios</h3>
+                <p>Ver reportes generados</p>
+            </a>
+            {% endif %}
+
+            {% if 'formulario' in permissions %}
+            <a href="{{ url_for('reportes_pendientes') }}" class="nav-card">
+                <div style="font-size: 48px; margin-bottom: 15px;">⏳</div>
+                <h3>Reportes Pendientes de Enviar</h3>
+                <p>Borradores sin enviar</p>
+            </a>
+            {% endif %}
+
+            {% if 'equipos' in permissions %}
+            <a href="{{ url_for('admin_equipos_modulo') }}" class="nav-card">
+                <div style="font-size: 48px; margin-bottom: 15px;">🔧</div>
+                <h3>Equipos</h3>
+                <p>Gestión y calendario</p>
+            </a>
+            {% endif %}
+
+            {% if 'formulario' in permissions %}
+            <a href="{{ url_for('formulario') }}" class="nav-card">
+                <div style="font-size: 48px; margin-bottom: 15px;">📝</div>
+                <h3>Generar Reporte</h3>
+                <p>Crear nuevo reporte técnico</p>
+            </a>
+            {% endif %}
+
+            {% if 'almacen' in permissions %}
+            <a href="{{ url_for('admin_almacen') }}" class="nav-card">
+                <div style="font-size: 48px; margin-bottom: 15px;">📦</div>
+                <h3>Almacén</h3>
+                <p>Inventario de refacciones</p>
+            </a>
+            {% endif %}
+
+            {% if 'cotizaciones' in permissions %}
+            <a href="{{ url_for('admin_cotizaciones') }}" class="nav-card">
+                <div style="font-size: 48px; margin-bottom: 15px;">📄</div>
+                <h3>Cotizaciones</h3>
+                <p>Crear y ver cotizaciones</p>
+            </a>
+            {% endif %}
+
+            {% if 'pi' in permissions %}
+            <a href="{{ url_for('admin_pis') }}" class="nav-card">
+                <div style="font-size: 48px; margin-bottom: 15px;">📑</div>
+                <h3>Gestión de PI</h3>
+                <p>Proforma Invoices</p>
+            </a>
+            {% endif %}
+
+            {% if 'compras' in permissions %}
+            <a href="{{ url_for('admin_compras') }}" class="nav-card">
+                <div style="font-size: 48px; margin-bottom: 15px;">🛍️</div>
+                <h3>Compras</h3>
+                <p>Gestionar compras y proveedores</p>
+            </a>
+            <a href="{{ url_for('admin_compras_requisiciones') }}" class="nav-card">
+                <div style="font-size: 48px; margin-bottom: 15px;">📋</div>
+                <h3>Requisiciones</h3>
+                <p>Gestionar faltantes y requisiciones</p>
+            </a>
+            {% endif %}
+
+            {% if 'crm' in permissions %}
+            <a href="{{ url_for('user_crm') }}" class="nav-card" style="border: 2px solid #d20000;">
+                <div style="font-size: 48px; margin-bottom: 15px;">📊</div>
+                <h3>CRM</h3>
+                <p>Mis oportunidades de venta</p>
+            </a>
+            {% endif %}
+
+            {% if 'finanzas' in permissions %}
+            <a href="{{ url_for('admin_finanzas') }}" class="nav-card">
+                <div style="font-size: 48px; margin-bottom: 15px;">💰</div>
+                <h3>Finanzas</h3>
+                <p>Administración financiera</p>
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</body>
+
+</html>

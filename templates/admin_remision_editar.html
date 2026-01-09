@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Remisión {{ remision.folio }} - INAIR</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+</head>
+<body>
+    <div class="admin-container">
+        <div class="admin-header">
+            <h1>📦 Editar Remisión {{ remision.folio }}</h1>
+            <div class="header-actions">
+                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="history.back()">Atrás</button>
+                <a href="{{ url_for('admin_remision_detalle', id=remision.id) }}" class="btn btn-secondary btn-sm">← Volver</a>
+            </div>
+        </div>
+
+        <div class="admin-content">
+            <form method="POST" class="form-container">
+                <div class="form-section">
+                    <h3>Datos Generales</h3>
+                    <div class="form-group">
+                        <label>Cliente *</label>
+                        <select name="cliente_id" id="clienteSelect" onchange="updateClienteNombre()">
+                            <option value="">-- Seleccionar Cliente --</option>
+                            {% for client in clientes %}
+                            <option value="{{ client.id }}" data-nombre="{{ client.nombre }}" {% if remision.cliente_id == client.id %}selected{% endif %}>{{ client.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                        <input type="hidden" name="cliente_nombre" id="clienteNombre" value="{{ remision.cliente_nombre }}">
+                    </div>
+                    <div class="form-group">
+                        <label>Fecha *</label>
+                        <input type="date" name="fecha" value="{{ remision.fecha }}" required>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3>Notas</h3>
+                    <div class="form-group">
+                        <textarea name="notas" rows="3" placeholder="Notas adicionales...">{{ remision.notas or '' }}</textarea>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                    <a href="{{ url_for('admin_remision_detalle', id=remision.id) }}" class="btn btn-secondary">Cancelar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function updateClienteNombre() {
+            const select = document.getElementById('clienteSelect');
+            const nombreInput = document.getElementById('clienteNombre');
+            const selected = select.options[select.selectedIndex];
+            if (selected.value) {
+                nombreInput.value = selected.getAttribute('data-nombre');
+            } else {
+                nombreInput.value = '';
+            }
+        }
+    </script>
+</body>
+</html>
+

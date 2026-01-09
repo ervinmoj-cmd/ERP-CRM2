@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administrar Etapas CRM - INAIR</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .admin-container {
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            background: white;
+            padding: 15px 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .admin-header h1 {
+            color: #d20000;
+            font-size: 1.5em;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #d20000, #ff4444);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(210, 0, 0, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        .content-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-header h2 {
+            font-size: 1.1em;
+            font-weight: 600;
+        }
+
+        .card-body {
+            padding: 20px;
+        }
+
+        .stages-list {
+            list-style: none;
+        }
+
+        .stage-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+            gap: 15px;
+            transition: all 0.2s;
+            cursor: grab;
+        }
+
+        .stage-item:hover {
+            background: #f8f9fa;
+        }
+
+        .stage-item.dragging {
+            opacity: 0.5;
+            background: #e3f2fd;
+        }
+
+        .stage-item.drag-over {
+            border-top: 3px solid #007bff;
+        }
+
+        .stage-item:last-child {
+            border-bottom: none;
+        }
+
+        .stage-drag-handle {
+            cursor: grab;
+            color: #aaa;
+            font-size: 18px;
+        }
+
+        .stage-drag-handle:active {
+            cursor: grabbing;
+        }
+
+        .stage-order {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #e9ecef;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .stage-color {
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            border: 2px solid rgba(0,0,0,0.1);
+            cursor: pointer;
+        }
+
+        .stage-name {
+            flex: 1;
+            font-weight: 500;
+        }
+
+        .stage-name input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .stage-name input.active {
+            display: block;
+        }
+
+        .stage-name span {
+            display: block;
+        }
+
+        .stage-name span.hidden {
+            display: none;
+        }
+
+        .stage-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .stage-actions button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 5px 8px;
+            border-radius: 4px;
+            transition: all 0.2s;
+            font-size: 16px;
+        }
+
+        .stage-actions button:hover {
+            background: #e9ecef;
+        }
+
+        .stage-actions .btn-edit:hover {
+            color: #007bff;
+        }
+
+        .stage-actions .btn-delete:hover {
+            color: #dc3545;
+        }
+
+        .stage-actions .btn-save {
+            color: #28a745;
+            display: none;
+        }
+
+        .stage-actions .btn-cancel {
+            color: #6c757d;
+            display: none;
+        }
+
+        .add-stage-form {
+            display: flex;
+            gap: 10px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-top: 1px solid #eee;
+            align-items: center;
+        }
+
+        .add-stage-form input[type="text"] {
+            flex: 1;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .add-stage-form input[type="color"] {
+            width: 45px;
+            height: 38px;
+            padding: 2px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .triggers-section {
+            margin-top: 30px;
+        }
+
+        .trigger-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+            gap: 10px;
+            font-size: 14px;
+        }
+
+        .trigger-item:last-child {
+            border-bottom: none;
+        }
+
+        .trigger-arrow {
+            color: #28a745;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .trigger-puesto {
+            background: #e9ecef;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+
+        .trigger-stage {
+            background: #007bff;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 4px;
+        }
+
+        .trigger-actions {
+            margin-left: auto;
+            display: flex;
+            gap: 5px;
+        }
+
+        .trigger-actions button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 5px 8px;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .trigger-actions button:hover {
+            background: #e9ecef;
+        }
+
+        .trigger-actions .btn-delete:hover {
+            color: #dc3545;
+        }
+
+        .add-trigger-form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-top: 1px solid #eee;
+            align-items: center;
+        }
+
+        .add-trigger-form select {
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            min-width: 180px;
+        }
+
+        .add-trigger-form .trigger-label {
+            font-weight: 500;
+            color: #666;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #888;
+        }
+
+        .alert {
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-danger {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert.show {
+            display: block;
+        }
+
+        .info-text {
+            color: #888;
+            font-size: 13px;
+            margin-top: 15px;
+            padding: 0 15px;
+        }
+
+        @media (max-width: 768px) {
+            .stage-item {
+                flex-wrap: wrap;
+            }
+            
+            .stage-name {
+                width: 100%;
+                order: 3;
+                margin-top: 10px;
+            }
+            
+            .add-stage-form, .add-trigger-form {
+                flex-wrap: wrap;
+            }
+            
+            .add-stage-form input[type="text"],
+            .add-trigger-form select {
+                width: 100%;
+            }
+
+            .trigger-item {
+                flex-wrap: wrap;
+            }
+
+            .trigger-actions {
+                width: 100%;
+                justify-content: flex-end;
+                margin-top: 10px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="admin-container">
+        <div class="admin-header">
+            <h1>⚙️ Administrar Etapas del CRM</h1>
+            <div class="header-actions">
+                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="history.back()">Atrás</button>
+                <a href="{{ url_for('admin_crm') }}" class="btn btn-secondary btn-sm">← Volver al CRM</a>
+                <a href="{{ url_for('dashboard_redirect') }}" class="btn btn-secondary btn-sm">Volver al Panel</a>
+                <a href="{{ url_for('logout') }}" class="btn btn-danger btn-sm">Cerrar Sesión</a>
+            </div>
+        </div>
+
+        <div id="alert-container">
+            <div id="alert-success" class="alert alert-success"></div>
+            <div id="alert-danger" class="alert alert-danger"></div>
+        </div>
+
+        {% for puesto, stages in stages_by_puesto.items() %}
+        <div class="content-card">
+            <div class="card-header">
+                <h2>👤 {{ puesto }}</h2>
+                <span>{{ stages|length }} etapas</span>
+            </div>
+            <div class="card-body">
+                <ul class="stages-list" data-puesto="{{ puesto }}">
+                    {% for stage in stages %}
+                    <li class="stage-item" data-id="{{ stage.id }}" draggable="true">
+                        <span class="stage-drag-handle" title="Arrastrar para reordenar">⋮⋮</span>
+                        <div class="stage-order">{{ stage.orden + 1 }}</div>
+                        <input type="color" class="stage-color" value="{{ stage.color }}" 
+                               onchange="updateStageColor({{ stage.id }}, this.value)">
+                        <div class="stage-name">
+                            <span>{{ stage.stage_name }}</span>
+                            <input type="text" value="{{ stage.stage_name }}" 
+                                   onkeydown="if(event.key==='Enter') saveStage({{ stage.id }}, this)">
+                        </div>
+                        <div class="stage-actions">
+                            <button class="btn-edit" onclick="editStage(this)" title="Editar">✏️</button>
+                            <button class="btn-save" onclick="saveStage({{ stage.id }}, this.parentElement.previousElementSibling.querySelector('input'))" title="Guardar">💾</button>
+                            <button class="btn-cancel" onclick="cancelEdit(this)" title="Cancelar">❌</button>
+                            <button class="btn-delete" onclick="deleteStage({{ stage.id }}, '{{ stage.stage_name }}')" title="Eliminar">🗑️</button>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+                <p class="info-text">💡 Arrastra las etapas para reordenarlas</p>
+                <div class="add-stage-form">
+                    <input type="text" placeholder="Nueva etapa..." id="new-stage-{{ puesto|replace(' ', '-') }}">
+                    <input type="color" value="#6c757d" id="new-color-{{ puesto|replace(' ', '-') }}">
+                    <button class="btn btn-success btn-sm" onclick="addStage('{{ puesto }}')">+ Agregar</button>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+
+        {% if not stages_by_puesto %}
+        <div class="content-card">
+            <div class="card-body">
+                <div class="empty-state">
+                    <p>No hay etapas configuradas. Reinicia la aplicación para crear las etapas por defecto.</p>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="content-card triggers-section">
+            <div class="card-header">
+                <h2>🔗 Triggers Automáticos (Automatizaciones)</h2>
+            </div>
+            <div class="card-body">
+                <div id="triggers-list" class="stages-list">
+                    {% for trigger in triggers %}
+                    <div class="trigger-item" data-id="{{ trigger.id }}">
+                        <span class="trigger-puesto">{{ trigger.source_puesto }}</span>
+                        <span class="trigger-stage">{{ trigger.source_stage }}</span>
+                        <span class="trigger-arrow">→</span>
+                        <span class="trigger-puesto">{{ trigger.target_puesto }}</span>
+                        <span class="trigger-stage">{{ trigger.target_stage }}</span>
+                        <div class="trigger-actions">
+                            <button class="btn-edit" onclick="editTrigger({{ trigger.id }}, '{{ trigger.source_puesto }}', '{{ trigger.source_stage }}', '{{ trigger.target_puesto }}', '{{ trigger.target_stage }}')" title="Editar">✏️</button>
+                            <button class="btn-delete" onclick="deleteTrigger({{ trigger.id }})" title="Eliminar">🗑️</button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% if not triggers %}
+                <div class="empty-state" id="no-triggers">
+                    <p>No hay triggers configurados.</p>
+                </div>
+                {% endif %}
+                
+                <p class="info-text">💡 Los triggers mueven automáticamente los tratos cuando cambian de etapa.</p>
+                
+                <div class="add-trigger-form">
+                    <span class="trigger-label">Cuando</span>
+                    <select id="trigger-source-puesto" onchange="loadSourceStages()">
+                        <option value="">Seleccionar puesto...</option>
+                        {% for puesto in stages_by_puesto.keys() %}
+                        <option value="{{ puesto }}">{{ puesto }}</option>
+                        {% endfor %}
+                    </select>
+                    <select id="trigger-source-stage">
+                        <option value="">Seleccionar etapa...</option>
+                    </select>
+                    <span class="trigger-label">→ mover a</span>
+                    <select id="trigger-target-puesto" onchange="loadTargetStages()">
+                        <option value="">Seleccionar puesto...</option>
+                        {% for puesto in stages_by_puesto.keys() %}
+                        <option value="{{ puesto }}">{{ puesto }}</option>
+                        {% endfor %}
+                    </select>
+                    <select id="trigger-target-stage">
+                        <option value="">Seleccionar etapa...</option>
+                    </select>
+                    <button class="btn btn-success btn-sm" onclick="addTrigger()">+ Crear Trigger</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Store stages data for dynamic loading
+        const stagesData = {{ stages_by_puesto | tojson | safe }};
+
+        function showAlert(type, message) {
+            const alert = document.getElementById('alert-' + type);
+            alert.textContent = message;
+            alert.classList.add('show');
+            setTimeout(() => alert.classList.remove('show'), 4000);
+        }
+
+        // ==================== STAGES MANAGEMENT ====================
+
+        function editStage(btn) {
+            const item = btn.closest('.stage-item');
+            const nameDiv = item.querySelector('.stage-name');
+            const span = nameDiv.querySelector('span');
+            const input = nameDiv.querySelector('input');
+            
+            span.classList.add('hidden');
+            input.classList.add('active');
+            input.focus();
+            input.select();
+            
+            item.querySelector('.btn-edit').style.display = 'none';
+            item.querySelector('.btn-delete').style.display = 'none';
+            item.querySelector('.btn-save').style.display = 'inline-block';
+            item.querySelector('.btn-cancel').style.display = 'inline-block';
+        }
+
+        function cancelEdit(btn) {
+            const item = btn.closest('.stage-item');
+            const nameDiv = item.querySelector('.stage-name');
+            const span = nameDiv.querySelector('span');
+            const input = nameDiv.querySelector('input');
+            
+            input.value = span.textContent;
+            span.classList.remove('hidden');
+            input.classList.remove('active');
+            
+            item.querySelector('.btn-edit').style.display = 'inline-block';
+            item.querySelector('.btn-delete').style.display = 'inline-block';
+            item.querySelector('.btn-save').style.display = 'none';
+            item.querySelector('.btn-cancel').style.display = 'none';
+        }
+
+        function saveStage(id, input) {
+            const newName = input.value.trim();
+            if (!newName) {
+                showAlert('danger', 'El nombre no puede estar vacío');
+                return;
+            }
+
+            fetch('/api/crm/etapa/' + id, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ stage_name: newName })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    showAlert('success', 'Etapa actualizada correctamente');
+                    const item = input.closest('.stage-item');
+                    const span = item.querySelector('.stage-name span');
+                    span.textContent = newName;
+                    cancelEdit(item.querySelector('.btn-cancel'));
+                } else {
+                    showAlert('danger', data.error || 'Error al actualizar');
+                }
+            })
+            .catch(() => showAlert('danger', 'Error de conexión'));
+        }
+
+        function updateStageColor(id, color) {
+            fetch('/api/crm/etapa/' + id, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ color: color })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    showAlert('success', 'Color actualizado');
+                } else {
+                    showAlert('danger', data.error || 'Error al actualizar color');
+                }
+            })
+            .catch(() => showAlert('danger', 'Error de conexión'));
+        }
+
+        function deleteStage(id, name) {
+            if (!confirm('¿Eliminar la etapa "' + name + '"?\n\nNota: No se puede eliminar si hay tratos en esta etapa.')) {
+                return;
+            }
+
+            fetch('/api/crm/etapa/' + id, {
+                method: 'DELETE'
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    showAlert('success', 'Etapa eliminada');
+                    document.querySelector('.stage-item[data-id="' + id + '"]').remove();
+                    updateOrderNumbers();
+                } else {
+                    showAlert('danger', data.error || 'Error al eliminar');
+                }
+            })
+            .catch(() => showAlert('danger', 'Error de conexión'));
+        }
+
+        function addStage(puesto) {
+            const safeId = puesto.replace(/ /g, '-');
+            const nameInput = document.getElementById('new-stage-' + safeId);
+            const colorInput = document.getElementById('new-color-' + safeId);
+            
+            const name = nameInput.value.trim();
+            const color = colorInput.value;
+            
+            if (!name) {
+                showAlert('danger', 'Ingresa un nombre para la etapa');
+                nameInput.focus();
+                return;
+            }
+
+            const list = document.querySelector('.stages-list[data-puesto="' + puesto + '"]');
+            const orden = list ? list.querySelectorAll('.stage-item').length : 0;
+
+            fetch('/api/crm/etapa', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    puesto: puesto,
+                    stage_name: name,
+                    color: color,
+                    orden: orden
+                })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    showAlert('success', 'Etapa creada correctamente');
+                    setTimeout(() => location.reload(), 500);
+                } else {
+                    showAlert('danger', data.error || 'Error al crear etapa');
+                }
+            })
+            .catch(() => showAlert('danger', 'Error de conexión'));
+        }
+
+        // ==================== DRAG & DROP ====================
+
+        let draggedItem = null;
+
+        document.querySelectorAll('.stage-item').forEach(item => {
+            item.addEventListener('dragstart', handleDragStart);
+            item.addEventListener('dragend', handleDragEnd);
+            item.addEventListener('dragover', handleDragOver);
+            item.addEventListener('dragleave', handleDragLeave);
+            item.addEventListener('drop', handleDrop);
+        });
+
+        function handleDragStart(e) {
+            draggedItem = this;
+            this.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+        }
+
+        function handleDragEnd(e) {
+            this.classList.remove('dragging');
+            document.querySelectorAll('.stage-item').forEach(item => {
+                item.classList.remove('drag-over');
+            });
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            if (this !== draggedItem && this.parentElement === draggedItem.parentElement) {
+                this.classList.add('drag-over');
+            }
+        }
+
+        function handleDragLeave(e) {
+            this.classList.remove('drag-over');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            this.classList.remove('drag-over');
+            
+            if (this !== draggedItem && this.parentElement === draggedItem.parentElement) {
+                const list = this.parentElement;
+                const items = Array.from(list.querySelectorAll('.stage-item'));
+                const draggedIdx = items.indexOf(draggedItem);
+                const droppedIdx = items.indexOf(this);
+                
+                if (draggedIdx < droppedIdx) {
+                    this.after(draggedItem);
+                } else {
+                    this.before(draggedItem);
+                }
+                
+                saveNewOrder(list);
+            }
+        }
+
+        function saveNewOrder(list) {
+            const puesto = list.dataset.puesto;
+            const items = list.querySelectorAll('.stage-item');
+            const order = Array.from(items).map(item => parseInt(item.dataset.id));
+            
+            fetch('/api/crm/etapas/reorder', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ puesto: puesto, order: order })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    showAlert('success', 'Orden actualizado');
+                    updateOrderNumbers();
+                } else {
+                    showAlert('danger', data.error || 'Error al reordenar');
+                    location.reload();
+                }
+            })
+            .catch(() => {
+                showAlert('danger', 'Error de conexión');
+                location.reload();
+            });
+        }
+
+        function updateOrderNumbers() {
+            document.querySelectorAll('.stages-list').forEach(list => {
+                list.querySelectorAll('.stage-item').forEach((item, idx) => {
+                    item.querySelector('.stage-order').textContent = idx + 1;
+                });
+            });
+        }
+
+        // ==================== TRIGGERS MANAGEMENT ====================
+
+        function loadSourceStages() {
+            const puesto = document.getElementById('trigger-source-puesto').value;
+            const select = document.getElementById('trigger-source-stage');
+            select.innerHTML = '<option value="">Seleccionar etapa...</option>';
+            
+            if (puesto && stagesData[puesto]) {
+                stagesData[puesto].forEach(stage => {
+                    const opt = document.createElement('option');
+                    opt.value = stage.stage_name;
+                    opt.textContent = stage.stage_name;
+                    select.appendChild(opt);
+                });
+            }
+        }
+
+        function loadTargetStages() {
+            const puesto = document.getElementById('trigger-target-puesto').value;
+            const select = document.getElementById('trigger-target-stage');
+            select.innerHTML = '<option value="">Seleccionar etapa...</option>';
+            
+            if (puesto && stagesData[puesto]) {
+                stagesData[puesto].forEach(stage => {
+                    const opt = document.createElement('option');
+                    opt.value = stage.stage_name;
+                    opt.textContent = stage.stage_name;
+                    select.appendChild(opt);
+                });
+            }
+        }
+
+        function addTrigger() {
+            const sourcePuesto = document.getElementById('trigger-source-puesto').value;
+            const sourceStage = document.getElementById('trigger-source-stage').value;
+            const targetPuesto = document.getElementById('trigger-target-puesto').value;
+            const targetStage = document.getElementById('trigger-target-stage').value;
+
+            if (!sourcePuesto || !sourceStage || !targetPuesto || !targetStage) {
+                showAlert('danger', 'Completa todos los campos del trigger');
+                return;
+            }
+
+            fetch('/api/crm/trigger', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    source_puesto: sourcePuesto,
+                    source_stage: sourceStage,
+                    target_puesto: targetPuesto,
+                    target_stage: targetStage
+                })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    showAlert('success', 'Trigger creado correctamente');
+                    setTimeout(() => location.reload(), 500);
+                } else {
+                    showAlert('danger', data.error || 'Error al crear trigger');
+                }
+            })
+            .catch(() => showAlert('danger', 'Error de conexión'));
+        }
+
+        function editTrigger(id, sourcePuesto, sourceStage, targetPuesto, targetStage) {
+            // Simple edit via prompt for now
+            const newTargetPuesto = prompt('Nuevo puesto destino:', targetPuesto);
+            if (newTargetPuesto === null) return;
+            
+            const newTargetStage = prompt('Nueva etapa destino:', targetStage);
+            if (newTargetStage === null) return;
+
+            fetch('/api/crm/trigger/' + id, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    target_puesto: newTargetPuesto,
+                    target_stage: newTargetStage
+                })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    showAlert('success', 'Trigger actualizado');
+                    setTimeout(() => location.reload(), 500);
+                } else {
+                    showAlert('danger', data.error || 'Error al actualizar trigger');
+                }
+            })
+            .catch(() => showAlert('danger', 'Error de conexión'));
+        }
+
+        function deleteTrigger(id) {
+            if (!confirm('¿Eliminar este trigger automático?')) return;
+
+            fetch('/api/crm/trigger/' + id, {
+                method: 'DELETE'
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    showAlert('success', 'Trigger eliminado');
+                    document.querySelector('.trigger-item[data-id="' + id + '"]').remove();
+                } else {
+                    showAlert('danger', data.error || 'Error al eliminar trigger');
+                }
+            })
+            .catch(() => showAlert('danger', 'Error de conexión'));
+        }
+    </script>
+</body>
+
+</html>

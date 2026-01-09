@@ -1,0 +1,236 @@
+
+# ==================== COMPRAS MODULE ROUTES ====================
+
+# ----- PROVEEDORES ROUTES -----
+
+@app.route("/admin/proveedores")
+@require_role("admin")
+def admin_proveedores():
+    """Manage Suppliers"""
+    proveedores = get_all_proveedores()
+    return render_template("admin_proveedores.html", proveedores=proveedores)
+
+@app.route("/admin/proveedores/nuevo", methods=["POST"])
+@require_role("admin")
+def admin_proveedores_nuevo():
+    """Create new Supplier"""
+    data = {
+        'nombre_empresa': request.form.get('nombre_empresa'),
+        'contacto_nombre': request.form.get('contacto_nombre'),
+        'telefono': request.form.get('telefono'),
+        'email': request.form.get('email'),
+        'direccion': request.form.get('direccion'),
+        'rfc': request.form.get('rfc')
+    }
+    create_proveedor(data)
+    return redirect(url_for("admin_proveedores"))
+
+@app.route("/admin/proveedores/editar/<int:id>", methods=["POST"])
+@require_role("admin")
+def admin_proveedores_editar(id):
+    """Update Supplier"""
+    data = {
+        'nombre_empresa': request.form.get('nombre_empresa'),
+        'contacto_nombre': request.form.get('contacto_nombre'),
+        'telefono': request.form.get('telefono'),
+        'email': request.form.get('email'),
+        'direccion': request.form.get('direccion'),
+        'rfc': request.form.get('rfc')
+    }
+    update_proveedor(id, data)
+    return redirect(url_for("admin_proveedores"))
+
+@app.route("/admin/proveedores/eliminar/<int:id>", methods=["POST"])
+@require_role("admin")
+def admin_proveedores_eliminar(id):
+    """Delete Supplier"""
+    delete_proveedor(id)
+    return redirect(url_for("admin_proveedores"))
+
+# ----- COMPRAS (PURCHASE ORDERS) ROUTES -----
+
+@app.route("/admin/compras")
+@require_role("admin")
+def admin_compras():
+    """Purchases Dashboard"""
+    compras = get_all_compras()
+    return render_template("admin_compras.html", compras=compras)
+
+@app.route("/admin/compras/nueva", methods=["GET", "POST"])
+@require_role("admin")
+def admin_compras_nueva():
+    """Create new Purchase Order"""
+    if request.method == "POST":
+        data = {
+            'proveedor_id': request.form.get('proveedor_id'),
+            'fecha_emision': request.form.get('fecha_emision'),
+            'fecha_entrega_estimada': request.form.get('fecha_entrega_estimada'),
+            'estado': 'Borrador',
+            'moneda': request.form.get('moneda'),
+            'subtotal': float(request.form.get('subtotal') or 0),
+            'iva': float(request.form.get('iva') or 0),
+            'total': float(request.form.get('total') or 0),
+            'notas': request.form.get('notas')
+        }
+        
+        # Process items
+        items = []
+        numeros_parte = request.form.getlist('numero_parte[]')
+        descripciones = request.form.getlist('descripcion[]')
+        cantidades = request.form.getlist('cantidad[]')
+        unidades = request.form.getlist('unidad[]')
+        precios = request.form.getlist('precio_unitario[]')
+        importes = request.form.getlist('importe[]')
+        
+        for i in range(len(numeros_parte)):
+            if numeros_parte[i] or descripciones[i]:
+                items.append({
+                    'linea': i+1,
+                    'numero_parte': numeros_parte[i],
+                    'descripcion': descripciones[i],
+                    'cantidad': float(cantidades[i] or 0),
+                    'unidad': unidades[i],
+                    'precio_unitario': float(precios[i] or 0),
+                    'importe': float(importes[i] or 0)
+                })
+        
+        user_id = session.get('user_id')
+        create_compra(data, items, user_id)
+        return redirect(url_for("admin_compras"))
+        
+    proveedores = get_all_proveedores()
+    folio = get_next_compra_folio()
+    fecha_hoy = datetime.now().strftime('%Y-%m-%d')
+    return render_template("admin_compra_form.html", proveedores=proveedores, folio=folio, fecha_hoy=fecha_hoy)
+
+@app.route("/admin/compras/editar/<int:id>", methods=["GET", "POST"])
+@require_role("admin")
+def admin_compras_editar(id):
+    """Edit Purchase Order"""
+    compra = get_compra_by_id(id)
+    if not compra:
+        return "Orden de Compra no encontrada", 404
+
+    if request.method == "POST":
+        data = {
+            'proveedor_id': request.form.get('proveedor_id'),
+            'fecha_emision': request.form.get('fecha_emision'),
+            'fecha_entrega_estimada': request.form.get('fecha_entrega_estimada'),
+            'estado': request.form.get('estado'),
+            'moneda': request.form.get('moneda'),
+            'subtotal': float(request.form.get('subtotal') or 0),
+            'iva': float(request.form.get('iva') or 0),
+            'total': float(request.form.get('total') or 0),
+            'notas': request.form.get('notas')
+        }
+        
+        items = []
+        numeros_parte = request.form.getlist('numero_parte[]')
+        descripciones = request.form.getlist('descripcion[]')
+        cantidades = request.form.getlist('cantidad[]')
+        unidades = request.form.getlist('unidad[]')
+        precios = request.form.getlist('precio_unitario[]')
+        importes = request.form.getlist('importe[]')
+        
+        for i in range(len(numeros_parte)):
+             if numeros_parte[i] or descripciones[i]:
+                items.append({
+                    'linea': i+1,
+                    'numero_parte': numeros_parte[i],
+                    'descripcion': descripciones[i],
+                    'cantidad': float(cantidades[i] or 0),
+                    'unidad': unidades[i],
+                    'precio_unitario': float(precios[i] or 0),
+                    'importe': float(importes[i] or 0)
+                })
+        
+        update_compra(id, data, items)
+        return redirect(url_for("admin_compras"))
+        
+    proveedores = get_all_proveedores()
+    return render_template("admin_compra_form.html", compra=compra, proveedores=proveedores)
+
+@app.route("/admin/compras/pdf/<int:id>")
+@require_role("admin")
+def admin_compras_pdf(id):
+    """Generate PDF for Purchase Order"""
+    compra = get_compra_by_id(id)
+    if not compra:
+        return "Orden de Compra no encontrada", 404
+        
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=letter, rightMargin=40, leftMargin=40, topMargin=40, bottomMargin=80)
+    elements = []
+    styles = getSampleStyleSheet()
+    
+    # Colors
+    INAIR_RED = colors.HexColor("#D20000")
+    
+    # Header
+    logo_path = os.path.join(app.root_path, 'static', 'img', 'logo_inair.png')
+    if os.path.exists(logo_path):
+        logo = Image(logo_path, width=120, height=40)
+        header_left = logo
+    else:
+        header_left = Paragraph("<b>INAIR</b>", styles['Heading1'])
+        
+    header_right = Paragraph(f"""
+        <b>ORDEN DE COMPRA</b><br/>
+        <font size="14" color="#D20000"><b>{compra['folio']}</b></font><br/>
+        Fecha: {compra['fecha_emision']}<br/>
+        Entrega: {compra['fecha_entrega_estimada'] or 'Por definir'}
+    """, ParagraphStyle('Right', parent=styles['Normal'], alignment=2))
+    
+    header_table = Table([[header_left, header_right]], colWidths=[300, 230])
+    elements.append(header_table)
+    elements.append(Spacer(1, 20))
+    
+    # Supplier Info
+    proveedor_info = f"""
+        <b>PROVEEDOR:</b><br/>
+        {compra['proveedor_nombre']}<br/>
+        {compra['proveedor_direccion'] or ''}<br/>
+        RFC: {compra['proveedor_rfc'] or 'N/A'}<br/>
+        Contacto: {compra['proveedor_contacto'] or ''} ({compra['proveedor_telefono'] or ''})
+    """
+    elements.append(Paragraph(proveedor_info, styles['Normal']))
+    elements.append(Spacer(1, 15))
+    
+    # Items Table
+    data = [['Parte', 'Descripción', 'Cant.', 'Unidad', 'P. Unit.', 'Importe']]
+    for item in compra['items']:
+        data.append([
+            item['numero_parte'],
+            Paragraph(item['descripcion'], styles['Normal']),
+            f"{item['cantidad']}",
+            item['unidad'],
+            f"${item['precio_unitario']:,.2f}",
+            f"${item['importe']:,.2f}"
+        ])
+    
+    table = Table(data, colWidths=[80, 200, 50, 50, 70, 80])
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor("#1a1a2e")),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+    ]))
+    elements.append(table)
+    elements.append(Spacer(1, 15))
+    
+    # Totals
+    totals = f"""
+        <b>Subtotal:</b> ${compra['subtotal']:,.2f} {compra['moneda']}<br/>
+        <b>IVA:</b> ${compra['iva']:,.2f} {compra['moneda']}<br/>
+        <font size="12" color="#D20000"><b>Total: ${compra['total']:,.2f} {compra['moneda']}</b></font>
+    """
+    elements.append(Paragraph(totals, ParagraphStyle('RightTotals', parent=styles['Normal'], alignment=2)))
+    
+    if compra['notas']:
+        elements.append(Spacer(1, 20))
+        elements.append(Paragraph(f"<b>Notas:</b> {compra['notas']}", styles['Normal']))
+    
+    doc.build(elements)
+    buffer.seek(0)
+    return send_file(buffer, mimetype='application/pdf', as_attachment=False, download_name=f"{compra['folio']}.pdf")

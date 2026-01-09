@@ -1,0 +1,313 @@
+{
+  "total_emails": 158,
+  "entrada_count": 92,
+  "salida_count": 66,
+  "threads_unicos": 33,
+  "conversaciones": [
+    {
+      "thread_id": "Cotización #T-00036 - INAIR",
+      "deal_id": 37,
+      "total": 13,
+      "entrada": 7,
+      "salida": 6,
+      "asunto": "Re: Cotización #T-00036 - INAIR"
+    },
+    {
+      "thread_id": "Cotización T-00017 - Ingeniería en Aire S.A. de C.V.",
+      "deal_id": 14,
+      "total": 11,
+      "entrada": 6,
+      "salida": 5,
+      "asunto": "Cotización T-00017 - Ingeniería en Aire S.A. de C.V."
+    },
+    {
+      "thread_id": "Factura IA-00011 - AutoFill Test Corp",
+      "deal_id": 27,
+      "total": 8,
+      "entrada": 7,
+      "salida": 1,
+      "asunto": "Factura IA-00011 - AutoFill Test Corp"
+    },
+    {
+      "thread_id": "Cotización T-00029 - AutoFill Test Corp",
+      "deal_id": 30,
+      "total": 7,
+      "entrada": 4,
+      "salida": 3,
+      "asunto": "Cotización T-00029 - AutoFill Test Corp"
+    },
+    {
+      "thread_id": "Cotización T-00028 - AutoFill Test Corp",
+      "deal_id": 29,
+      "total": 6,
+      "entrada": 4,
+      "salida": 2,
+      "asunto": "Cotización T-00028 - AutoFill Test Corp"
+    },
+    {
+      "thread_id": "Cotización T-00019 - AutoFill Test Corp",
+      "deal_id": 16,
+      "total": 5,
+      "entrada": 3,
+      "salida": 2,
+      "asunto": "Cotización T-00019 - AutoFill Test Corp"
+    },
+    {
+      "thread_id": "Cotización #T-00037 - INAIR",
+      "deal_id": 38,
+      "total": 3,
+      "entrada": 2,
+      "salida": 1,
+      "asunto": "Re: Cotización #T-00037 - INAIR"
+    },
+    {
+      "thread_id": "Cotización T-00020 - Ingeniería en Aire S.A. de C.V.",
+      "deal_id": 17,
+      "total": 3,
+      "entrada": 1,
+      "salida": 2,
+      "asunto": "Cotización T-00020 - Ingeniería en Aire S.A. de C.V."
+    },
+    {
+      "thread_id": "Cotización T-00021 - Ingeniería en Aire S.A. de C.V.",
+      "deal_id": 19,
+      "total": 3,
+      "entrada": 2,
+      "salida": 1,
+      "asunto": "Cotización T-00021 - Ingeniería en Aire S.A. de C.V."
+    },
+    {
+      "thread_id": "Cotización T-00023 - Ingeniería en Aire S.A. de C.V.",
+      "deal_id": 24,
+      "total": 3,
+      "entrada": 1,
+      "salida": 2,
+      "asunto": "Cotización T-00023 - Ingeniería en Aire S.A. de C.V."
+    }
+  ],
+  "deals_con_multiples_threads": [
+    {
+      "deal_id": 37,
+      "thread_count": 3,
+      "total_emails": 15,
+      "threads": [
+        {
+          "thread_id": "Cotización #T-00036 - INAIR",
+          "email_count": 13,
+          "entrada": 7,
+          "salida": 6,
+          "asunto": "Re: Cotización #T-00036 - INAIR"
+        },
+        {
+          "thread_id": "Cotización T-00029 - AutoFill Test Corp",
+          "email_count": 1,
+          "entrada": 1,
+          "salida": 0,
+          "asunto": "Re: Re: Re: Cotización T-00029 - AutoFill Test Corp"
+        },
+        {
+          "thread_id": "Cotización T-00036 - AutoFill Test Corp",
+          "email_count": 1,
+          "entrada": 0,
+          "salida": 1,
+          "asunto": "Cotización T-00036 - AutoFill Test Corp"
+        }
+      ]
+    },
+    {
+      "deal_id": 35,
+      "thread_count": 7,
+      "total_emails": 15,
+      "threads": [
+        {
+          "thread_id": "Cotización #T-00033 - INAIR",
+          "email_count": 3,
+          "entrada": 3,
+          "salida": 0,
+          "asunto": "Re: Cotización #T-00033 - INAIR"
+        },
+        {
+          "thread_id": "Cotización #T-00034 - INAIR",
+          "email_count": 1,
+          "entrada": 1,
+          "salida": 0,
+          "asunto": "Re: Cotización #T-00034 - INAIR"
+        },
+        {
+          "thread_id": "Cotización T-00024 - AutoFill Test Corp",
+          "email_count": 1,
+          "entrada": 1,
+          "salida": 0,
+          "asunto": "Re: Cotización T-00024 - AutoFill Test Corp"
+        },
+        {
+          "thread_id": "Cotización T-00027 - AutoFill Test Corp",
+          "email_count": 4,
+          "entrada": 4,
+          "salida": 0,
+          "asunto": "Re: Cotización T-00027 - AutoFill Test Corp"
+        },
+        {
+          "thread_id": "Cotización T-00028 - AutoFill Test Corp",
+          "email_count": 2,
+          "entrada": 2,
+          "salida": 0,
+          "asunto": "Re: Cotización T-00028 - AutoFill Test Corp"
+        },
+        {
+          "thread_id": "Cotización T-00029 - AutoFill Test Corp",
+          "email_count": 3,
+          "entrada": 3,
+          "salida": 0,
+          "asunto": "Re: Cotización T-00029 - AutoFill Test Corp"
+        },
+        {
+          "thread_id": "Cotización T-00034 - AutoFill Test Corp",
+          "email_count": 1,
+          "entrada": 0,
+          "salida": 1,
+          "asunto": "Cotización T-00034 - AutoFill Test Corp"
+        }
+      ]
+    },
+    {
+      "deal_id": 30,
+      "thread_count": 5,
+      "total_emails": 15,
+      "threads": [
+        {
+          "thread_id": "Cotización T-00024 - AutoFill Test Corp",
+          "email_count": 1,
+          "entrada": 1,
+          "salida": 0,
+          "asunto": "Re: Cotización T-00024 - AutoFill Test Corp"
+        },
+        {
+          "thread_id": "Cotización T-00027 - AutoFill Test Corp",
+          "email_count": 4,
+          "entrada": 4,
+          "salida": 0,
+          "asunto": "Re: Cotización T-00027 - AutoFill Test Corp"
+        },
+        {
+          "thread_id": "Cotización T-00028 - AutoFill Test Corp",
+          "email_count": 2,
+          "entrada": 2,
+          "salida": 0,
+          "asunto": "Re: Cotización T-00028 - AutoFill Test Corp"
+        },
+        {
+          "thread_id": "Cotización T-00029 - AutoFill Test Corp",
+          "email_count": 7,
+          "entrada": 4,
+          "salida": 3,
+          "asunto": "Cotización T-00029 - AutoFill Test Corp"
+        },
+        {
+          "thread_id": "Factura IA-00013 - AutoFill Test Corp",
+          "email_count": 1,
+          "entrada": 0,
+          "salida": 1,
+          "asunto": "Factura IA-00013 - AutoFill Test Corp"
+        }
+      ]
+    },
+    {
+      "deal_id": 14,
+      "thread_count": 2,
+      "total_emails": 12,
+      "threads": [
+        {
+          "thread_id": "Cotización T-00017 - Ingeniería en Aire S.A. de C.",
+          "email_count": 11,
+          "entrada": 6,
+          "salida": 5,
+          "asunto": "Cotización T-00017 - Ingeniería en Aire S.A. de C.V."
+        },
+        {
+          "thread_id": "RE: Cotización T-00017 - Ingeniería en Aire S.A. d",
+          "email_count": 1,
+          "entrada": 0,
+          "salida": 1,
+          "asunto": "Re: RE: Cotización T-00017 - Ingeniería en Aire S.A. de C.V."
+        }
+      ]
+    },
+    {
+      "deal_id": 29,
+      "thread_count": 3,
+      "total_emails": 11,
+      "threads": [
+        {
+          "thread_id": "Cotización T-00024 - AutoFill Test Corp",
+          "email_count": 1,
+          "entrada": 1,
+          "salida": 0,
+          "asunto": "Re: Cotización T-00024 - AutoFill Test Corp"
+        },
+        {
+          "thread_id": "Cotización T-00027 - AutoFill Test Corp",
+          "email_count": 4,
+          "entrada": 4,
+          "salida": 0,
+          "asunto": "Re: Cotización T-00027 - AutoFill Test Corp"
+        },
+        {
+          "thread_id": "Cotización T-00028 - AutoFill Test Corp",
+          "email_count": 6,
+          "entrada": 4,
+          "salida": 2,
+          "asunto": "Cotización T-00028 - AutoFill Test Corp"
+        }
+      ]
+    }
+  ],
+  "emails_sin_thread": 24,
+  "ultimas_cotizaciones": [
+    {
+      "email_id": 157,
+      "deal_id": 41,
+      "thread_id": "Cotización T-00040 - AutoFill Test Corp",
+      "asunto": "Cotización T-00040 - AutoFill Test Corp",
+      "destinatario": "ervin.moj@gmail.com",
+      "fecha": "2025-12-18 18:35:39",
+      "respuestas": 0
+    },
+    {
+      "email_id": 154,
+      "deal_id": 40,
+      "thread_id": "Cotización T-00039 - AutoFill Test Corp",
+      "asunto": "Cotización T-00039 - AutoFill Test Corp",
+      "destinatario": "ervin.moj@gmail.com",
+      "fecha": "2025-12-18 18:14:28",
+      "respuestas": 0
+    },
+    {
+      "email_id": 147,
+      "deal_id": 39,
+      "thread_id": "Cotización T-00038 - AutoFill Test Corp",
+      "asunto": "Cotización T-00038 - AutoFill Test Corp",
+      "destinatario": "ervin.moj@gmail.com",
+      "fecha": "2025-12-18 18:00:50",
+      "respuestas": 0
+    },
+    {
+      "email_id": 143,
+      "deal_id": 38,
+      "thread_id": "Cotización T-00037 - AutoFill Test Corp",
+      "asunto": "Cotización T-00037 - AutoFill Test Corp",
+      "destinatario": "ervin.moj@gmail.com",
+      "fecha": "2025-12-18 01:34:46",
+      "respuestas": 0
+    },
+    {
+      "email_id": 129,
+      "deal_id": 37,
+      "thread_id": "Cotización T-00036 - AutoFill Test Corp",
+      "asunto": "Cotización T-00036 - AutoFill Test Corp",
+      "destinatario": "ervin.moj@gmail.com",
+      "fecha": "2025-12-17 23:58:48",
+      "respuestas": 0
+    }
+  ]
+}

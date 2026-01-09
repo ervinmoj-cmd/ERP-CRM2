@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Remisión {{ remision.folio }} - INAIR</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+    <style>
+        .remision-detalle {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .detalle-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+        }
+        .section-card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .info-row {
+            display: grid;
+            grid-template-columns: 150px 1fr;
+            padding: 12px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .info-label {
+            font-weight: 600;
+            color: #7f8c8d;
+        }
+        .info-value {
+            color: #2c3e50;
+        }
+        .badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .badge.draft {
+            background: #fff3cd;
+            color: #856404;
+        }
+        .badge.confirmed {
+            background: #d4edda;
+            color: #155724;
+        }
+        .badge.cancelled {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        @media (max-width: 768px) {
+            .detalle-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+    <script>
+        function confirmarSalida() {
+            if (!confirm('¿Desea confirmar la salida de almacén para esta remisión? Esta acción descontará el inventario de las refacciones.')) {
+                return;
+            }
+            
+            const remisionId = {{ remision.id }};
+            const btn = event.target;
+            btn.disabled = true;
+            btn.textContent = '⏳ Procesando...';
+            
+            fetch(`/api/remisiones/${remisionId}/confirmar-salida`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    alert('✅ ' + data.message);
+                    location.reload();
+                } else {
+                    let errorMsg = 'Error al confirmar salida:\n';
+                    if (data.errors && data.errors.length > 0) {
+                        errorMsg += data.errors.join('\n');
+                    } else {
+                        errorMsg += data.error || 'Error desconocido';
+                    }
+                    alert('❌ ' + errorMsg);
+                    btn.disabled = false;
+                    btn.textContent = '✅ Confirmar Salida';
+                }
+            })
+            .catch(err => {
+                alert('❌ Error de conexión: ' + err.message);
+                btn.disabled = false;
+                btn.textContent = '✅ Confirmar Salida';
+            });
+        }
+
+        function agregarItem() {
+            const remisionId = {{ remision.id }};
+            const descripcion = prompt('Descripción del item:');
+            if (!descripcion) return;
+            
+            const cantidad = prompt('Cantidad:');
+            if (!cantidad || isNaN(cantidad)) return;
+            
+            const numero_parte = prompt('Número de parte (opcional):') || '';
+            
+            fetch(`/api/remisiones/${remisionId}/items`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    descripcion: descripcion,
+                    cantidad: parseFloat(cantidad),
+                    unidad: 'PZA',
+                    numero_parte: numero_parte
+                })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Error: ' + (data.error || 'Desconocido'));
+                }
+            })
+            .catch(err => alert('Error: ' + err.message));
+        }
+    </script>
+</head>
+<body>
+    <div class="admin-container">
+        <div class="admin-header">
+            <h1>📦 Remisión {{ remision.folio }}</h1>
+            <div class="header-actions">
+                <a href="{{ url_for('admin_remision_pdf', id=remision.id) }}?preview=true" class="btn btn-primary" target="_blank">👁️ Vista Previa</a>
+                <a href="{{ url_for('admin_remision_pdf', id=remision.id) }}" class="btn btn-primary">📥 Descargar PDF</a>
+                {% if remision.estado == 'draft' %}
+                <a href="{{ url_for('admin_remision_editar', id=remision.id) }}" class="btn btn-secondary">✏️ Editar</a>
+                {% endif %}
+                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="history.back()">Atrás</button>
+                <a href="{{ url_for('admin_remisiones') }}" class="btn btn-secondary btn-sm">← Volver</a>
+            </div>
+        </div>
+
+        <div class="remision-detalle">
+            <div class="detalle-grid">
+                <!-- Remision Details -->
+                <div>
+                    <div class="section-card">
+                        <h2>Detalles de la Remisión</h2>
+                        
+                        <div class="info-row">
+                            <div class="info-label">Estado:</div>
+                            <div class="info-value">
+                                <span class="badge {{ remision.estado }}">{{ remision.estado|upper }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="info-row">
+                            <div class="info-label">Cliente:</div>
+                            <div class="info-value">{{ remision.cliente_nombre }}</div>
+                        </div>
+                        
+                        <div class="info-row">
+                            <div class="info-label">Fecha:</div>
+                            <div class="info-value">{{ remision.fecha }}</div>
+                        </div>
+                        
+                        {% if remision.factura_id %}
+                        <div class="info-row">
+                            <div class="info-label">Factura:</div>
+                            <div class="info-value">
+                                <a href="{{ url_for('admin_factura_detalle', id=remision.factura_id) }}">Ver Factura</a>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if remision.oc_cliente_id %}
+                        <div class="info-row">
+                            <div class="info-label">OC Cliente:</div>
+                            <div class="info-value">{{ remision.oc_cliente_id }}</div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if remision.notas %}
+                        <div class="info-row">
+                            <div class="info-label">Notas:</div>
+                            <div class="info-value">{{ remision.notas }}</div>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Items Section -->
+                    <div class="section-card" style="margin-top: 20px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                            <h2 style="margin: 0;">📋 Items</h2>
+                            {% if remision.estado == 'draft' %}
+                            <button onclick="agregarItem()" class="btn" style="background: #17a2b8; color: white; padding: 8px 16px; font-size: 0.9em;">+ Agregar Item</button>
+                            {% endif %}
+                            {% if not salida_aplicada and remision.estado == 'draft' %}
+                            <button onclick="confirmarSalida()" class="btn" style="background: #e67e22; color: white; padding: 8px 16px; font-size: 0.9em;">✅ Confirmar Salida</button>
+                            {% elif salida_aplicada %}
+                            <span class="btn" style="background: #27ae60; color: white; cursor: default; padding: 8px 16px; font-size: 0.9em;">✅ Salida Confirmada</span>
+                            {% endif %}
+                        </div>
+                        {% if remision['items'] %}
+                        <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
+                            <thead>
+                                <tr style="background: #f8f9fa;">
+                                    <th style="padding: 10px; text-align: left; border-bottom: 2px solid #ddd;">Descripción</th>
+                                    <th style="padding: 10px; text-align: center; border-bottom: 2px solid #ddd;">Cantidad</th>
+                                    <th style="padding: 10px; text-align: center; border-bottom: 2px solid #ddd;">Unidad</th>
+                                    <th style="padding: 10px; text-align: left; border-bottom: 2px solid #ddd;">Número de Parte</th>
+                                    {% if remision.estado == 'draft' %}
+                                    <th style="padding: 10px; text-align: center; border-bottom: 2px solid #ddd;">Acciones</th>
+                                    {% endif %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in remision['items'] %}
+                                <tr>
+                                    <td style="padding: 10px; border-bottom: 1px solid #eee;">{{ item.descripcion }}</td>
+                                    <td style="padding: 10px; text-align: center; border-bottom: 1px solid #eee;">{{ item.cantidad }}</td>
+                                    <td style="padding: 10px; text-align: center; border-bottom: 1px solid #eee;">{{ item.unidad }}</td>
+                                    <td style="padding: 10px; border-bottom: 1px solid #eee;">{{ item.numero_parte or '-' }}</td>
+                                    {% if remision.estado == 'draft' %}
+                                    <td style="padding: 10px; text-align: center; border-bottom: 1px solid #eee;">
+                                        <button onclick="if(confirm('¿Eliminar este item?')) { fetch('/api/remisiones/items/{{ item.id }}', {method: 'DELETE'}).then(() => location.reload()); }" 
+                                                class="btn btn-sm" style="background: #dc3545; color: white; padding: 4px 8px;">Eliminar</button>
+                                    </td>
+                                    {% endif %}
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        
+                        {% if salida_aplicada and movements %}
+                        <div style="margin-top: 20px; padding: 15px; background: #d4edda; border-radius: 8px; border-left: 4px solid #27ae60;">
+                            <h3 style="margin: 0 0 10px 0; color: #155724;">✅ Salida de Almacén Confirmada</h3>
+                            <table style="width: 100%; border-collapse: collapse;">
+                                <thead>
+                                    <tr style="background: #c3e6cb;">
+                                        <th style="padding: 8px; text-align: left; border: 1px solid #b8dacc;">Número de Parte</th>
+                                        <th style="padding: 8px; text-align: left; border: 1px solid #b8dacc;">Descripción</th>
+                                        <th style="padding: 8px; text-align: right; border: 1px solid #b8dacc;">Cantidad</th>
+                                        <th style="padding: 8px; text-align: left; border: 1px solid #b8dacc;">Fecha</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for mov in movements %}
+                                    <tr>
+                                        <td style="padding: 8px; border: 1px solid #b8dacc;">{{ mov.numero_parte }}</td>
+                                        <td style="padding: 8px; border: 1px solid #b8dacc;">{{ mov.refaccion_descripcion or '-' }}</td>
+                                        <td style="padding: 8px; text-align: right; border: 1px solid #b8dacc;">{{ mov.cantidad|abs }}</td>
+                                        <td style="padding: 8px; border: 1px solid #b8dacc;">{{ mov.fecha[:10] if mov.fecha else '-' }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% endif %}
+                        {% else %}
+                        <p style="text-align: center; padding: 20px; color: #999;">No hay items en esta remisión</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Sidebar -->
+                <div>
+                    <div class="section-card">
+                        <h3>Información</h3>
+                        <p style="color: #666; font-size: 0.9em;">
+                            {% if remision.estado == 'draft' %}
+                            Esta remisión está en borrador. Puedes agregar items y confirmar la salida cuando esté lista.
+                            {% elif remision.estado == 'confirmed' %}
+                            Esta remisión ha sido confirmada y la salida de almacén ha sido aplicada.
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+

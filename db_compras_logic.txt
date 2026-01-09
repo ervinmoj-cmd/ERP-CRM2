@@ -1,0 +1,187 @@
+
+# ==================== COMPRAS MODULE FUNCTIONS ====================
+
+# ----- PROVEEDORES -----
+
+def get_all_proveedores():
+    """Get all suppliers ordered by name"""
+    with get_db() as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM proveedores ORDER BY nombre_empresa")
+        return [dict(row) for row in cursor.fetchall()]
+
+def get_proveedor_by_id(proveedor_id):
+    """Get supplier by ID"""
+    with get_db() as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM proveedores WHERE id = ?", (proveedor_id,))
+        row = cursor.fetchone()
+        return dict(row) if row else None
+
+def create_proveedor(data):
+    """Create a new supplier"""
+    with get_db() as conn:
+        cursor = conn.cursor()
+        cursor.execute('''
+            INSERT INTO proveedores (nombre_empresa, contacto_nombre, telefono, email, direccion, rfc)
+            VALUES (?, ?, ?, ?, ?, ?)
+        ''', (
+            data.get('nombre_empresa'), data.get('contacto_nombre'), 
+            data.get('telefono'), data.get('email'), 
+            data.get('direccion'), data.get('rfc')
+        ))
+        return cursor.lastrowid
+
+def update_proveedor(proveedor_id, data):
+    """Update supplier information"""
+    with get_db() as conn:
+        cursor = conn.cursor()
+        cursor.execute('''
+            UPDATE proveedores 
+            SET nombre_empresa=?, contacto_nombre=?, telefono=?, email=?, direccion=?, rfc=?, updated_at=CURRENT_TIMESTAMP
+            WHERE id=?
+        ''', (
+            data.get('nombre_empresa'), data.get('contacto_nombre'), 
+            data.get('telefono'), data.get('email'), 
+            data.get('direccion'), data.get('rfc'), proveedor_id
+        ))
+        return cursor.rowcount > 0
+
+def delete_proveedor(proveedor_id):
+    """Delete supplier"""
+    with get_db() as conn:
+        cursor = conn.cursor()
+        # Should check constraints before delete? Sqlite handles FK?
+        cursor.execute("DELETE FROM proveedores WHERE id = ?", (proveedor_id,))
+        return cursor.rowcount > 0
+
+# ----- COMPRAS (Purchase Orders) -----
+
+def get_all_compras():
+    """Get all purchase orders"""
+    with get_db() as conn:
+        cursor = conn.cursor()
+        cursor.execute('''
+            SELECT c.*, p.nombre_empresa as proveedor_nombre, u.nombre as creador_nombre 
+            FROM compras c
+            LEFT JOIN proveedores p ON c.proveedor_id = p.id
+            LEFT JOIN users u ON c.created_by = u.id
+            ORDER BY c.created_at DESC
+        ''')
+        return [dict(row) for row in cursor.fetchall()]
+
+def get_compra_by_id(compra_id):
+    """Get purchase order with items"""
+    with get_db() as conn:
+        cursor = conn.cursor()
+        
+        # Get master
+        cursor.execute('''
+            SELECT c.*, p.nombre_empresa as proveedor_nombre, 
+                   p.direccion as proveedor_direccion, p.rfc as proveedor_rfc,
+                   p.contacto_nombre as proveedor_contacto, p.telefono as proveedor_telefono, p.email as proveedor_email,
+                   u.nombre as creador_nombre
+            FROM compras c
+            LEFT JOIN proveedores p ON c.proveedor_id = p.id
+            LEFT JOIN users u ON c.created_by = u.id
+            WHERE c.id = ?
+        ''', (compra_id,))
+        row = cursor.fetchone()
+        if not row:
+            return None
+        
+        compra = dict(row)
+        
+        # Get items
+        cursor.execute("SELECT * FROM compra_items WHERE compra_id = ? ORDER BY linea ASC", (compra_id,))
+        items = [dict(item) for item in cursor.fetchall()]
+        compra['items'] = items
+        
+        return compra
+
+def get_next_compra_folio():
+    """Generate next PO folio (OC-XXXX)"""
+    with get_db() as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT folio FROM compras ORDER BY id DESC LIMIT 1")
+        last = cursor.fetchone()
+        if last and last['folio']:
+            try:
+                num = int(last['folio'].split('-')[1])
+                return f"OC-{num + 1:04d}"
+            except:
+                return "OC-0001"
+        return "OC-0001"
+
+def create_compra(data, items, user_id):
+    """Create new Purchase Order"""
+    try:
+        with get_db() as conn:
+            cursor = conn.cursor()
+            
+            folio = data.get('folio') or get_next_compra_folio()
+            
+            cursor.execute('''
+                INSERT INTO compras (
+                    folio, proveedor_id, fecha_emision, fecha_entrega_estimada, estado,
+                    moneda, subtotal, iva, total, notas, created_by
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (
+                folio, data.get('proveedor_id'), data.get('fecha_emision'), 
+                data.get('fecha_entrega_estimada'), data.get('estado', 'Borrador'),
+                data.get('moneda', 'MXN'), data.get('subtotal'), data.get('iva'), 
+                data.get('total'), data.get('notas'), user_id
+            ))
+            
+            compra_id = cursor.lastrowid
+            
+            # Insert items
+            for item in items:
+                cursor.execute('''
+                    INSERT INTO compra_items (
+                        compra_id, linea, numero_parte, descripcion, cantidad, unidad, precio_unitario, importe
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ''', (
+                    compra_id, item.get('linea'), item.get('numero_parte'), item.get('descripcion'),
+                    item.get('cantidad'), item.get('unidad'), item.get('precio_unitario'), item.get('importe')
+                ))
+                
+            return compra_id
+    except Exception as e:
+        print(f"Error creating compra: {e}")
+        return None
+
+def update_compra(compra_id, data, items):
+    """Update Purchase Order"""
+    try:
+        with get_db() as conn:
+            cursor = conn.cursor()
+            
+            cursor.execute('''
+                UPDATE compras SET
+                    proveedor_id=?, fecha_emision=?, fecha_entrega_estimada=?, 
+                    estado=?, moneda=?, subtotal=?, iva=?, total=?, notas=?, updated_at=CURRENT_TIMESTAMP
+                WHERE id=?
+            ''', (
+                data.get('proveedor_id'), data.get('fecha_emision'), data.get('fecha_entrega_estimada'),
+                data.get('estado'), data.get('moneda'), data.get('subtotal'), data.get('iva'),
+                data.get('total'), data.get('notas'), compra_id
+            ))
+            
+            # Rewrite items
+            cursor.execute("DELETE FROM compra_items WHERE compra_id = ?", (compra_id,))
+            
+            for item in items:
+                cursor.execute('''
+                    INSERT INTO compra_items (
+                        compra_id, linea, numero_parte, descripcion, cantidad, unidad, precio_unitario, importe
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ''', (
+                    compra_id, item.get('linea'), item.get('numero_parte'), item.get('descripcion'),
+                    item.get('cantidad'), item.get('unidad'), item.get('precio_unitario'), item.get('importe')
+                ))
+            
+            return True
+    except Exception as e:
+        print(f"Error updating compra: {e}")
+        return False

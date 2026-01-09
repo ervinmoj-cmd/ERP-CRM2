@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRM - INAIR</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .admin-container {
+            padding: 20px;
+            max-width: 100%;
+        }
+
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            background: white;
+            padding: 15px 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .admin-header h1 {
+            color: #d20000;
+            font-size: 1.5em;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #d20000, #ff4444);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(210, 0, 0, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        /* Notifications Bell Icon */
+        .notification-bell {
+            position: relative;
+            background: #f0f0f0;
+            color: #333;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 15px;
+            cursor: pointer;
+            font-size: 20px;
+            transition: all 0.3s;
+        }
+
+        .notification-bell:hover {
+            background: #e0e0e0;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: #d20000;
+            color: white;
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 11px;
+            font-weight: bold;
+            min-width: 18px;
+            text-align: center;
+        }
+
+        .notifications-dropdown {
+            display: none;
+            position: absolute;
+            top: 60px;
+            right: 120px;
+            width: 400px;
+            max-height: 500px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            overflow: hidden;
+        }
+
+        .notifications-dropdown.show {
+            display: block;
+        }
+
+        .notifications-header {
+            padding: 15px 20px;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .notifications-header h3 {
+            font-size: 1.1em;
+            margin: 0;
+        }
+
+        .mark-all-read {
+            background: none;
+            border: none;
+            color: white;
+            text-decoration: underline;
+            cursor: pointer;
+            font-size: 0.85em;
+        }
+
+        .notifications-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .notification-item {
+            padding: 15px 20px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .notification-item:hover {
+            background: #f8f9fa;
+        }
+
+        .notification-item.unread {
+            background: #e3f2fd;
+        }
+
+        .notification-item.unread:hover {
+            background: #bbdefb;
+        }
+
+        .notification-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .notification-message {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .notification-time {
+            font-size: 0.75em;
+            color: #999;
+        }
+
+        .no-notifications {
+            padding: 40px 20px;
+            text-align: center;
+            color: #999;
+        }
+
+        .kanban-container {
+            display: flex;
+            gap: 15px;
+            overflow-x: auto;
+            padding-bottom: 20px;
+        }
+
+        .kanban-column {
+            min-width: 280px;
+            max-width: 280px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .kanban-header {
+            padding: 15px;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            color: white;
+            border-radius: 12px 12px 0 0;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .kanban-header .count {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.85em;
+        }
+
+        .kanban-body {
+            padding: 10px;
+            min-height: 200px;
+            flex: 1;
+            overflow-y: auto;
+            max-height: 70vh;
+        }
+
+        .kanban-body.drag-over {
+            background: rgba(210, 0, 0, 0.1);
+        }
+
+        .deal-card {
+            background: white;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            cursor: pointer;
+            border-left: 4px solid #d20000;
+            transition: all 0.2s;
+        }
+
+        .deal-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .deal-card.dragging {
+            opacity: 0.5;
+            cursor: grabbing;
+        }
+
+        .deal-title {
+            font-weight: 600;
+            color: #1a1a2e;
+            margin-bottom: 8px;
+            font-size: 0.95em;
+        }
+
+        .deal-client {
+            color: #666;
+            font-size: 0.85em;
+            margin-bottom: 5px;
+        }
+
+        .deal-value {
+            color: #d20000;
+            font-weight: 700;
+            font-size: 1.1em;
+        }
+
+        .deal-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #eee;
+            font-size: 0.8em;
+            color: #888;
+        }
+
+        .deal-actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        .deal-actions a {
+            color: #666;
+            text-decoration: none;
+            padding: 3px 6px;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .deal-actions a:hover {
+            background: #f0f0f0;
+            color: #d20000;
+        }
+
+        .activities-panel {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .activities-panel h3 {
+            color: #1a1a2e;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .activity-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            background: #f8f9fa;
+            gap: 15px;
+        }
+
+        .activity-type {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #1a1a2e;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .activity-info {
+            flex: 1;
+        }
+
+        .activity-info strong {
+            display: block;
+            color: #1a1a2e;
+        }
+
+        .activity-info small {
+            color: #666;
+        }
+
+        .activity-date {
+            color: #888;
+            font-size: 0.85em;
+        }
+
+        .activity-actions button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 5px;
+            color: #28a745;
+            font-size: 1.2em;
+        }
+
+        .stage-1 .kanban-header {
+            background: linear-gradient(135deg, #6c757d, #495057);
+        }
+
+        .stage-2 .kanban-header {
+            background: linear-gradient(135deg, #17a2b8, #138496);
+        }
+
+        .stage-3 .kanban-header {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+        }
+
+        .stage-4 .kanban-header {
+            background: linear-gradient(135deg, #6f42c1, #59359a);
+        }
+
+        .stage-5 .kanban-header {
+            background: linear-gradient(135deg, #fd7e14, #e06200);
+        }
+
+        .stage-6 .kanban-header {
+            background: linear-gradient(135deg, #28a745, #1e7e34);
+        }
+
+        .stage-7 .kanban-header {
+            background: linear-gradient(135deg, #20c997, #17a085);
+        }
+
+        .stage-8 .kanban-header {
+            background: linear-gradient(135deg, #d20000, #a00000);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="admin-container">
+        <div class="admin-header">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <h1>📊 CRM - {{ crm_title }}</h1>
+                {% if session.get('role') == 'admin' or current_puesto == 'Director' %}
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="color: #fff; font-size: 14px;">Vista:</span>
+                    <select id="puesto-selector"
+                        style="padding: 8px 12px; border-radius: 6px; border: none; font-size: 14px; cursor: pointer;"
+                        onchange="cambiarPuesto(this.value)">
+                        {% for puesto in available_puestos %}
+                        <option value="{{ puesto }}" {% if puesto==view_puesto %}selected{% endif %}>{{ puesto }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                {% endif %}
+            </div>
+            <div class="header-actions">
+                {% if session.get('role') == 'admin' or current_puesto == 'Gerente de Servicios Técnicos' %}
+                <a href="{{ url_for('admin_crm_nuevo') }}" class="btn btn-primary">+ Nuevo Trato</a>
+                {% endif %}
+                {% if session.get('role') == 'admin' %}
+                <a href="{{ url_for('admin_crm_etapas') }}" class="btn btn-secondary" title="Administrar etapas">⚙️
+                    Etapas</a>
+                {% endif %}
+                <!-- Notifications Bell -->
+                <button class="notification-bell" onclick="toggleNotifications()" id="notificationBell">
+                    🔔
+                    <span class="notification-badge" id="notificationBadge" style="display: none;">0</span>
+                </button>
+                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="history.back()">Atrás</button>
+                <a href="{{ url_for('dashboard_redirect') }}" class="btn btn-secondary btn-sm">Volver al Panel</a>
+                <a href="{{ url_for('logout') }}" class="btn btn-danger btn-sm">Cerrar Sesión</a>
+            </div>
+        </div>
+
+        <!-- Notifications Dropdown -->
+        <div class="notifications-dropdown" id="notificationsDropdown">
+            <div class="notifications-header">
+                <h3>🔔 Notificaciones</h3>
+                <button class="mark-all-read" onclick="markAllAsRead()">Marcar todas como leídas</button>
+            </div>
+            <div class="notifications-list" id="notificationsList">
+                <div class="no-notifications">Cargando...</div>
+            </div>
+        </div>
+
+        <div class="kanban-container">
+            {% for stage in stages %}
+            <div class="kanban-column stage-{{ loop.index }}">
+                <div class="kanban-header">
+                    <span>{{ stage }}</span>
+                    <span class="count">{{ deals|selectattr('etapa', 'equalto', stage)|list|length }}</span>
+                </div>
+                <div class="kanban-body" data-stage="{{ stage }}" ondrop="dropDeal(event)" ondragover="allowDrop(event)"
+                    ondragleave="leaveDrop(event)">
+                    {% for deal in deals if deal.etapa == stage %}
+                    <div class="deal-card" draggable="true" data-id="{{ deal.id }}" ondragstart="dragStart(event)"
+                        ondragend="dragEnd(event)" onclick="viewDeal({{ deal.id }})">
+                        <div class="deal-title">
+                            {% if deal.folio %}<span
+                                style="color: #d20000; font-size: 0.85em; margin-right: 8px; font-weight: 700;">{{
+                                deal.folio }}</span>{% endif %}{{ deal.titulo }}
+                        </div>
+                        <div class="deal-client">👤 {{ deal.cliente_nombre or 'Sin cliente' }}</div>
+                        <div class="deal-value">${{ '{:,.2f}'.format(deal.valor_estimado or 0) }} {{ deal.moneda }}
+                        </div>
+                        <div class="deal-meta">
+                            <span>{{ deal.fecha_cierre_estimada or 'Sin fecha' }}</span>
+                            <div class="deal-actions" onclick="event.stopPropagation();">
+                                <a href="{{ url_for('admin_crm_editar', id=deal.id) }}" title="Editar">✏️</a>
+                                <a href="#" onclick="deleteDeal({{ deal.id }}); return false;" title="Eliminar">🗑️</a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        {% if pending_activities %}
+        <div class="activities-panel">
+            <h3>🔔 Actividades Pendientes</h3>
+            {% for act in pending_activities[:5] %}
+            <div class="activity-item">
+                <div class="activity-type">
+                    {% if act.tipo == 'Llamada' %}📞{% elif act.tipo == 'Reunión' %}🤝{% elif act.tipo == 'Email' %}📧{%
+                    elif act.tipo == 'Tarea' %}✅{% else %}🔔{% endif %}
+                </div>
+                <div class="activity-info">
+                    <strong>{{ act.descripcion or act.tipo }}</strong>
+                    <small>{{ act.deal_titulo }} - {{ act.cliente_nombre or 'Sin cliente' }}</small>
+                </div>
+                <div class="activity-date">{{ act.fecha_programada or 'Sin fecha' }}</div>
+                <div class="activity-actions">
+                    <button onclick="completeActivity({{ act.id }})" title="Marcar completada">✓</button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+
+    <form id="deleteForm" method="POST" style="display:none;"></form>
+
+    <script>
+        var isDragging = false;
+
+        function cambiarPuesto(puesto) {
+            window.location.href = '/admin/crm?puesto=' + encodeURIComponent(puesto);
+        }
+
+        function dragStart(e) {
+            isDragging = true;
+            e.target.classList.add('dragging');
+            e.dataTransfer.setData('text/plain', e.target.dataset.id);
+        }
+
+        function dragEnd(e) {
+            isDragging = false;
+            e.target.classList.remove('dragging');
+        }
+
+        function allowDrop(e) {
+            e.preventDefault();
+            e.currentTarget.classList.add('drag-over');
+        }
+
+        function leaveDrop(e) {
+            e.currentTarget.classList.remove('drag-over');
+        }
+
+        function dropDeal(e) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('drag-over');
+
+            var dealId = e.dataTransfer.getData('text/plain');
+            var newStage = e.currentTarget.dataset.stage;
+            var card = document.querySelector('.deal-card[data-id="' + dealId + '"]');
+
+            e.currentTarget.appendChild(card);
+
+            // Obtener el puesto actual de la vista (para admins)
+            var viewPuesto = '{{ view_puesto }}' || '';
+
+            fetch('/api/crm/deal/' + dealId + '/etapa', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    etapa: newStage,
+                    view_puesto: viewPuesto  // Enviar puesto de la vista para admins
+                })
+            }).then(function (r) {
+                return r.json();
+            }).then(function (data) {
+                // Show notification if email was sent
+                if (data.email_sent) {
+                    showNotification(
+                        '✅ Email Enviado Exitosamente',
+                        'Cotización ' + data.cotizacion_folio + ' enviada a ' + data.email_to,
+                        'success'
+                    );
+                } else if (data.email_error && newStage.toLowerCase().includes('enviada') || newStage.toLowerCase().includes('enviado')) {
+                    showNotification(
+                        '⚠️ No Se Pudo Enviar Email',
+                        data.email_error,
+                        'error'
+                    );
+                }
+
+                if (data.triggered) {
+                    setTimeout(function () {
+                        showNotification(
+                            '🔄 Automatización Ejecutada',
+                            'Trato movido a "' + data.target_stage + '"',
+                            'info'
+                        );
+                        setTimeout(function () { location.reload(); }, 2500);
+                    }, 2000);
+                } else if (!data.success) {
+                    location.reload();
+                } else {
+                    updateCounts();
+                }
+            }).catch(function () {
+                location.reload();
+            });
+        }
+
+        function updateCounts() {
+            document.querySelectorAll('.kanban-column').forEach(function (col) {
+                var count = col.querySelectorAll('.deal-card').length;
+                col.querySelector('.count').textContent = count;
+            });
+        }
+
+        function viewDeal(id) {
+            if (!isDragging) {
+                window.location.href = '/admin/crm/ver/' + id;
+            }
+        }
+
+        function deleteDeal(id) {
+            if (confirm('¿Eliminar este trato?')) {
+                var form = document.getElementById('deleteForm');
+                form.action = '/admin/crm/eliminar/' + id;
+                form.submit();
+            }
+        }
+
+        function completeActivity(id) {
+            fetch('/api/crm/actividad/' + id + '/completar', { method: 'POST' }).then(function () {
+                location.reload();
+            });
+        }
+
+        // Notification system
+        function showNotification(title, message, type) {
+            // Create notification container if it doesn't exist
+            var container = document.getElementById('notification-container');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'notification-container';
+                container.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 10000; max-width: 400px;';
+                document.body.appendChild(container);
+            }
+
+            // Create notification element
+            var notification = document.createElement('div');
+            notification.className = 'notification notification-' + type;
+
+            var colors = {
+                'success': '#4caf50',
+                'error': '#f44336',
+                'info': '#2196f3',
+                'warning': '#ff9800'
+            };
+
+            var icons = {
+                'success': '✅',
+                'error': '❌',
+                'info': 'ℹ️',
+                'warning': '⚠️'
+            };
+
+            notification.style.cssText = `
+                background: white;
+                border-left: 4px solid ${colors[type] || '#2196f3'};
+                padding: 16px 20px;
+                margin-bottom: 10px;
+                border-radius: 6px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                animation: slideIn 0.3s ease-out;
+                min-width: 300px;
+            `;
+
+            notification.innerHTML = `
+                <div style="display: flex; align-items: start; gap: 12px;">
+                    <span style="font-size: 24px;">${icons[type] || 'ℹ️'}</span>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 600; color: #333; margin-bottom: 4px;">${title}</div>
+                        <div style="color: #666; font-size: 14px;">${message}</div>
+                    </div>
+                    <button onclick="this.parentElement.parentElement.remove()" 
+                            style="background: none; border: none; color: #999; cursor: pointer; font-size: 20px; padding: 0; line-height: 1;">
+                        ×
+                    </button>
+                </div>
+            `;
+
+            container.appendChild(notification);
+
+            // Auto-remove after 5 seconds
+            setTimeout(function () {
+                notification.style.animation = 'slideOut 0.3s ease-out';
+                setTimeout(function () {
+                    notification.remove();
+                }, 300);
+            }, 5000);
+        }
+
+        // Add CSS animation
+        var style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from {
+                    transform: translateX(400px);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+            @keyframes slideOut {
+                from {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+                to {
+                    transform: translateX(400px);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // ==================== NOTIFICATIONS SYSTEM ====================
+
+        function toggleNotifications() {
+            var dropdown = document.getElementById('notificationsDropdown');
+            dropdown.classList.toggle('show');
+            if (dropdown.classList.contains('show')) {
+                loadNotifications();
+            }
+        }
+
+        function loadNotifications() {
+            fetch('/api/notifications')
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        updateNotificationBadge(data.unread_count);
+                        renderNotifications(data.notifications);
+                    }
+                })
+                .catch(err => console.error('Error loading notifications:', err));
+        }
+
+        function renderNotifications(notifications) {
+            var list = document.getElementById('notificationsList');
+            if (notifications.length === 0) {
+                list.innerHTML = '<div class="no-notifications">No hay notificaciones</div>';
+                return;
+            }
+
+            list.innerHTML = notifications.map(n => `
+                <div class="notification-item ${n.leido ? '' : 'unread'}" onclick="handleNotificationClick(${n.id}, ${n.deal_id || null}, '${n.tipo || ''}', ${n.ocu_id || null})">
+                    <div class="notification-title">${n.titulo}</div>
+                    <div class="notification-message">${n.mensaje || ''}</div>
+                    <div class="notification-time">${timeAgo(n.created_at)}</div>
+                </div>
+            `).join('');
+        }
+
+        function handleNotificationClick(notificationId, dealId, tipo, ocuId) {
+            // Mark as read
+            fetch(`/api/notifications/${notificationId}/read`, { method: 'POST' })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        updateNotificationBadge(data.unread_count);
+                        // Redirect based on notification type
+                        if (tipo === 'finance_request' || tipo === 'ocu_nueva') {
+                            // Redirect to finance requests page, with ocu_id if available
+                            let url = '/admin/finanzas/solicitudes-factura';
+                            if (ocuId) {
+                                url += '?ocu_id=' + ocuId;
+                            }
+                            window.location.href = url;
+                        } else if (tipo === 'purchase_requisition') {
+                            // Redirect to purchase requisitions page, with ocu_id if available
+                            let url = '/admin/compras/requisiciones';
+                            if (ocuId) {
+                                url += '?ocu_id=' + ocuId;
+                            }
+                            window.location.href = url;
+                        } else if (dealId) {
+                            // Default: redirect to deal (for CRM notifications)
+                            window.location.href = '/admin/crm/ver/' + dealId;
+                        }
+                    }
+                });
+        }
+
+        function markAllAsRead() {
+            fetch('/api/notifications/mark-all-read', { method: 'POST' })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        updateNotificationBadge(0);
+                        loadNotifications();
+                    }
+                });
+        }
+
+        function updateNotificationBadge(count) {
+            var badge = document.getElementById('notificationBadge');
+            if (count > 0) {
+                badge.textContent = count > 99 ? '99+' : count;
+                badge.style.display = 'block';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+
+        function timeAgo(dateString) {
+            var date = new Date(dateString);
+            var now = new Date();
+            var seconds = Math.floor((now - date) / 1000);
+
+            if (seconds < 60) return 'Hace un momento';
+            if (seconds < 3600) return `Hace ${Math.floor(seconds / 60)} min`;
+            if (seconds < 86400) return `Hace ${Math.floor(seconds / 3600)} h`;
+            return `Hace ${Math.floor(seconds / 86400)} días`;
+        }
+
+        // Load notifications on page load
+        loadNotifications();
+
+        // Refresh notifications every 30 seconds
+        setInterval(loadNotifications, 30000);
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function (e) {
+            var dropdown = document.getElementById('notificationsDropdown');
+            var bell = document.getElementById('notificationBell');
+            if (!dropdown.contains(e.target) && !bell.contains(e.target)) {
+                dropdown.classList.remove('show');
+            }
+        });
+
+        // ==================== TOUCH SUPPORT FOR MOBILE ====================
+        // This code enables drag-and-drop on touch devices (phones/tablets)
+        // It does NOT affect desktop functionality
+
+        var touchDragData = { element: null, startX: 0, startY: 0, offsetX: 0, offsetY: 0, isDragging: false };
+
+        function touchStart(e) {
+            var card = e.target.closest('.deal-card');
+            if (!card) return;
+
+            // Don't interfere with action buttons
+            if (e.target.closest('.deal-actions')) return;
+
+            var touch = e.touches[0];
+            var rect = card.getBoundingClientRect();
+
+            touchDragData.element = card;
+            touchDragData.startX = touch.clientX;
+            touchDragData.startY = touch.clientY;
+            touchDragData.offsetX = touch.clientX - rect.left;
+            touchDragData.offsetY = touch.clientY - rect.top;
+            touchDragData.isDragging = false;
+            touchDragData.originalParent = card.parentElement;
+        }
+
+        function touchMove(e) {
+            if (!touchDragData.element) return;
+
+            var touch = e.touches[0];
+            var card = touchDragData.element;
+
+            // Check if user has moved enough to consider it a drag
+            var deltaX = Math.abs(touch.clientX - touchDragData.startX);
+            var deltaY = Math.abs(touch.clientY - touchDragData.startY);
+
+            if (!touchDragData.isDragging && (deltaX > 15 || deltaY > 15)) {
+                touchDragData.isDragging = true;
+                card.classList.add('dragging');
+                card.style.opacity = '0.3';
+
+                // Disable scroll on body while dragging
+                document.body.style.overflow = 'hidden';
+                document.body.style.touchAction = 'none';
+            }
+
+            if (!touchDragData.isDragging) return;
+
+            e.preventDefault();
+            e.stopPropagation();
+
+            // Create floating clone if doesn't exist
+            var clone = document.getElementById('touch-drag-clone');
+            if (!clone) {
+                clone = card.cloneNode(true);
+                clone.id = 'touch-drag-clone';
+                clone.style.cssText = 'position: fixed; pointer-events: none; z-index: 9999; opacity: 0.9; width: 260px; transform: rotate(2deg); box-shadow: 0 10px 30px rgba(0,0,0,0.3);';
+                document.body.appendChild(clone);
+            }
+
+            clone.style.left = (touch.clientX - touchDragData.offsetX) + 'px';
+            clone.style.top = (touch.clientY - touchDragData.offsetY) + 'px';
+
+            // Highlight drop target - hide clone temporarily to find element underneath
+            clone.style.display = 'none';
+            var dropTarget = document.elementFromPoint(touch.clientX, touch.clientY);
+            clone.style.display = '';
+
+            document.querySelectorAll('.kanban-body').forEach(function (kb) {
+                kb.classList.remove('drag-over');
+            });
+            var kanbanBody = dropTarget ? dropTarget.closest('.kanban-body') : null;
+            if (kanbanBody) {
+                kanbanBody.classList.add('drag-over');
+            }
+        }
+
+        function touchEnd(e) {
+            // Re-enable scroll
+            document.body.style.overflow = '';
+            document.body.style.touchAction = '';
+
+            if (!touchDragData.element) return;
+
+            var card = touchDragData.element;
+            card.classList.remove('dragging');
+            card.style.opacity = '';
+
+            // Remove clone
+            var clone = document.getElementById('touch-drag-clone');
+            if (clone) clone.remove();
+
+            // Remove all drag-over highlights
+            document.querySelectorAll('.kanban-body').forEach(function (kb) {
+                kb.classList.remove('drag-over');
+            });
+
+            // If not actually dragging, treat as click (view deal)
+            if (!touchDragData.isDragging) {
+                touchDragData.element = null;
+                return;
+            }
+
+            // Find drop target
+            var touch = e.changedTouches[0];
+            var dropTarget = document.elementFromPoint(touch.clientX, touch.clientY);
+            var kanbanBody = dropTarget ? dropTarget.closest('.kanban-body') : null;
+
+            if (kanbanBody && kanbanBody !== touchDragData.originalParent) {
+                var newStage = kanbanBody.dataset.stage;
+                var dealId = card.dataset.id;
+
+                kanbanBody.appendChild(card);
+
+                // Obtener el puesto actual de la vista (para admins)
+                var viewPuesto = '{{ view_puesto }}' || '';
+
+                // Call existing API to update stage
+                fetch('/api/crm/deal/' + dealId + '/etapa', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        etapa: newStage,
+                        view_puesto: viewPuesto
+                    })
+                }).then(function (r) { return r.json(); })
+                    .then(function (data) {
+                        if (data.email_sent) {
+                            showNotification(
+                                '✅ Email Enviado Exitosamente',
+                                'Cotización ' + data.cotizacion_folio + ' enviada a ' + data.email_to,
+                                'success'
+                            );
+                        }
+                        updateCounts();
+                        if (!data.success) location.reload();
+                    })
+                    .catch(function () {
+                        location.reload();
+                    });
+            }
+
+            touchDragData.element = null;
+            touchDragData.isDragging = false;
+        }
+
+        // Attach touch events to kanban container
+        (function () {
+            var container = document.querySelector('.kanban-container');
+            if (container) {
+                container.addEventListener('touchstart', touchStart, { passive: true });
+                container.addEventListener('touchmove', touchMove, { passive: false });
+                container.addEventListener('touchend', touchEnd);
+            }
+        })();
+    </script>
+</body>
+
+</html>

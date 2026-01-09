@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Facturas - INAIR</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+    <style>
+        .facturas-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 30px;
+        }
+
+        .section-card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge.pendiente {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .badge.parcial {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .badge.pagada {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .badge.vencida {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #95a5a6;
+        }
+
+        .empty-state .icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+
+        .empty-state .icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+
+        /* Mobile Responsive Fixes */
+        @media (max-width: 768px) {
+            .admin-header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+
+            .header-actions {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+                width: 100%;
+            }
+
+            .header-actions .btn {
+                width: 100%;
+                margin: 0 !important;
+            }
+
+            .section-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+                text-align: left;
+            }
+
+            .table-wrapper {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                margin-bottom: 20px;
+                border-radius: 8px;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            }
+
+            table {
+                min-width: 800px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="admin-container">
+        <div class="admin-header">
+            <h1>📄 Gestión de Facturas</h1>
+            <div class="header-actions">
+                <a href="{{ url_for('admin_factura_nueva') }}" class="btn btn-primary">+ Nueva Factura</a>
+                <a href="{{ url_for('admin_remisiones') }}" class="btn btn-primary" style="background: #e67e22;">📦
+                    Remisiones</a>
+                <a href="{{ url_for('admin_finanzas') }}" class="btn btn-secondary">← Finanzas</a>
+            </div>
+        </div>
+
+        <div class="facturas-container">
+            <!-- All Invoices Section -->
+            <div class="section-card">
+                <div class="section-header">
+                    <h2>📋 Todas las Facturas</h2>
+                </div>
+
+                {% if facturas %}
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>No. Factura</th>
+                                <th>Fecha</th>
+                                <th>Cliente</th>
+                                <th>Total</th>
+                                <th>Pagado</th>
+                                <th>Saldo</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for f in facturas %}
+                            <tr>
+                                <td><strong>{{ f.numero_factura }}</strong></td>
+                                <td>{{ f.fecha_emision }}</td>
+                                <td>{{ f.cliente_nombre }}</td>
+                                <td>${{ "%.2f"|format(f.total) }}</td>
+                                <td>${{ "%.2f"|format(f.monto_pagado) }}</td>
+                                <td>${{ "%.2f"|format(f.saldo_pendiente) }}</td>
+                                <td>
+                                    <span class="badge {{ f.estado_pago|lower }}">{{ f.estado_pago }}</span>
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('admin_factura_detalle', id=f.id) }}"
+                                        class="btn btn-sm btn-primary">Ver</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <div class="icon">📄</div>
+                    <h3>No hay facturas registradas</h3>
+                    <p>Crea tu primera factura para comenzar</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Accounts Receivable Section -->
+            <div class="section-card" id="por-cobrar">
+                <div class="section-header">
+                    <h2>💳 Cuentas por Cobrar</h2>
+                    <div>
+                        <strong>Total por cobrar: ${{ "%.2f"|format(por_cobrar|sum(attribute='saldo_pendiente') if
+                            por_cobrar else 0) }}</strong>
+                    </div>
+                </div>
+
+                {% if por_cobrar %}
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>No. Factura</th>
+                                <th>Cliente</th>
+                                <th>Fecha Vencimiento</th>
+                                <th>Total</th>
+                                <th>Pagado</th>
+                                <th>Saldo Pendiente</th>
+                                <th>Días Vencido</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for f in por_cobrar %}
+                            <tr>
+                                <td><strong>{{ f.numero_factura }}</strong></td>
+                                <td>{{ f.cliente_nombre }}</td>
+                                <td>
+                                    {{ f.fecha_vencimiento if f.fecha_vencimiento else 'Sin fecha' }}
+                                    {% if f.dias_vencido and f.dias_vencido > 0 %}
+                                    <span class="badge vencida">Vencida</span>
+                                    {% endif %}
+                                </td>
+                                <td>${{ "%.2f"|format(f.total) }}</td>
+                                <td>${{ "%.2f"|format(f.monto_pagado) }}</td>
+                                <td><strong>${{ "%.2f"|format(f.saldo_pendiente) }}</strong></td>
+                                <td>
+                                    {% if f.fecha_vencimiento %}
+                                    {% if f.dias_vencido and f.dias_vencido > 0 %}
+                                    <span style="color: #e74c3c; font-weight: bold;">{{ f.dias_vencido }} días</span>
+                                    {% else %}
+                                    <span style="color: #27ae60;">Al corriente</span>
+                                    {% endif %}
+                                    {% else %}
+                                    -
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('admin_factura_detalle', id=f.id) }}"
+                                        class="btn btn-sm btn-primary">Gestionar</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <div class="icon">✅</div>
+                    <h3>¡Todo al día!</h3>
+                    <p>No hay facturas pendientes de cobro</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

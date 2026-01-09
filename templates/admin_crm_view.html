@@ -1,0 +1,2378 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ver Trato - CRM INAIR</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .main-layout {
+            display: grid;
+            grid-template-columns: 350px 1fr 400px;
+            gap: 20px;
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+
+        .chat-panel {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 40px);
+            position: sticky;
+            top: 20px;
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            color: white;
+            padding: 20px;
+            border-radius: 16px 16px 0 0;
+        }
+
+        .chat-header h2 {
+            font-size: 1.1em;
+            margin: 0;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            animation: fadeIn 0.3s;
+        }
+
+        .message-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 5px;
+        }
+
+        .message-author {
+            font-weight: 600;
+            color: #d20000;
+            font-size: 0.9em;
+        }
+
+        .message-time {
+            font-size: 0.75em;
+            color: #999;
+        }
+
+        .message-content {
+            background: white;
+            padding: 12px 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            line-height: 1.5;
+        }
+
+        .message-content .mention {
+            color: #007bff;
+            font-weight: 600;
+            background: #e3f2fd;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .chat-input-container {
+            padding: 15px;
+            background: white;
+            border-top: 1px solid #eee;
+            border-radius: 0 0 16px 16px;
+        }
+
+        .chat-input-wrapper {
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 0.95em;
+            resize: none;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+
+        .chat-input:focus {
+            outline: none;
+            border-color: #d20000;
+        }
+
+        .chat-send-btn {
+            background: linear-gradient(135deg, #d20000, #ff4444);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: transform 0.2s;
+        }
+
+        .chat-send-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .mention-helper {
+            font-size: 0.75em;
+            color: #999;
+            margin-top: 5px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Email History Panel - RIGHT SIDE */
+        .email-panel {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 40px);
+            position: sticky;
+            top: 20px;
+        }
+
+        .email-header {
+            background: linear-gradient(135deg, #7b1fa2, #9c27b0);
+            color: white;
+            padding: 20px;
+            border-radius: 16px 16px 0 0;
+        }
+
+        .email-header h2 {
+            font-size: 1.1em;
+            margin: 0;
+        }
+
+        .email-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            background: #f8f9fa;
+        }
+
+        .email-item {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+            cursor: pointer;
+            transition: all 0.2s;
+            border-left: 4px solid transparent;
+        }
+
+        .email-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+        }
+
+        .email-item.salida {
+            border-left-color: #2196f3;
+        }
+
+        .email-item.entrada {
+            border-left-color: #4caf50;
+        }
+
+        .email-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 8px;
+        }
+
+        .email-direction-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.7em;
+            font-weight: 600;
+            margin-right: 5px;
+        }
+
+        .badge-salida {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .badge-entrada {
+            background: #e8f5e9;
+            color: #388e3c;
+        }
+
+        .email-subject {
+            font-weight: 600;
+            color: #333;
+            font-size: 0.95em;
+            margin-bottom: 5px;
+        }
+
+        .email-preview {
+            font-size: 0.85em;
+            color: #666;
+            line-height: 1.4;
+            max-height: 40px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
+
+        .email-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 8px;
+            font-size: 0.75em;
+            color: #999;
+        }
+
+        .email-attachment-icon {
+            color: #666;
+        }
+
+        .no-emails {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+        }
+
+        .no-emails-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+            opacity: 0.3;
+        }
+
+        /* Image Lightbox Modal */
+        .image-lightbox {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 10001;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .image-lightbox.show {
+            display: flex;
+        }
+
+        .image-lightbox-content {
+            position: relative;
+            max-width: 90%;
+            max-height: 90%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .image-lightbox img {
+            max-width: 100%;
+            max-height: 85vh;
+            object-fit: contain;
+            border-radius: 8px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .image-lightbox-close {
+            position: absolute;
+            top: -40px;
+            right: 0;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s;
+        }
+
+        .image-lightbox-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .image-lightbox-title {
+            color: white;
+            margin-top: 15px;
+            font-size: 0.9em;
+            text-align: center;
+            max-width: 100%;
+            word-break: break-word;
+        }
+
+        .image-thumbnail {
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .image-thumbnail:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Email Detail Modal */
+        .email-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .email-modal.show {
+            display: flex;
+        }
+
+        .email-modal-content {
+            background: white;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow: hidden;
+            box-shadow: 0 10px 50px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .email-modal-header {
+            background: linear-gradient(135deg, #7b1fa2, #9c27b0);
+            color: white;
+            padding: 20px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .email-modal-header h3 {
+            margin: 0;
+            font-size: 1.2em;
+        }
+
+        .email-modal-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 28px;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .email-modal-body {
+            padding: 25px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .email-detail-header {
+            border-bottom: 2px solid #e0e0e0;
+            padding: 20px 25px;
+            background: #fafafa;
+            border-radius: 8px 8px 0 0;
+            margin: -20px -20px 20px -20px;
+        }
+
+        .email-detail-subject {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
+
+        .email-detail-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            font-size: 0.9em;
+        }
+
+        .email-detail-meta label {
+            font-weight: 600;
+            color: #666;
+        }
+
+        .email-detail-meta .value {
+            color: #333;
+        }
+
+        .email-detail-body {
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            line-height: 1.6;
+            margin: 20px 0;
+            min-height: 150px;
+        }
+
+        .email-reply-section {
+            border-top: 2px solid #eee;
+            padding-top: 20px;
+            margin-top: 20px;
+        }
+
+        .email-reply-section h4 {
+            color: #7b1fa2;
+            margin-bottom: 15px;
+        }
+
+        .reply-form textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 0.95em;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 150px;
+        }
+
+        .reply-form textarea:focus {
+            outline: none;
+            border-color: #7b1fa2;
+        }
+
+        .reply-form-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            align-items: center;
+        }
+
+        .btn-send-reply {
+            background: linear-gradient(135deg, #7b1fa2, #9c27b0);
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: transform 0.2s;
+        }
+
+        .btn-send-reply:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-cancel {
+            background: #f0f0f0;
+            color: #666;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .reply-status {
+            display: none;
+            color: #28a745;
+            font-size: 0.9em;
+        }
+
+        .reply-status.show {
+            display: inline;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            color: white;
+            padding: 25px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 1.4em;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #d20000, #ff4444);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(210, 0, 0, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .btn-warning {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .body {
+            padding: 30px;
+        }
+
+        .section {
+            margin-bottom: 25px;
+            padding-bottom: 25px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .section:last-child {
+            border-bottom: none;
+        }
+
+        .section h3 {
+            color: #1a1a2e;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .info-item label {
+            font-weight: 500;
+            color: #666;
+            font-size: 0.85em;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .info-item .value {
+            font-size: 1.1em;
+            color: #1a1a2e;
+        }
+
+        .info-item .value.highlight {
+            color: #d20000;
+            font-weight: 700;
+            font-size: 1.3em;
+        }
+
+        .stage-badge {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 20px;
+            background: #17a2b8;
+            color: white;
+            font-weight: 600;
+        }
+
+        .actions-bar {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid #eee;
+        }
+
+        .linked-items {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .linked-item {
+            background: #e9ecef;
+            padding: 10px 15px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .linked-item a {
+            color: #d20000;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .linked-item a:hover {
+            text-decoration: underline;
+        }
+
+        .activity-list {
+            margin-top: 10px;
+        }
+
+        .activity-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            gap: 12px;
+        }
+
+        .activity-icon {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: #1a1a2e;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .activity-details {
+            flex: 1;
+        }
+
+        .activity-details strong {
+            color: #1a1a2e;
+        }
+
+        .activity-details small {
+            color: #666;
+            display: block;
+        }
+
+        .notes-box {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            color: #333;
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+
+        .empty-state {
+            color: #999;
+            font-style: italic;
+        }
+
+        /* ==================== MOBILE RESPONSIVE ==================== */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .main-layout {
+                display: flex;
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .chat-panel,
+            .email-panel {
+                position: relative;
+                top: auto;
+                height: auto;
+                max-height: 400px;
+            }
+
+            .container {
+                order: -1;
+                /* Deal info first on mobile */
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+
+            .header h1 {
+                font-size: 1.1em;
+            }
+
+            .header-actions {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .actions-bar {
+                justify-content: center;
+            }
+
+            .btn {
+                padding: 8px 12px;
+                font-size: 0.85em;
+            }
+
+            .chat-messages {
+                max-height: 250px;
+            }
+
+            .email-list {
+                max-height: 250px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .header-actions {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .header-actions .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="main-layout">
+        <!-- LEFT PANEL: Internal Chat -->
+        <div class="chat-panel">
+            <div class="chat-header">
+                <h2>💬 Mensajes Internos</h2>
+            </div>
+            <div class="chat-messages" id="chatMessages">
+                <div style="text-align: center; padding: 20px; color: #999;">
+                    Cargando mensajes...
+                </div>
+            </div>
+            <div class="chat-input-container">
+                <div class="mention-helper">💡 Usa @usuario para mencionar a alguien</div>
+                <div style="margin-bottom: 8px;">
+                    <input type="file" id="messageAttachments" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt"
+                        style="display: none;" onchange="handleMessageAttachmentsChange()">
+                    <button type="button" onclick="document.getElementById('messageAttachments').click()"
+                        style="background: #f0f0f0; border: 1px solid #ddd; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 1.1em; margin-right: 8px;">📄
+                        Adjuntar</button>
+                    <div id="messageAttachmentsList"
+                        style="display: inline-flex; flex-wrap: wrap; gap: 4px; align-items: center;"></div>
+                </div>
+                <div class="chat-input-wrapper">
+                    <textarea class="chat-input" id="chatInput" rows="2"
+                        placeholder="Escribe un mensaje... (usa @usuario para mencionar)"
+                        onkeydown="handleChatKeydown(event)"></textarea>
+                    <button class="chat-send-btn" onclick="sendMessage()">Enviar</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- CENTER/RIGHT PANEL: Deal Info -->
+        <div class="container">
+            <div class="header">
+                <h1>📋 {{ deal.titulo }}</h1>
+                <div class="header-actions">
+                    <a href="{{ url_for('admin_crm_editar', id=deal.id) }}" class="btn btn-secondary">✏️ Editar</a>
+                    <button type="button" class="btn btn-outline-secondary btn-sm"
+                        onclick="history.back()">Atrás</button>
+                    <a href="{{ url_for('admin_crm') }}" class="btn btn-secondary btn-sm">← Volver</a>
+                </div>
+            </div>
+
+            <div class="body">
+                <!-- Deal Info -->
+                <div class="section">
+                    <h3>📄 Información del Trato</h3>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <label>Etapa Actual</label>
+                            <span class="stage-badge">{{ deal.etapa }}</span>
+                        </div>
+                        <div class="info-item">
+                            <label>Vendedor</label>
+                            <div class="value">{{ deal.vendedor_nombre or 'Sin asignar' }}</div>
+                        </div>
+                        <div class="info-item">
+                            <label>Valor Estimado</label>
+                            <div class="value highlight">${{ '{:,.2f}'.format(deal.valor_estimado or 0) }} {{
+                                deal.moneda }}
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <label>Fecha Cierre Estimada</label>
+                            <div class="value">{{ deal.fecha_cierre_estimada or 'Sin definir' }}</div>
+                        </div>
+                        <div class="info-item">
+                            <label>Producto/Servicio</label>
+                            <div class="value">{{ deal.producto_servicio or 'Sin especificar' }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Client Info -->
+                <div class="section">
+                    <h3>👤 Cliente</h3>
+                    {% if client %}
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <label>Nombre</label>
+                            <div class="value">{{ client.nombre }}</div>
+                        </div>
+                        <div class="info-item">
+                            <label>Contacto</label>
+                            <div class="value">{{ deal.contacto_nombre or client.contacto or '-' }}</div>
+                        </div>
+                        <div class="info-item">
+                            <label>Teléfono</label>
+                            <div class="value">{{ client.telefono or '-' }}</div>
+                        </div>
+                        <div class="info-item">
+                            <label>Email</label>
+                            <div class="value">{{ deal.email if deal.email else (client.email if client and client.email
+                                else '-') }}</div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <p class="empty-state">No hay cliente asociado</p>
+                    {% endif %}
+                </div>
+
+                <!-- Primer Correo al Cliente (Solo visible desde "Cotización lista para enviar" en adelante) -->
+                {% set etapa_actual = (deal.etapa or '').strip() %}
+                {% set etapa_lower = etapa_actual.lower() %}
+                {% set etapas_mostrar_email = ['cotización lista para enviar', 'cotización enviada', 'negociación',
+                'ganado', 'perdido'] %}
+                {% set mostrar_email = etapa_lower in etapas_mostrar_email %}
+
+                {% if mostrar_email %}
+                <div class="section"
+                    style="background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
+                    <h3 style="margin-top: 0; color: #333; border-bottom: 2px solid #007bff; padding-bottom: 8px;">📧
+                        Primer Correo al Cliente</h3>
+
+                    <div style="margin-bottom: 12px;">
+                        <label style="display: block; margin-bottom: 4px; font-weight: 500; color: #333;">Para:</label>
+                        <input type="text" id="emailToInput"
+                            value="{{ deal.email if deal.email else (client.email if client and client.email else '') }}"
+                            placeholder="cliente@email.com"
+                            style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 0.95em;">
+                    </div>
+
+                    <div style="margin-bottom: 12px;">
+                        <label style="display: block; margin-bottom: 4px; font-weight: 500; color: #333;">CC:</label>
+                        <input type="text" id="emailCcInput" placeholder="copia@email.com, otro@email.com"
+                            style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 0.95em;">
+                    </div>
+
+                    <div style="margin-bottom: 12px;">
+                        <label
+                            style="display: block; margin-bottom: 4px; font-weight: 500; color: #333;">Asunto:</label>
+                        <input type="text" id="emailSubjectInput"
+                            value="{% if linked_cotizaciones %}Cotización {{ linked_cotizaciones[0].folio }} - INAIR [DEAL-{{ deal.id }}]{% else %}Seguimiento - INAIR [DEAL-{{ deal.id }}]{% endif %}"
+                            style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 0.95em;">
+                    </div>
+
+                    <div style="margin-bottom: 12px;">
+                        <label
+                            style="display: block; margin-bottom: 4px; font-weight: 500; color: #333;">Cuerpo:</label>
+                        <textarea id="emailBodyInput" rows="8" placeholder="Escribe tu mensaje..."
+                            style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 0.95em; font-family: inherit; resize: vertical;">Hola, buen día
+
+Adjunto encontrará la cotización solicitada.
+
+Quedamos a sus órdenes para cualquier duda o aclaración.</textarea>
+                    </div>
+
+                    <div
+                        style="margin-bottom: 12px; padding: 10px; background: #e7f3ff; border-radius: 4px; border-left: 3px solid #2196F3;">
+                        <small style="color: #1976d2; font-size: 0.9em;">
+                            {% if linked_cotizaciones %}
+                            📎 Adjunto automático: Cotización PDF {{ linked_cotizaciones[0].folio }}
+                            {% else %}
+                            ⚠️ No hay cotización vinculada para adjuntar
+                            {% endif %}
+                        </small>
+                    </div>
+
+                    <div style="display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap;">
+                        <button onclick="sendQuoteEmailFromERP({{ deal.id }})" id="btnSendFromERP{{ deal.id }}"
+                            class="btn btn-primary"
+                            style="flex: 1; min-width: 150px; {% if deal.first_quote_email_sent == 1 %}opacity: 0.6;{% endif %}">
+                            {% if deal.first_quote_email_sent == 1 %}
+                            ✅ Enviado desde ERP
+                            {% else %}
+                            📤 Enviar desde ERP
+                            {% endif %}
+                        </button>
+                        <button onclick="openMailApp({{ deal.id }})" class="btn"
+                            style="background: #17a2b8; color: white; flex: 1; min-width: 150px;">
+                            📧 Abrir Correo (App)
+                        </button>
+                        {% if linked_cotizaciones %}
+                        <a href="/crm/deals/{{ deal.id }}/cotizacion.pdf" target="_blank" class="btn"
+                            style="background: #28a745; color: white; flex: 1; min-width: 150px; text-align: center; text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">
+                            📥 Ver PDF
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Notes -->
+                {% if deal.notas %}
+                <div class="section">
+                    <h3>📝 Notas</h3>
+                    <div class="notes-box" id="notesDisplay">
+                        <script>
+                            // Parsear y mostrar notas correctamente
+                            (function () {
+                                var notasRaw = {{ deal.notas| tojson | safe
+                            }};
+                            var notasContainer = document.getElementById('notesDisplay');
+
+                            try {
+                                var notas = typeof notasRaw === 'string' ? JSON.parse(notasRaw) : notasRaw;
+
+                                if (notas && typeof notas === 'object' && (notas.texto !== undefined || notas.text !== undefined)) {
+                                    // Nuevo formato JSON - soportar tanto "texto" como "text"
+                                    var html = '';
+                                    var textoNotas = notas.texto || notas.text || '';
+
+                                    // Mostrar texto
+                                    if (textoNotas) {
+                                        html += '<div style="margin-bottom: 15px; white-space: pre-wrap; line-height: 1.6;">' +
+                                            textoNotas.replace(/\n/g, '<br>') + '</div>';
+                                    }
+
+                                    // Mostrar imágenes
+                                    if (notas.imagenes && notas.imagenes.length > 0) {
+                                        html += '<div style="margin-top: 20px;"><strong>Imágenes adjuntas:</strong></div>';
+                                        html += '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; margin-top: 10px;">';
+                                        notas.imagenes.forEach(function (img, imgIndex) {
+                                            // Asegurar que la imagen tenga el prefijo data: si no lo tiene
+                                            var imgSrc = img.data || '';
+                                            if (imgSrc && !imgSrc.startsWith('data:')) {
+                                                var mimeType = img.tipo || 'image/png';
+                                                imgSrc = 'data:' + mimeType + ';base64,' + imgSrc;
+                                            }
+                                            // Guardar imagen en array global para el lightbox
+                                            if (!window.dealImagenes) {
+                                                window.dealImagenes = [];
+                                            }
+                                            window.dealImagenes.push({
+                                                src: imgSrc,
+                                                nombre: img.nombre || 'Imagen ' + (imgIndex + 1)
+                                            });
+
+                                            html += '<div style="border: 1px solid #ddd; border-radius: 4px; overflow: hidden;" class="image-thumbnail">';
+                                            html += '<img src="' + imgSrc + '" style="width: 100%; height: 150px; object-fit: cover; display: block;" ' +
+                                                'onerror="this.style.display=\'none\'; this.nextElementSibling.style.display=\'block\';" ' +
+                                                'onclick="openImageLightbox(' + (window.dealImagenes.length - 1) + ')" />';
+                                            html += '<div style="display: none; padding: 20px; text-align: center; color: #999; font-size: 0.8em;">Error al cargar imagen</div>';
+                                            html += '<div style="padding: 5px; font-size: 0.8em; color: #666; text-align: center;">' + (img.nombre || 'Imagen') + '</div>';
+                                            html += '</div>';
+                                        });
+                                        html += '</div>';
+                                    }
+
+                                    // Mostrar correos
+                                    if (notas.correos && notas.correos.length > 0) {
+                                        html += '<div style="margin-top: 20px;"><strong>Correos adjuntos:</strong></div>';
+                                        html += '<div style="margin-top: 10px;">';
+                                        notas.correos.forEach(function (correo, index) {
+                                            html += '<div style="display: flex; align-items: center; gap: 10px; padding: 10px; background: #f8f9fa; border-radius: 4px; margin-bottom: 8px;">';
+                                            html += '<span style="font-size: 1.5em;">📧</span>';
+                                            html += '<div style="flex: 1;"><strong>' + correo.nombre + '</strong></div>';
+                                            html += '<button onclick="openCorreoFromView(' + index + ')" style="background: #007bff; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;">Abrir</button>';
+                                            html += '</div>';
+                                        });
+                                        html += '</div>';
+
+                                        // Guardar datos de correos para la función openCorreoFromView
+                                        window.dealCorreos = notas.correos;
+                                    }
+
+                                    notasContainer.innerHTML = html;
+                                } else {
+                                    // Formato antiguo (texto plano)
+                                    notasContainer.innerHTML = '<div style="white-space: pre-wrap; line-height: 1.6;">' +
+                                        (typeof notasRaw === 'string' ? notasRaw : JSON.stringify(notasRaw)).replace(/\n/g, '<br>') + '</div>';
+                                }
+                            } catch (e) {
+                                // Si falla, mostrar como texto plano
+                                notasContainer.innerHTML = '<div style="white-space: pre-wrap; line-height: 1.6;">' +
+                                    (typeof notasRaw === 'string' ? notasRaw : JSON.stringify(notasRaw)).replace(/\n/g, '<br>') + '</div>';
+                            }
+                            }) ();
+
+                            function openCorreoFromView(index) {
+                                if (!window.dealCorreos || !window.dealCorreos[index]) return;
+                                var correo = window.dealCorreos[index];
+                                var binary = atob(correo.data);
+                                var bytes = new Uint8Array(binary.length);
+                                for (var i = 0; i < binary.length; i++) {
+                                    bytes[i] = binary.charCodeAt(i);
+                                }
+                                // Determinar el tipo MIME según la extensión o tipo guardado
+                                var fileName = (correo.nombre || '').toLowerCase();
+                                var mimeType = fileName.endsWith('.msg') || correo.tipo === 'msg'
+                                    ? 'application/vnd.ms-outlook'
+                                    : 'message/rfc822';
+                                var blob = new Blob([bytes], { type: mimeType });
+                                var url = URL.createObjectURL(blob);
+                                var a = document.createElement('a');
+                                a.href = url;
+                                a.download = correo.nombre;
+                                a.click();
+                                setTimeout(function () { URL.revokeObjectURL(url); }, 100);
+                            }
+                        </script>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Linked Cotizaciones -->
+                <div class="section">
+                    <h3>📄 Cotizaciones Vinculadas</h3>
+                    {% if linked_cotizaciones %}
+                    <div class="linked-items">
+                        {% for cot in linked_cotizaciones %}
+                        <div class="linked-item">
+                            📄
+                            <a href="{{ url_for('admin_cotizaciones_editar', id=cot.id) }}">
+                                {{ cot.folio }} - ${{ '{:,.2f}'.format(cot.total or 0) }}
+                            </a>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="empty-state">No hay cotizaciones vinculadas</p>
+                    {% endif %}
+                </div>
+
+                <!-- Linked Facturas -->
+                <div class="section">
+                    <h3>📋 Orden de Compra del Cliente</h3>
+                    {% if deal.oc_cliente_file_path %}
+                    <div style="margin-top: 10px;">
+                        <a href="/static/{{ deal.oc_cliente_file_path }}" target="_blank" class="btn"
+                            style="background: #007bff; color: white; padding: 8px 16px; text-decoration: none; border-radius: 4px; display: inline-block;">
+                            📄 Ver OC del Cliente
+                        </a>
+                    </div>
+                    {% else %}
+                    <p style="color: #888; margin-top: 10px;">No hay OC del cliente adjunta</p>
+                    {% endif %}
+
+                    <h3>🧾 Facturas Vinculadas</h3>
+                    {% if linked_facturas %}
+                    <div class="linked-items">
+                        {% for factura in linked_facturas %}
+                        <div class="linked-item">
+                            📄
+                            <a href="{{ url_for('admin_factura_pdf', id=factura.id) }}" target="_blank"
+                                title="Ver PDF de Factura">
+                                {{ factura.numero_factura }} - ${{ '{:,.2f}'.format(factura.total or 0) }}
+                            </a>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="empty-state">No hay facturas vinculadas</p>
+                    {% endif %}
+                </div>
+
+                <!-- Linked PIs (New Section) -->
+                <div class="section">
+                    <h3>📋 PIs Vinculadas (Proforma Invoices)</h3>
+                    {% if deal.pis %}
+                    <div class="linked-items">
+                        {% for pi in deal.pis %}
+                        <div class="linked-item">
+                            📄
+                            <a href="{{ url_for('admin_pi_pdf', id=pi.id) }}" target="_blank" title="Ver PDF de PI">
+                                {{ pi.folio }} - ${{ '{:,.2f}'.format(pi.total or 0) }} {{ pi.moneda }}
+                            </a>
+                            <span style="margin-left: 10px;">
+                                <a href="{{ url_for('admin_pi_excel', id=pi.id) }}"
+                                    style="font-size: 0.9em; color: #28a745;" title="Descargar Excel">
+                                    📊 Excel
+                                </a>
+                            </span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="empty-state">No hay PIs vinculadas</p>
+                    {% endif %}
+                </div>
+
+
+                <!-- Email Message Editor - ELIMINADO: Ahora se maneja desde el chat de correos (panel derecho) -->
+
+                <!-- Activities -->
+                <div class="section">
+                    <h3>📅 Actividades</h3>
+                    {% if activities %}
+                    <div class="activity-list">
+                        {% for act in activities %}
+                        <div class="activity-item{% if act.completada %} completed{% endif %}">
+                            <div class="activity-icon">
+                                {% if act.tipo == 'Llamada' %}📄{% elif act.tipo == 'Reunión' %}📄{% elif act.tipo ==
+                                'Email' %}📄{% else %}📄{% endif %}
+                            </div>
+                            <div class="activity-details">
+                                <strong>{{ act.tipo }}: {{ act.descripcion or '-' }}</strong>
+                                <small>{{ act.fecha_programada or 'Sin fecha' }}</small>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="empty-state">No hay actividades registradas</p>
+                    {% endif %}
+                </div>
+
+                <!-- Actions -->
+                <div class="actions-bar">
+                    <a href="{{ url_for('admin_cotizaciones_nueva') }}?deal_id={{ deal.id }}{% if client %}&cliente_id={{ client.id }}{% endif %}"
+                        class="btn btn-success">
+                        📄 Generar Cotización
+                    </a>
+
+                    <a href="{{ url_for('admin_factura_nueva') }}?cliente_id={{ client.id if client else '' }}"
+                        class="btn btn-primary">
+                        🧾 Generar Factura
+                    </a>
+
+                    <a href="{{ url_for('admin_pi_nueva') }}?deal_id={{ deal.id }}{% if client %}&cliente_id={{ client.id }}{% endif %}"
+                        class="btn btn-warning">
+                        📋 Generar PI
+                    </a>
+
+                    <a href="{{ url_for('admin_crm_editar', id=deal.id) }}" class="btn btn-secondary">
+                        ✏️ Editar Trato
+                    </a>
+
+                    {% if deal.oc_cliente_file_path %}
+                    <a href="/static/{{ deal.oc_cliente_file_path }}" target="_blank" class="btn"
+                        style="background: #007bff; color: white;">
+                        📋 Ver OC Cliente
+                    </a>
+                    <button type="button" onclick="document.getElementById('ocClienteFileView').click()" class="btn"
+                        style="background: #28a745; color: white;">
+                        📤 Reemplazar OC
+                    </button>
+                    {% else %}
+                    <div id="ocClienteDropZone{{ deal.id }}" style="display: inline-block; position: relative;">
+                        <button type="button" onclick="document.getElementById('ocClienteFileView').click()" class="btn"
+                            style="background: #17a2b8; color: white; position: relative;">
+                            📤 Adjuntar OC Cliente
+                        </button>
+                        <div id="ocClienteDropOverlay{{ deal.id }}"
+                            style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(23, 162, 184, 0.3); border: 2px dashed #17a2b8; border-radius: 4px; display: none; align-items: center; justify-content: center; pointer-events: none; z-index: 10;">
+                            <span style="color: #17a2b8; font-weight: bold; font-size: 1.1em;">Suelta el archivo
+                                aquí</span>
+                        </div>
+                    </div>
+                    {% endif %}
+                    <input type="file" id="ocClienteFileView" name="oc_cliente_file" accept=".pdf,.jpg,.jpeg,.png"
+                        style="display: none;" onchange="handleOCFileUpload({{ deal.id }}, this)">
+
+                </div>
+            </div>
+        </div>
+
+
+    </div> <!-- Close main-layout -->
+
+    <!-- Email Detail Modal - ELIMINADO: Ya no se usa, el chat muestra todo directamente -->
+
+    <script>
+        // ==================== CONSTANTES ELIMINADAS ====================
+        // Estas constantes ya no se usan porque el sistema de mensajes fue reemplazado por el chat
+        /*
+        // Contexts Definition
+        // Mapeo de módulos a puestos
+        const MODULE_TO_PUESTO = {
+            'Ventas': 'Vendedor',
+            'Finanzas': 'Contador',
+            'Servicios': 'Gerente de Servicios Técnicos',
+            'Compras': 'Compras',
+            'Cotización': 'Cotizador'
+        };
+
+        // Mapeo de módulos a módulos internos (para templates)
+        const MODULE_TO_INTERNAL = {
+            'Ventas': 'ventas',
+            'Finanzas': 'finanzas',
+            'Servicios': 'servicios',
+            'Compras': 'compras',
+            'Cotización': 'cotizacion'
+        };
+
+        const CONTEXTS = {
+            'Ventas': ['cotizacion'],
+            'Finanzas': ['envio_factura', 'solicitud_factura'],
+            'Servicios': ['orden_servicio']
+        };
+
+        const CONTEXT_LABELS = {
+            'cotizacion': 'Cotización',
+            'envio_factura': 'Envío de Factura',
+            'solicitud_factura': 'Solicitud de Factura',
+            'orden_servicio': 'Orden de Servicio'
+        };
+        */
+
+        // ==================== FUNCIONES ELIMINADAS ====================
+        // Estas funciones ya no se usan porque la sección "Mensaje para el Cliente" fue eliminada
+        // y reemplazada por el chat de correos (panel derecho)
+        // 
+        // function updateContextOptions() { ... }
+        // function loadModuleContent() { ... }
+        // function loadMessage() { ... }
+        // function guardarMensajeEmail() { ... }
+
+        // ==================== CHAT SYSTEM ====================
+
+        {% if deal and deal.id %}
+        const dealId = {{ deal.id|default ('null') }};
+        const dealEtapa = {{ deal.etapa| tojson | safe if deal.etapa else 'null' }};
+        {% else %}
+        const dealId = null;
+        const dealEtapa = null;
+        {% endif %}
+
+        function loadMessages() {
+            fetch(`/api/crm/deal/${dealId}/messages`)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        renderMessages(data.messages);
+                    }
+                })
+                .catch(err => console.error('Error loading messages:', err));
+        }
+
+        function renderMessages(messages) {
+            const container = document.getElementById('chatMessages');
+            if (messages.length === 0) {
+                container.innerHTML = '<div style="text-align: center; padding: 20px; color: #999;">No hay mensajes aún. ¡Sé el primero en escribir!</div>';
+                return;
+            }
+
+            container.innerHTML = messages.map(m => {
+                // Convert @mentions to highlighted spans
+                let content = escapeHtml(m.mensaje);
+                content = content.replace(/@(\w+)/g, '<span class="mention">@$1</span>');
+
+                // Render attachments if any
+                let attachmentsHtml = '';
+                if (m.attachments && m.attachments.length > 0) {
+                    attachmentsHtml = '<div style="margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px;">';
+                    m.attachments.forEach(att => {
+                        const isImage = att.mime_type && att.mime_type.startsWith('image/');
+                        if (isImage) {
+                            attachmentsHtml += `
+                                <div style="position: relative; display: inline-block;">
+                                    <img src="/api/attachments/${att.id}/preview" 
+                                         alt="${escapeHtml(att.original_name)}"
+                                         style="max-width: 150px; max-height: 150px; border-radius: 4px; cursor: pointer; border: 1px solid #ddd;"
+                                         onclick="window.open('/api/attachments/${att.id}/preview', '_blank')"
+                                         title="${escapeHtml(att.original_name)}">
+                                    <a href="/api/attachments/${att.id}" download style="display: block; font-size: 0.75em; color: #1976d2; margin-top: 2px;">${escapeHtml(att.original_name)}</a>
+                                </div>
+                            `;
+                        } else {
+                            const icon = getFileIcon(att.original_name);
+                            attachmentsHtml += `
+                                <div style="display: inline-flex; align-items: center; gap: 4px; padding: 6px 10px; background: #f5f5f5; border-radius: 12px; border: 1px solid #ddd;">
+                                    <span>${icon}</span>
+                                    <a href="/api/attachments/${att.id}" download style="color: #1976d2; text-decoration: none; font-size: 0.9em;">${escapeHtml(att.original_name)}</a>
+                                    <span style="color: #666; font-size: 0.8em;">(${formatFileSize(att.size)})</span>
+                                </div>
+                            `;
+                        }
+                    });
+                    attachmentsHtml += '</div>';
+                }
+
+                return `
+                    <div class="message">
+                        <div class="message-header">
+                            <span class="message-author">${escapeHtml(m.nombre || m.username)}</span>
+                            <span class="message-time">${timeAgo(m.created_at)}</span>
+                        </div>
+                        <div class="message-content">${content}</div>
+                        ${attachmentsHtml}
+                    </div>
+                `;
+            }).join('');
+
+            // Scroll to bottom
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function handleMessageAttachmentsChange() {
+            const input = document.getElementById('messageAttachments');
+            const files = Array.from(input.files);
+            const listDiv = document.getElementById('messageAttachmentsList');
+            listDiv.innerHTML = '';
+
+            files.forEach((file, index) => {
+                const fileItem = document.createElement('div');
+                fileItem.style.cssText = 'display: flex; align-items: center; gap: 4px; padding: 4px 8px; background: #e3f2fd; border-radius: 12px; font-size: 0.85em;';
+                fileItem.innerHTML = `
+                    <span>${getFileIcon(file.name)}</span>
+                    <span>${escapeHtml(file.name)}</span>
+                    <span style="color: #666;">(${formatFileSize(file.size)})</span>
+                    <button type="button" onclick="removeMessageAttachment(${index})" style="background: none; border: none; color: #dc3545; cursor: pointer; padding: 0 4px;">?</button>
+                `;
+                listDiv.appendChild(fileItem);
+            });
+        }
+
+        function removeMessageAttachment(index) {
+            const input = document.getElementById('messageAttachments');
+            const dt = new DataTransfer();
+            const files = Array.from(input.files);
+            files.splice(index, 1);
+            files.forEach(file => dt.items.add(file));
+            input.files = dt.files;
+            handleMessageAttachmentsChange();
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const mensaje = input.value.trim();
+            const attachmentsInput = document.getElementById('messageAttachments');
+            const files = attachmentsInput ? Array.from(attachmentsInput.files) : [];
+
+            if (!mensaje && files.length === 0) {
+                alert('Por favor escribe un mensaje o adjunta un archivo');
+                return;
+            }
+
+            if (files.length > 0) {
+                // Use FormData for files
+                const formData = new FormData();
+                formData.append('mensaje', mensaje || '(mensaje con adjuntos)');
+                files.forEach((file, index) => {
+                    formData.append(`attachment${index}`, file);
+                });
+
+                fetch(`/api/crm/deal/${dealId}/messages`, {
+                    method: 'POST',
+                    body: formData
+                })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.success) {
+                            input.value = '';
+                            if (attachmentsInput) {
+                                attachmentsInput.value = '';
+                                document.getElementById('messageAttachmentsList').innerHTML = '';
+                            }
+                            loadMessages();
+                        } else {
+                            alert('Error al enviar mensaje: ' + (data.error || 'Desconocido'));
+                        }
+                    })
+                    .catch(err => {
+                        alert('Error al enviar mensaje');
+                        console.error(err);
+                    });
+            } else {
+                // No files, use JSON
+                fetch(`/api/crm/deal/${dealId}/messages`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ mensaje: mensaje })
+                })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.success) {
+                            input.value = '';
+                            loadMessages();
+                        } else {
+                            alert('Error al enviar mensaje: ' + (data.error || 'Desconocido'));
+                        }
+                    })
+                    .catch(err => {
+                        alert('Error al enviar mensaje');
+                        console.error(err);
+                    });
+            }
+        }
+
+        function handleChatKeydown(e) {
+            // Send on Ctrl+Enter or Cmd+Enter
+            if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+                e.preventDefault();
+                sendMessage();
+            }
+        }
+
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+
+        function timeAgo(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const seconds = Math.floor((now - date) / 1000);
+
+            if (seconds < 60) return 'Ahora';
+            if (seconds < 3600) return `Hace ${Math.floor(seconds / 60)} min`;
+            if (seconds < 86400) return `Hace ${Math.floor(seconds / 3600)} h`;
+            return `Hace ${Math.floor(seconds / 86400)} días`;
+        }
+
+        // Load messages on page load
+        loadMessages();
+
+        // Refresh messages every 10 seconds
+        setInterval(loadMessages, 10000);
+
+        // ==================== EMAIL CHAT SYSTEM (REEMPLAZA HISTORIAL) ====================
+
+        // Funciones auxiliares para el chat de correos
+        function getFileIcon(filename) {
+            const ext = filename.split('.').pop().toLowerCase();
+            if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext)) return '🖼️';
+            if (ext === 'pdf') return '📄';
+            if (['doc', 'docx'].includes(ext)) return '📄';
+            if (['xls', 'xlsx'].includes(ext)) return '📄';
+            return '📄';
+        }
+
+        function formatFileSize(bytes) {
+            if (!bytes || bytes === 0) return '0 B';
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+        }
+
+        // Función para limpiar el cuerpo del mensaje eliminando texto citado
+        function cleanEmailBody(body) {
+            if (!body) return '';
+            let normalized = body.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+            const isHTML = /<[a-z][\s\S]*>/i.test(normalized);
+            const isEscapedHTML = normalized.includes('\u0026lt;') || normalized.includes('\u0026gt;');
+            if (isHTML || isEscapedHTML) {
+                const tempDiv = document.createElement('div');
+                if (isEscapedHTML && !isHTML) {
+                    const unescapeDiv = document.createElement('div');
+                    unescapeDiv.textContent = normalized;
+                    normalized = unescapeDiv.innerHTML;
+                }
+                try {
+                    tempDiv.innerHTML = normalized;
+                } catch (e) {
+                    return normalized.replace(/<[^>]+>/g, '').trim();
+                }
+                tempDiv.querySelectorAll('blockquote, .gmail_quote, .gmail_quote_container, [class*="gmail_quote"], .moz-cite-prefix, [class*="moz-cite"]').forEach(el => el.remove());
+                tempDiv.querySelectorAll('br').forEach(br => br.replaceWith('\n'));
+                tempDiv.querySelectorAll('p, div').forEach((el, idx) => {
+                    if (idx > 0 && el.textContent.trim()) {
+                        el.insertAdjacentText('beforebegin', '\n');
+                    }
+                });
+                let textContent = tempDiv.textContent || tempDiv.innerText || '';
+                const lines = textContent.split('\n');
+                const filteredLines = [];
+                let inQuote = false;
+                for (let i = 0; i < lines.length; i++) {
+                    const line = lines[i];
+                    const trimmed = line.trim();
+                    if (trimmed.match(/^(El|On|De|From|Sent|Enviado).*(escribi[�o]|wrote):/i) ||
+                        trimmed.match(/^From:\s*</i) ||
+                        trimmed.match(/^[-_]{3,}$/) ||
+                        trimmed.startsWith('>')) {
+                        inQuote = true;
+                        continue;
+                    }
+                    if (inQuote) {
+                        if (trimmed === '' && i + 1 < lines.length) {
+                            const nextLine = lines[i + 1].trim();
+                            if (!nextLine.startsWith('>') &&
+                                !nextLine.match(/^(El|On|De|From|Sent|Enviado).*(escribi[�o]|wrote):/i)) {
+                                inQuote = false;
+                                continue;
+                            }
+                        }
+                        continue;
+                    }
+                    filteredLines.push(line);
+                }
+                textContent = filteredLines.join('\n');
+                textContent = textContent.replace(/\n{3,}/g, '\n\n').trim();
+                return textContent || body;
+            } else {
+                const lines = normalized.split('\n');
+                const filteredLines = [];
+                let inQuote = false;
+                for (let i = 0; i < lines.length; i++) {
+                    const line = lines[i];
+                    const trimmed = line.trim();
+                    if (trimmed.match(/^(El|On|De|From|Sent|Enviado).*(escribi[�o]|wrote):/i) ||
+                        trimmed.startsWith('>')) {
+                        inQuote = true;
+                        continue;
+                    }
+                    if (inQuote && trimmed === '') {
+                        inQuote = false;
+                        continue;
+                    }
+                    if (!inQuote) {
+                        filteredLines.push(line);
+                    }
+                }
+                return filteredLines.join('\n').replace(/\n{3,}/g, '\n\n').trim() || body;
+            }
+        }
+
+        // ==================== FUNCIONES ELIMINADAS (HISTORIAL DE CORREOS) ====================
+        // Las siguientes funciones fueron eliminadas porque el panel "Historial de Correos" ya no existe:
+        // - loadEmailLog()
+        // - renderEmailLog()
+        // - viewEmailDetail()
+        // - syncEmailLog()
+
+        /*
+        function loadEmailLog() {
+            const container = document.getElementById('emailLogMessages');
+            if (!container) {
+                console.error('❌ Container emailLogMessages no encontrado');
+                return;
+            }
+            
+            if (!dealId) {
+                console.error('❌ dealId no está definido');
+                container.innerHTML = '<div style="text-align: center; padding: 20px; color: #dc3545;">Error: ID de trato no disponible</div>';
+                return;
+            }
+            
+            container.innerHTML = '<div style="text-align: center; padding: 20px; color: #999;">Cargando historial...</div>';
+            
+            console.log(`📧 Cargando email log para deal ${dealId}`);
+            
+            fetch(`/api/crm/deals/${dealId}/email_log`)
+                .then(r => {
+                    console.log(`📧 Respuesta recibida: ${r.status}`);
+                    if (!r.ok) {
+                        throw new Error(`HTTP ${r.status}: ${r.statusText}`);
+                    }
+                    return r.json();
+                })
+                .then(data => {
+                    console.log(`📧 Datos recibidos:`, data);
+                    if (data.success) {
+                        renderEmailLog(data.messages || []);
+                    } else {
+                        console.error('❌ Error en respuesta:', data.error);
+                        container.innerHTML = `<div style="text-align: center; padding: 20px; color: #dc3545;">Error: ${data.error || 'Error desconocido'}</div>`;
+                    }
+                })
+                .catch(err => {
+                    console.error('❌ Error loading email log:', err);
+                    container.innerHTML = `<div style="text-align: center; padding: 20px; color: #dc3545;">Error al cargar historial: ${err.message}</div>`;
+                });
+        }
+
+        function renderEmailLog(messages) {
+            const container = document.getElementById('emailLogMessages');
+            if (!container) return;
+
+            if (messages.length === 0) {
+                container.innerHTML = '<div style="text-align: center; padding: 20px; color: #999;">No hay correos en el historial. Haz clic en "Sincronizar" para traer correos.</div>';
+                return;
+            }
+
+            container.innerHTML = messages.map(msg => {
+                const isOutbound = msg.direction === 'outbound';
+                const badgeClass = isOutbound ? 'background: #4CAF50;' : 'background: #2196F3;';
+                const badgeText = isOutbound ? '📤 Enviado' : '📥 Recibido';
+                const fromText = isOutbound ? 'Yo' : escapeHtml(msg.from_email || 'Desconocido');
+                const toText = isOutbound ? escapeHtml(msg.to_emails || '') : 'Yo';
+                
+                const date = new Date(msg.date_ts).toLocaleString('es-MX', {
+                    day: '2-digit',
+                    month: 'short',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                
+                // Use snippet from backend (already clean text)
+                const snippet = msg.snippet || msg.body_text || '';
+                const snippetDisplay = escapeHtml(snippet) || '(Sin contenido)';
+                const hasFullContent = msg.body_html || msg.body_text;
+                const msgId = msg.id;
+                
+                let attachmentsHtml = '';
+                if (msg.attachments && msg.attachments.length > 0) {
+                    attachmentsHtml = '<div style="margin-top: 8px; font-size: 0.85em; color: #666;">📎 ' + msg.attachments.length + ' adjunto(s)</div>';
+                }
+                
+                const viewButton = hasFullContent ? 
+                    `<button onclick="viewEmailDetail(${msgId})" style="background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.8em; margin-left: 8px;">👁️ Ver</button>` : '';
+                
+                return `
+                    <div class="message" id="email-msg-${msgId}" style="margin-bottom: 16px; padding: 12px; background: rgba(255,255,255,0.05); border-radius: 6px; border-left: 3px solid ${isOutbound ? '#4CAF50' : '#2196F3'};">
+                        <div class="message-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span style="${badgeClass} color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.8em;">${badgeText}</span>
+                                <span style="font-weight: 500; color: #fff;">${fromText}</span>
+                                <span style="color: #999;">→</span>
+                                <span style="color: #ccc;">${toText}</span>
+                                ${viewButton}
+                            </div>
+                            <span style="font-size: 0.85em; color: #999;">${date}</span>
+                        </div>
+                        <div style="font-weight: 500; color: #fff; margin-bottom: 6px;">${escapeHtml(msg.subject_raw || '(Sin asunto)')}</div>
+                        <div style="color: #ccc; font-size: 0.9em; line-height: 1.4; white-space: pre-wrap;">${snippetDisplay}</div>
+                        ${attachmentsHtml}
+                        <div id="email-detail-${msgId}" style="display: none; margin-top: 12px; padding: 12px; background: rgba(0,0,0,0.2); border-radius: 4px; border-top: 1px solid rgba(255,255,255,0.1);"></div>
+                    </div>
+                `;
+            }).join('');
+
+            // Scroll to bottom
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function viewEmailDetail(msgId) {
+            const detailDiv = document.getElementById(`email-detail-${msgId}`);
+            if (!detailDiv) return;
+            
+            if (detailDiv.style.display === 'none') {
+                // Fetch full email content
+                fetch(`/api/crm/deals/${dealId}/email_log`)
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.success) {
+                            const msg = data.messages.find(m => m.id === msgId);
+                            if (msg) {
+                                let content = '';
+                                if (msg.body_html) {
+                                    // Sanitize HTML (simple approach - remove script tags)
+                                    let sanitized = msg.body_html
+                                        .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+                                        .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
+                                        .replace(/on\w+="[^"]*"/gi, '')
+                                        .replace(/on\w+='[^']*'/gi, '');
+                                    content = `<div style="max-width: 100%; overflow-x: auto;">${sanitized}</div>`;
+                                } else if (msg.body_text) {
+                                    content = `<div style="white-space: pre-wrap; font-family: monospace;">${escapeHtml(msg.body_text)}</div>`;
+                                } else {
+                                    content = '<div style="color: #999; font-style: italic;">Sin contenido disponible</div>';
+                                }
+                                detailDiv.innerHTML = content;
+                                detailDiv.style.display = 'block';
+                            }
+                        }
+                    })
+                    .catch(err => {
+                        console.error('Error loading email detail:', err);
+                        detailDiv.innerHTML = '<div style="color: #dc3545;">Error al cargar contenido</div>';
+                        detailDiv.style.display = 'block';
+                    });
+            } else {
+                detailDiv.style.display = 'none';
+            }
+        }
+
+        function syncEmailLog() {
+            const btn = document.getElementById('syncEmailLogButton');
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '🔄 Sincronizando...';
+
+            fetch(`/api/crm/deals/${dealId}/email_sync`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        loadEmailLog();
+                        if (data.synced_count > 0) {
+                            alert(`✅ ${data.synced_count} correo(s) sincronizado(s)`);
+                        } else {
+                            alert('ℹ️ No hay nuevos correos para sincronizar');
+                        }
+                    } else {
+                        alert('❌ Error: ' + (data.error || 'Error desconocido'));
+                    }
+                })
+                .catch(err => {
+                    console.error('Error syncing email log:', err);
+                    alert('❌ Error al sincronizar');
+                })
+                .finally(() => {
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
+                });
+        }
+        */
+
+        // ==================== EMAIL CHAT FUNCTIONS (CRM) ====================
+
+        function renderEmailMessages(messages) {
+            const container = document.getElementById('emailChatMessages');
+            if (!container) return;
+
+            if (messages.length === 0) {
+                container.innerHTML = '<div style="text-align: center; padding: 20px; color: #999;">No hay correos aún. Escribe un mensaje para comenzar.</div>';
+                return;
+            }
+
+            // Ordenar por fecha (más antiguo primero, más reciente abajo - estilo WhatsApp)
+            messages.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+
+            container.innerHTML = messages.map(msg => {
+                const isSent = msg.direccion === 'salida' || msg.direction === 'outbound';
+                const author = isSent ? 'Yo' : (msg.remitente || 'Cliente');
+                const authorClass = isSent ? 'message-author' : 'message-author';
+
+                // Limpiar cuerpo del mensaje - extraer solo texto, sin HTML
+                let rawBody = msg.cuerpo || msg.body || '';
+                // cleanEmailBody ya devuelve texto plano sin HTML
+                let content = cleanEmailBody(rawBody);
+                // Escapar HTML por seguridad y preservar saltos de línea
+                content = escapeHtml(content).replace(/\n/g, '<br>');
+
+                // Render attachments if any
+                let attachmentsHtml = '';
+                if (msg.attachments && msg.attachments.length > 0) {
+                    attachmentsHtml = '<div style="margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px;">';
+                    msg.attachments.forEach(att => {
+                        const isImage = att.mime_type && att.mime_type.startsWith('image/');
+                        if (isImage) {
+                            attachmentsHtml += `
+                                <div style="position: relative; display: inline-block;">
+                                    <img src="/api/attachments/${att.id}/preview" 
+                                         alt="${escapeHtml(att.original_name)}"
+                                         style="max-width: 150px; max-height: 150px; border-radius: 4px; cursor: pointer; border: 1px solid #ddd;"
+                                         onclick="window.open('/api/attachments/${att.id}/preview', '_blank')"
+                                         title="${escapeHtml(att.original_name)}">
+                                    <a href="/api/attachments/${att.id}" download style="display: block; font-size: 0.75em; color: #1976d2; margin-top: 2px;">${escapeHtml(att.original_name)}</a>
+                                </div>
+                            `;
+                        } else {
+                            const icon = getFileIcon(att.original_name);
+                            attachmentsHtml += `
+                                <div style="display: inline-flex; align-items: center; gap: 4px; padding: 6px 10px; background: #f5f5f5; border-radius: 12px; border: 1px solid #ddd;">
+                                    <span>${icon}</span>
+                                    <a href="/api/attachments/${att.id}" download style="color: #1976d2; text-decoration: none; font-size: 0.9em;">${escapeHtml(att.original_name)}</a>
+                                    <span style="color: #666; font-size: 0.8em;">(${formatFileSize(att.size)})</span>
+                                </div>
+                            `;
+                        }
+                    });
+                    attachmentsHtml += '</div>';
+                }
+
+                return `
+                    <div class="message">
+                        <div class="message-header">
+                            <span class="${authorClass}">${escapeHtml(author)}</span>
+                            <span class="message-time">${timeAgo(msg.created_at)}</span>
+                        </div>
+                        <div class="message-content" style="white-space: pre-wrap;">${content}</div>
+                        ${attachmentsHtml}
+                    </div>
+                `;
+            }).join('');
+
+            // Scroll to bottom
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // Funciones eliminadas: sendEmailMessage, handleEmailAttachmentsChange, handleEmailChatKeydown, syncClientEmails
+        // El panel "Historial de Correos" y el chat fueron completamente eliminados
+
+        // ==================== PRIMER CORREO AL CLIENTE ====================
+
+        // Función para validar formato de email
+        function validateEmail(email) {
+            const pattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+            return pattern.test(email.trim());
+        }
+
+        // Función para parsear y validar lista de emails
+        function parseEmailList(emailString) {
+            if (!emailString || !emailString.trim()) {
+                return { valid: [], invalid: [] };
+            }
+
+            // Reemplazar punto y coma por comas
+            emailString = emailString.replace(/;/g, ',');
+
+            // Separar por comas y limpiar
+            const emails = emailString.split(',')
+                .map(e => e.trim())
+                .filter(e => e.length > 0);
+
+            const valid = [];
+            const invalid = [];
+
+            emails.forEach(email => {
+                if (validateEmail(email)) {
+                    valid.push(email);
+                } else {
+                    invalid.push(email);
+                }
+            });
+
+            return { valid, invalid };
+        }
+
+        function sendQuoteEmailFromERP(dealId) {
+            const to = document.getElementById('emailToInput').value.trim();
+            const cc = document.getElementById('emailCcInput').value.trim();
+            const subject = document.getElementById('emailSubjectInput').value.trim();
+            const body = document.getElementById('emailBodyInput').value.trim();
+
+            if (!to) {
+                alert('Por favor ingresa el email del destinatario (Para)');
+                return;
+            }
+
+            // Validar emails en "Para"
+            const toParsed = parseEmailList(to);
+            if (toParsed.invalid.length > 0) {
+                alert(`❌ Emails inválidos en "Para":\n${toParsed.invalid.join(', ')}\n\nPor favor corrige los emails antes de enviar.`);
+                return;
+            }
+            if (toParsed.valid.length === 0) {
+                alert('❌ No hay emails válidos en el campo "Para"');
+                return;
+            }
+
+            // Validar emails en "CC" (si hay)
+            let ccValid = null;
+            if (cc) {
+                const ccParsed = parseEmailList(cc);
+                if (ccParsed.invalid.length > 0) {
+                    const continueAnyway = confirm(
+                        `⚠️ Emails inválidos en "CC":\n${ccParsed.invalid.join(', ')}\n\n` +
+                        `¿Deseas continuar enviando solo a los emails válidos en CC?\n` +
+                        `Emails válidos en CC: ${ccParsed.valid.length > 0 ? ccParsed.valid.join(', ') : 'ninguno'}`
+                    );
+                    if (!continueAnyway) {
+                        return;
+                    }
+                }
+                if (ccParsed.valid.length > 0) {
+                    ccValid = ccParsed.valid.join(', ');
+                }
+            }
+
+            // Deshabilitar botón para evitar doble click
+            const btn = document.getElementById(`btnSendFromERP${dealId}`);
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '⏳ Enviando...';
+
+            if (!confirm('¿Enviar correo desde el ERP? Se adjuntará el PDF de la cotización vinculada.')) {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+                return;
+            }
+
+            fetch(`/api/crm/deals/${dealId}/send_quote_email`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    to: toParsed.valid.join(', '),  // Enviar solo emails válidos
+                    cc: ccValid || null,  // Enviar solo CC válidos (o null si no hay)
+                    subject: subject,
+                    body: body
+                })
+            })
+                .then(r => {
+                    if (!r.ok) {
+                        return r.json().then(data => Promise.reject(data));
+                    }
+                    return r.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        alert('✅ Correo enviado exitosamente desde ERP');
+                        // Update button state
+                        btn.innerHTML = '✅ Enviado desde ERP';
+                        btn.style.opacity = '0.6';
+                        btn.disabled = true;
+                    } else {
+                        if (data.already_sent) {
+                            alert('ℹ️ Este correo ya fue enviado desde ERP anteriormente. No se reenvió para evitar duplicados.');
+                            btn.innerHTML = '✅ Enviado desde ERP';
+                            btn.style.opacity = '0.6';
+                            btn.disabled = true;
+                        } else {
+                            alert('❌ Error: ' + (data.error || 'Error desconocido'));
+                            btn.disabled = false;
+                            btn.innerHTML = originalText;
+                        }
+                    }
+                })
+                .catch(err => {
+                    console.error('Error sending email:', err);
+                    const errorMsg = err.error || err.message || 'Error desconocido';
+                    alert('❌ Error al enviar correo: ' + errorMsg);
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
+                });
+        }
+
+        // Legacy function name for compatibility
+        function sendFirstEmailFromERP(dealId) {
+            return sendQuoteEmailFromERP(dealId);
+        }
+
+        function openMailApp(dealId) {
+            const to = document.getElementById('emailToInput').value.trim();
+            const cc = document.getElementById('emailCcInput').value.trim();
+            const subject = document.getElementById('emailSubjectInput').value.trim();
+            const body = document.getElementById('emailBodyInput').value.trim();
+
+            if (!to) {
+                alert('Por favor ingresa el email del destinatario (Para)');
+                return;
+            }
+
+            // Descargar PDF si hay cotización vinculada
+            {% if linked_cotizaciones %}
+            const cotizacionId = {{ linked_cotizaciones[0].id }
+        };
+        const downloadLink = document.createElement('a');
+        downloadLink.href = `/admin/cotizaciones/pdf/${cotizacionId}`;
+        downloadLink.download = `Cotizacion_{{ linked_cotizaciones[0].folio }}.pdf`;
+        downloadLink.style.display = 'none';
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+        {% endif %}
+
+        // Construir URL mailto:
+        let mailtoUrl = `mailto:${encodeURIComponent(to)}`;
+        const params = [];
+
+        if (cc) {
+            params.push(`cc=${encodeURIComponent(cc)}`);
+        }
+        if (subject) {
+            params.push(`subject=${encodeURIComponent(subject)}`);
+        }
+        if (body) {
+            params.push(`body=${encodeURIComponent(body)}`);
+        }
+
+        if (params.length > 0) {
+            mailtoUrl += '?' + params.join('&');
+        }
+
+        // Mostrar aviso
+        alert('📧 Se abrirá tu aplicación de correo predeterminada.\n\n📎 El PDF de la cotización se descargará automáticamente para que puedas adjuntarlo manualmente.\n\n💡 Para usar Outlook clásico, configúralo como predeterminado para MAILTO en Windows.');
+
+        // Abrir cliente de correo predeterminado
+        window.location.href = mailtoUrl;
+        }
+
+        // Función compartida para procesar archivo (click y drag&drop)
+        function processOCFile(dealId, file) {
+            // Validar tipo de archivo
+            const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
+            if (!allowedTypes.includes(file.type)) {
+                alert('❌ Solo se permiten archivos PDF, JPG, JPEG o PNG');
+                return;
+            }
+
+            // Validar tamaño (máximo 10MB)
+            const maxSize = 10 * 1024 * 1024; // 10MB
+            if (file.size > maxSize) {
+                alert('❌ El archivo es demasiado grande. Máximo 10MB');
+                return;
+            }
+
+            // Crear FormData para enviar el archivo
+            const formData = new FormData();
+            formData.append('oc_cliente_file', file);
+
+            // Mostrar indicador de carga
+            const dropZone = document.getElementById(`ocClienteDropZone${dealId}`);
+            const btn = dropZone ? dropZone.querySelector('button') : document.getElementById('ocClienteFileView').previousElementSibling;
+            const originalText = btn ? btn.innerHTML : 'Adjuntar OC Cliente';
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '⏳ Subiendo...';
+            }
+
+            // Enviar archivo al servidor
+            fetch(`/api/crm/deal/${dealId}/upload-oc`, {
+                method: 'POST',
+                body: formData
+            })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('✅ OC del cliente adjuntada correctamente');
+                        // Recargar la página para mostrar el archivo
+                        window.location.reload();
+                    } else {
+                        alert('❌ Error: ' + (data.error || 'No se pudo adjuntar el archivo'));
+                        if (btn) {
+                            btn.disabled = false;
+                            btn.innerHTML = originalText;
+                        }
+                    }
+                })
+                .catch(err => {
+                    console.error('Error subiendo archivo:', err);
+                    alert('❌ Error al subir el archivo');
+                    if (btn) {
+                        btn.disabled = false;
+                        btn.innerHTML = originalText;
+                    }
+                });
+        }
+
+        // Función para manejar subida de OC del cliente (click en input file)
+        function handleOCFileUpload(dealId, fileInput) {
+            const file = fileInput.files[0];
+            if (!file) return;
+            processOCFile(dealId, file);
+        }
+
+        // Configurar drag and drop para OC Cliente
+        (function () {
+            const dealId = {{ deal.id }
+        };
+        const dropZone = document.getElementById(`ocClienteDropZone${dealId}`);
+        const overlay = document.getElementById(`ocClienteDropOverlay${dealId}`);
+
+        if (!dropZone || !overlay) return;
+
+        // Prevenir comportamiento por defecto del navegador
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+        });
+
+        // Mostrar overlay cuando se arrastra sobre la zona
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, function () {
+                overlay.style.display = 'flex';
+            }, false);
+        });
+
+        // Ocultar overlay cuando se sale de la zona
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, function () {
+                overlay.style.display = 'none';
+            }, false);
+        });
+
+        // Manejar el drop
+        dropZone.addEventListener('drop', function (e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+
+            if (files.length > 0) {
+                const file = files[0];
+                processOCFile(dealId, file);
+            }
+        }, false);
+        }) ();
+
+        // Configurar drag and drop para OC Cliente
+        (function () {
+            const dealId = {{ deal.id }
+        };
+        const dropZone = document.getElementById(`ocClienteDropZone${dealId}`);
+        const overlay = document.getElementById(`ocClienteDropOverlay${dealId}`);
+
+        if (!dropZone || !overlay) return;
+
+        // Prevenir comportamiento por defecto del navegador
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+        });
+
+        // Mostrar overlay cuando se arrastra sobre la zona
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, function () {
+                overlay.style.display = 'flex';
+            }, false);
+        });
+
+        // Ocultar overlay cuando se sale de la zona
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, function () {
+                overlay.style.display = 'none';
+            }, false);
+        });
+
+        // Manejar el drop
+        dropZone.addEventListener('drop', function (e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+
+            if (files.length > 0) {
+                const file = files[0];
+                processOCFile(dealId, file);
+            }
+        }, false);
+        }) ();
+
+        // ==================== PRIMER CORREO AL CLIENTE ====================
+
+        function saveFirstEmailDraft() {
+            const to = document.getElementById('firstEmailTo').value.trim();
+            const cc = document.getElementById('firstEmailCc').value.trim();
+            const subject = document.getElementById('firstEmailSubject').value.trim();
+            const body = document.getElementById('firstEmailBody').value.trim();
+            const autoSend = document.getElementById('autoSendEmail').checked ? 1 : 0;
+
+            if (!to) {
+                alert('Por favor ingresa el email del destinatario');
+                return;
+            }
+
+            // Asegurar que el token esté en el subject
+            const dealToken = `[DEAL-${dealId}]`;
+            let finalSubject = subject;
+            if (!finalSubject.includes(dealToken)) {
+                finalSubject = `${finalSubject} ${dealToken}`;
+            }
+
+            fetch(`/api/crm/deal/${dealId}/first-email-draft`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    to: to,
+                    cc: cc,
+                    subject: finalSubject,
+                    body: body,
+                    auto_send_email: autoSend
+                })
+            })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('✅ Borrador guardado correctamente');
+                    } else {
+                        alert('❌ Error: ' + (data.error || 'Error desconocido'));
+                    }
+                })
+                .catch(err => {
+                    console.error('Error saving draft:', err);
+                    alert('❌ Error al guardar borrador');
+                });
+        }
+
+        function sendFirstEmailNow() {
+            const to = document.getElementById('firstEmailTo').value.trim();
+            const cc = document.getElementById('firstEmailCc').value.trim();
+            const subject = document.getElementById('firstEmailSubject').value.trim();
+            const body = document.getElementById('firstEmailBody').value.trim();
+
+            if (!to) {
+                alert('Por favor ingresa el email del destinatario');
+                return;
+            }
+
+            // Asegurar que el token esté en el subject
+            const dealToken = `[DEAL-${dealId}]`;
+            let finalSubject = subject;
+            if (!finalSubject.includes(dealToken)) {
+                finalSubject = `${finalSubject} ${dealToken}`;
+            }
+
+            if (!confirm('¿Enviar correo ahora? Se adjuntará el PDF de la cotización vinculada.')) {
+                return;
+            }
+
+            fetch(`/api/crm/deal/${dealId}/send-first-email`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    to: to,
+                    cc: cc,
+                    subject: finalSubject,
+                    body: body
+                })
+            })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('✅ Correo enviado exitosamente');
+                        // Recargar página para actualizar estado
+                        window.location.reload();
+                    } else {
+                        alert('❌ Error: ' + (data.error || 'Error desconocido'));
+                    }
+                })
+                .catch(err => {
+                    console.error('Error sending email:', err);
+                    alert('❌ Error al enviar correo');
+                });
+        }
+
+        // ==================== ABRIR CORREO (ESTE TRATO) ====================
+
+
+        // ==================== C�DIGO ANTIGUO DEL HISTORIAL - COMPLETAMENTE ELIMINADO ====================
+        // Todo el c�digo del historial antiguo ha sido eliminado y reemplazado por el chat de correos
+        // Las funciones loadEmails(), syncEmails(), viewThreadDetail(), etc. ya no existen
+        // Ahora se usa loadEmailMessages() y syncClientEmails() del nuevo chat
+
+        // Funciones para el lightbox de imágenes
+        function openImageLightbox(index) {
+            if (!window.dealImagenes || !window.dealImagenes[index]) return;
+            var imagen = window.dealImagenes[index];
+            var lightbox = document.getElementById('imageLightbox');
+            var lightboxImg = document.getElementById('lightboxImage');
+            var lightboxTitle = document.getElementById('lightboxTitle');
+
+            if (lightbox && lightboxImg && lightboxTitle) {
+                lightboxImg.src = imagen.src;
+                lightboxTitle.textContent = imagen.nombre;
+                lightbox.classList.add('show');
+                document.body.style.overflow = 'hidden'; // Prevenir scroll del body
+            }
+        }
+
+        function closeImageLightbox(event) {
+            // Si se hace clic en el botón de cerrar, no propagar el evento
+            if (event && event.target && event.target.classList.contains('image-lightbox-close')) {
+                event.stopPropagation();
+            }
+
+            var lightbox = document.getElementById('imageLightbox');
+            if (lightbox) {
+                lightbox.classList.remove('show');
+                document.body.style.overflow = ''; // Restaurar scroll del body
+            }
+        }
+
+        // Cerrar con tecla ESC
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape') {
+                var lightbox = document.getElementById('imageLightbox');
+                if (lightbox && lightbox.classList.contains('show')) {
+                    closeImageLightbox();
+                }
+            }
+        });
+    </script>
+
+    <!-- Image Lightbox Modal -->
+    <div id="imageLightbox" class="image-lightbox" onclick="closeImageLightbox(event)">
+        <div class="image-lightbox-content" onclick="event.stopPropagation()">
+            <button class="image-lightbox-close" onclick="closeImageLightbox(event)" title="Cerrar (ESC)">×</button>
+            <img id="lightboxImage" src="" alt="Vista previa">
+            <div class="image-lightbox-title" id="lightboxTitle"></div>
+        </div>
+    </div>
+</body>
+
+</html>

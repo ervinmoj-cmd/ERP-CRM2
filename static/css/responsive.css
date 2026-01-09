@@ -1,0 +1,214 @@
+/*
+ * INAIR ERP - Responsive CSS
+ * Estilos globales para móvil y tablet
+ * Solo afecta apariencia visual, no funcionalidad
+ */
+
+/* ========================================
+   MÓVIL (max-width: 576px)
+   ======================================== */
+@media (max-width: 576px) {
+
+  /* Container con padding reducido */
+  .container,
+  .container-fluid {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  /* Cards con sombra más sutil */
+  .card {
+    border-radius: 12px;
+    margin-bottom: 1rem;
+  }
+
+  /* Botones en grupos se apilan verticalmente */
+  .btn-group-vertical-mobile {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .btn-group-vertical-mobile .btn {
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+
+  /* Tablas con scroll horizontal */
+  .table-responsive {
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* IMPORTANTE: Hacer que TODAS las tablas dentro de table-container tengan scroll */
+  .table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* También aplicar a tablas directas en admin (NO en formularios .card) */
+  .table-container>table,
+  .admin-container>table {
+    min-width: 600px;
+  }
+
+
+  /* Texto de tabla más pequeño - SOLO en páginas admin */
+  .table-container .table {
+    font-size: 0.85rem;
+  }
+
+  .table-container .table th,
+  .table-container .table td {
+    padding: 0.5rem 0.4rem;
+    white-space: nowrap;
+  }
+
+  /* Formularios: inputs de ancho completo */
+  .form-control,
+  .form-select {
+    font-size: 16px;
+    /* Evita zoom en iOS */
+  }
+
+  /* Badges más pequeños */
+  .badge {
+    font-size: 0.7rem;
+    padding: 0.3em 0.5em;
+  }
+
+  /* Modales más pequeños */
+  .modal-dialog {
+    margin: 0.5rem;
+  }
+
+  /* Headers de página */
+  h1,
+  .h1 {
+    font-size: 1.5rem;
+  }
+
+  h2,
+  .h2 {
+    font-size: 1.3rem;
+  }
+
+  h3,
+  .h3 {
+    font-size: 1.15rem;
+  }
+
+  h4,
+  .h4 {
+    font-size: 1rem;
+  }
+
+  /* Flexbox: permitir wrap en móvil */
+  .d-flex.gap-2,
+  .d-flex.gap-3 {
+    flex-wrap: wrap;
+  }
+
+  /* Botones de acción más pequeños */
+  .btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+  }
+
+  /* Ocultar texto en botones pequeños, solo iconos */
+  .btn-icon-only-mobile .btn-text {
+    display: none;
+  }
+
+  /* Kanban cards más compactas */
+  .kanban-card {
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+  }
+
+  /* Sidebar oculta por defecto en móvil */
+  .sidebar-mobile-hidden {
+    display: none;
+  }
+}
+
+/* ========================================
+   TABLET (577px - 992px)
+   ======================================== */
+@media (min-width: 577px) and (max-width: 992px) {
+
+  /* Container con padding moderado */
+  .container {
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+
+  /* Tablas con mejor espaciado */
+  .table th,
+  .table td {
+    padding: 0.6rem 0.5rem;
+  }
+
+  /* Formularios */
+  .form-control,
+  .form-select {
+    height: 40px;
+  }
+
+  /* Grids de 2 columnas en lugar de 3-4 */
+  .col-tablet-6 {
+    flex: 0 0 50%;
+    max-width: 50%;
+  }
+}
+
+/* ========================================
+   UTILIDADES RESPONSIVE
+   ======================================== */
+
+/* Ocultar en móvil */
+@media (max-width: 576px) {
+  .hide-mobile {
+    display: none !important;
+  }
+}
+
+/* Ocultar en tablet */
+@media (min-width: 577px) and (max-width: 992px) {
+  .hide-tablet {
+    display: none !important;
+  }
+}
+
+/* Mostrar solo en móvil */
+@media (min-width: 577px) {
+  .show-mobile-only {
+    display: none !important;
+  }
+}
+
+/* Texto truncado con ellipsis */
+.text-truncate-mobile {
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (min-width: 577px) {
+  .text-truncate-mobile {
+    max-width: none;
+  }
+}
+
+/* Stack elements vertically on mobile */
+@media (max-width: 576px) {
+  .stack-mobile {
+    flex-direction: column !important;
+  }
+
+  .stack-mobile>* {
+    width: 100% !important;
+    margin-bottom: 0.5rem;
+  }
+}

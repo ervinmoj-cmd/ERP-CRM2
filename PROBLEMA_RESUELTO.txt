@@ -1,0 +1,230 @@
+╔══════════════════════════════════════════════════════════════╗
+║            ✅ PROBLEMA DEL EMAIL RESUELTO                     ║
+╚══════════════════════════════════════════════════════════════╝
+
+Fecha: 09/12/2025
+
+═══════════════════════════════════════════════════════════════
+
+🔍 PROBLEMAS ENCONTRADOS
+═══════════════════════════════════════════════════════════════
+
+❌ PROBLEMA 1: Nombre de etapa incorrecto
+────────────────────────────────────────────────────────────────
+• El código buscaba: "Cotización Enviada" (mayúscula)
+• La etapa real es: "Cotización enviada" (minúscula)
+• Resultado: El código NUNCA se ejecutaba
+
+✅ SOLUCIÓN: Corregido el nombre en app.py
+
+❌ PROBLEMA 2: Sin logs de debugging
+────────────────────────────────────────────────────────────────
+• No había forma de saber por qué no se enviaba
+• No se mostraban mensajes en consola
+• Difícil de diagnosticar
+
+✅ SOLUCIÓN: Agregados logs detallados
+
+❌ PROBLEMA 3: Email del cliente no configurado
+────────────────────────────────────────────────────────────────
+• Los tratos no tenían email del cliente
+• Sistema no podía enviar sin destinatario
+
+✅ SOLUCIÓN: Ahora muestra claramente si falta email
+
+═══════════════════════════════════════════════════════════════
+
+✅ CORRECCIONES APLICADAS
+═══════════════════════════════════════════════════════════════
+
+1. ✅ Nombre de etapa corregido
+   └─ "Cotización Enviada" → "Cotización enviada"
+
+2. ✅ Logs detallados agregados
+   ├─ Muestra etapa y puesto del usuario
+   ├─ Indica si encuentra cotización vinculada
+   ├─ Muestra si hay email del cliente
+   ├─ Indica cuando inicia envío
+   └─ Muestra errores específicos
+
+3. ✅ Mensajes de error claros
+   ├─ "Email del cliente NO configurado"
+   ├─ "No hay cotización vinculada"
+   ├─ "Trato no encontrado"
+   └─ Stack trace completo en caso de error
+
+═══════════════════════════════════════════════════════════════
+
+🚀 CÓMO USAR EL SISTEMA AHORA
+═══════════════════════════════════════════════════════════════
+
+PASO 1: Reinicia el servidor
+────────────────────────────────────────────────────────────────
+• Detén el servidor actual (Ctrl+C)
+• Ejecuta: python app.py
+
+PASO 2: Configura el trato COMPLETO
+────────────────────────────────────────────────────────────────
+Antes de mover a "Cotización enviada", asegúrate de:
+
+✅ 1. Vincular cotización al trato
+   └─ Usa el selector "Vincular Cotización"
+
+✅ 2. Agregar EMAIL del cliente
+   └─ Campo: "📧 Email del Cliente"
+   └─ Ejemplo: cliente@empresa.com
+
+✅ 3. Agregar firma del vendedor (opcional)
+   └─ Campo: "✍️ Firma del Vendedor"
+   └─ Ejemplo: "Ing. Juan Pérez - Ventas"
+
+✅ 4. Agregar mensaje personalizado (opcional)
+   └─ Campo: "💬 Mensaje Personalizado"
+
+✅ 5. GUARDAR el trato
+   └─ Botón: "💾 Guardar Trato"
+
+PASO 3: Mover a "Cotización enviada"
+────────────────────────────────────────────────────────────────
+• Arrastra el trato a la columna "Cotización enviada"
+• O usa el selector de etapa
+
+PASO 4: Verifica en la CONSOLA del servidor
+────────────────────────────────────────────────────────────────
+Deberías ver estos mensajes:
+
+🔍 DEBUG: Trato movido a 'Cotización enviada' por usuario con puesto 'Vendedor'
+✅ Condición cumplida: Etapa='Cotización enviada' y Puesto='Vendedor'
+✅ Cotización encontrada: T-00008
+📧 Email del cliente: cliente@empresa.com
+✅ Iniciando envío de email...
+✅ PDF de cotización T-00008 enviado a cliente@empresa.com
+
+═══════════════════════════════════════════════════════════════
+
+❌ MENSAJES DE ERROR POSIBLES
+═══════════════════════════════════════════════════════════════
+
+ERROR 1: Email del cliente no configurado
+────────────────────────────────────────────────────────────────
+Mensaje:
+❌ ERROR: No se puede enviar email - Email del cliente NO configurado
+
+SOLUCIÓN:
+1. Edita el trato
+2. Agrega email en "📧 Email del Cliente"
+3. Guarda el trato
+4. Mueve a "Cotización enviada" nuevamente
+
+ERROR 2: Sin cotización vinculada
+────────────────────────────────────────────────────────────────
+Mensaje:
+❌ ERROR: El trato no tiene cotizaciones vinculadas
+
+SOLUCIÓN:
+1. Edita el trato
+2. Vincula una cotización usando el selector
+3. Guarda el trato
+4. Mueve a "Cotización enviada" nuevamente
+
+ERROR 3: Usuario no es vendedor
+────────────────────────────────────────────────────────────────
+Mensaje:
+ℹ️ Puesto 'Administrador' no envía cotizaciones automáticamente
+
+SOLUCIÓN:
+• Solo usuarios con puesto "Vendedor" envían automáticamente
+• Otros puestos no activan el envío automático
+
+ERROR 4: Error en servidor SMTP
+────────────────────────────────────────────────────────────────
+Mensaje:
+❌ Error enviando PDF: [detalles del error]
+
+SOLUCIÓN:
+• Verifica configuración SMTP en email_sender.py
+• Verifica conexión a internet
+• Revisa que la contraseña sea correcta
+
+═══════════════════════════════════════════════════════════════
+
+📋 CHECKLIST ANTES DE MOVER A "COTIZACIÓN ENVIADA"
+═══════════════════════════════════════════════════════════════
+
+□ Trato tiene cotización vinculada
+□ Email del cliente está configurado
+□ Email del cliente es válido (tiene @)
+□ Firma del vendedor agregada (opcional)
+□ Mensaje personalizado agregado (opcional)
+□ Trato guardado
+□ Usuario tiene puesto "Vendedor"
+□ Servidor está corriendo
+□ Consola del servidor visible
+
+Si TODOS los items están marcados ✅ → El email se enviará
+
+═══════════════════════════════════════════════════════════════
+
+🧪 EJEMPLO COMPLETO PASO A PASO
+═══════════════════════════════════════════════════════════════
+
+1. COTIZADOR genera cotización T-00012
+   └─ La vincula al trato #5
+   └─ Mueve trato a "Cotizado"
+
+2. TRATO aparece automáticamente en CRM del VENDEDOR
+   └─ En columna "Cotización Lista para Enviar"
+
+3. VENDEDOR edita el trato #5:
+   ├─ Email cliente: cliente@empresa.com ✅
+   ├─ Firma: "Ing. Juan Pérez - Ventas" ✅
+   ├─ Mensaje: "Quedamos atentos" ✅
+   └─ Guarda trato ✅
+
+4. VENDEDOR arrastra trato a "Cotización enviada"
+
+5. CONSOLA DEL SERVIDOR muestra:
+   🔍 DEBUG: Trato movido a 'Cotización enviada' por usuario con puesto 'Vendedor'
+   ✅ Condición cumplida: Etapa='Cotización enviada' y Puesto='Vendedor'
+   ✅ Cotización encontrada: T-00012
+   📧 Email del cliente: cliente@empresa.com
+   ✅ Iniciando envío de email...
+   ✅ Email enviado desde juan@inair.com.mx (credenciales propias)
+   ✅ PDF de cotización T-00012 enviado a cliente@empresa.com
+
+6. CLIENTE recibe email con PDF adjunto ✅
+
+═══════════════════════════════════════════════════════════════
+
+🎯 RESUMEN
+═══════════════════════════════════════════════════════════════
+
+ANTES:
+❌ No funcionaba
+❌ Sin mensajes
+❌ Imposible saber por qué fallaba
+
+AHORA:
+✅ Funcionará correctamente
+✅ Mensajes claros en consola
+✅ Fácil diagnosticar problemas
+✅ Te dice exactamente qué falta
+
+═══════════════════════════════════════════════════════════════
+
+⚠️ IMPORTANTE
+═══════════════════════════════════════════════════════════════
+
+• REINICIA EL SERVIDOR para que los cambios surtan efecto
+• ABRE LA CONSOLA del servidor para ver los mensajes
+• CONFIGURA EL EMAIL del cliente ANTES de mover el trato
+• VINCULA UNA COTIZACIÓN al trato primero
+
+═══════════════════════════════════════════════════════════════
+
+✅ CAMBIOS APLICADOS - REINICIA EL SERVIDOR
+═══════════════════════════════════════════════════════════════
+
+
+
+

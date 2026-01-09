@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nueva Factura - INAIR</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+    <style>
+        .form-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        .form-group input[readonly] {
+            background: #f8f9fa;
+            color: #6c757d;
+        }
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        .btn-container {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+        .partidas-section {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        .partidas-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            background: white;
+        }
+        .partidas-table th,
+        .partidas-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        .partidas-table th {
+            background: #2c3e50;
+            color: white;
+            font-weight: 600;
+        }
+        .partidas-table tbody tr:hover {
+            background: #f8f9fa;
+        }
+        .btn-delete-partida {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .btn-delete-partida:hover {
+            background: #c0392b;
+        }
+        .totals-box {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .total-row.final {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #27ae60;
+            border-top: 2px solid #27ae60;
+            border-bottom: none;
+            margin-top: 10px;
+        }
+        .empty-partidas {
+            text-align: center;
+            padding: 40px;
+            color: #95a5a6;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="admin-container">
+        <div class="admin-header">
+            <h1>📄 Nueva Factura</h1>
+            <div class="header-actions">
+                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="history.back()">Atrás</button>
+                <a href="{{ url_for('admin_facturas') }}" class="btn btn-secondary btn-sm">← Volver</a>
+            </div>
+        </div>
+
+        <div class="form-container">
+            <form method="POST" id="facturaForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="numero_factura">Número de Factura (Automático)</label>
+                        <input type="text" id="numero_factura" name="numero_factura" value="{{ next_folio }}" readonly>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="fecha_emision">Fecha de Emisión *</label>
+                        <input type="date" id="fecha_emision" name="fecha_emision" value="{{ now().strftime('%Y-%m-%d') }}" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="cliente_id">Cliente *</label>
+                        <select id="cliente_id" name="cliente_id" onchange="onClienteChange()" required>
+                            <option value="">-- Seleccionar cliente --</option>
+                            {% for c in clientes %}
+                            <option value="{{ c.id }}" data-nombre="{{ c.nombre }}" data-rfc="{{ c.rfc or '' }}">{{ c.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="cliente_nombre">Nombre del Cliente *</label>
+                        <input type="text" id="cliente_nombre" name="cliente_nombre" required readonly>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="cliente_rfc">RFC del Cliente</label>
+                        <input type="text" id="cliente_rfc" name="cliente_rfc" readonly>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="cotizacion_id">Cotización Relacionada *</label>
+                        <select id="cotizacion_id" name="cotizacion_id" onchange="onCotizacionChange()" required>
+                            <option value="">-- Seleccione un cliente primero --</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="iva_porcentaje">IVA (%) *</label>
+                        <input type="number" step="0.01" id="iva_porcentaje" name="iva_porcentaje" value="16" required readonly>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="fecha_vencimiento">Fecha de Vencimiento</label>
+                        <input type="date" id="fecha_vencimiento" name="fecha_vencimiento">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="metodo_pago">Método de Pago</label>
+                        <select id="metodo_pago" name="metodo_pago">
+                            <option value="">-- Seleccionar --</option>
+                            <option value="Transferencia">Transferencia</option>
+                            <option value="Efectivo">Efectivo</option>
+                            <option value="Cheque">Cheque</option>
+                            <option value="Tarjeta">Tarjeta</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label for="notas">Notas</label>
+                        <textarea id="notas" name="notas"></textarea>
+                    </div>
+                </div>
+
+                <!-- Partidas Section -->
+                <div class="partidas-section">
+                    <h2>Partidas de la Factura</h2>
+                    <div id="partidasContainer">
+                        <div class="empty-partidas">
+                            <p>📋 Selecciona una cotización para cargar las partidas</p>
+                        </div>
+                    </div>
+
+                    <!-- Totals -->
+                    <div class="totals-box" id="totalsBox" style="display: none;">
+                        <div class="total-row">
+                            <span>Subtotal:</span>
+                            <strong id="subtotalDisplay">$0.00</strong>
+                        </div>
+                        <div class="total-row">
+                            <span>IVA (<span id="ivaPercent">16</span>%):</span>
+                            <strong id="ivaDisplay">$0.00</strong>
+                        </div>
+                        <div class="total-row final">
+                            <span>TOTAL:</span>
+                            <strong id="totalDisplay">$0.00</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hidden field for partidas JSON -->
+                <input type="hidden" id="partidas_json" name="partidas_json" value="[]">
+
+                <div class="btn-container">
+                    <a href="{{ url_for('admin_facturas') }}" class="btn btn-secondary">Cancelar</a>
+                    <button type="submit" class="btn btn-primary" id="submitBtn" disabled>Crear Factura</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let partidas = [];
+
+        function onClienteChange() {
+            const select = document.getElementById('cliente_id');
+            const option = select.options[select.selectedIndex];
+            const clienteId = option.value;
+            
+            if (clienteId) {
+                // Load client info
+                document.getElementById('cliente_nombre').value = option.dataset.nombre || '';
+                document.getElementById('cliente_rfc').value = option.dataset.rfc || '';
+                
+                // Load available cotizaciones for this client
+                loadCotizaciones(clienteId);
+            } else {
+                document.getElementById('cliente_nombre').value = '';
+                document.getElementById('cliente_rfc').value = '';
+                document.getElementById('cotizacion_id').innerHTML = '<option value="">-- Seleccione un cliente primero --</option>';
+                clearPartidas();
+            }
+        }
+
+        function loadCotizaciones(clienteId) {
+            fetch(`/api/finanzas/cotizaciones/${clienteId}`)
+                .then(response => response.json())
+                .then(data => {
+                    const select = document.getElementById('cotizacion_id');
+                    select.innerHTML = '<option value="">-- Seleccionar cotización --</option>';
+                    
+                    if (data.success && data.cotizaciones.length > 0) {
+                        data.cotizaciones.forEach(cot => {
+                            const option = document.createElement('option');
+                            option.value = cot.id;
+                            option.textContent = `${cot.folio} - ${cot.cliente} ($${parseFloat(cot.total).toFixed(2)})`;
+                            select.appendChild(option);
+                        });
+                    } else {
+                        select.innerHTML = '<option value="">No hay cotizaciones disponibles</option>';
+                    }
+                    
+                    clearPartidas();
+                })
+                .catch(error => {
+                    console.error('Error loading cotizaciones:', error);
+                    alert('Error al cargar cotizaciones');
+                });
+        }
+
+        function onCotizacionChange() {
+            const cotizacionId = document.getElementById('cotizacion_id').value;
+            
+            if (cotizacionId) {
+                loadPartidas(cotizacionId);
+            } else {
+                clearPartidas();
+            }
+        }
+
+        function loadPartidas(cotizacionId) {
+            fetch(`/api/finanzas/cotizacion/${cotizacionId}/partidas`)
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Respuesta de API:', data);
+                    if (data.success) {
+                        partidas = data.partidas || [];
+                        console.log('Partidas cargadas:', partidas);
+                        document.getElementById('iva_porcentaje').value = data.iva_porcentaje || 16;
+                        renderPartidas();
+                        updateTotals();
+                        document.getElementById('submitBtn').disabled = partidas.length === 0;
+                    } else {
+                        console.error('Error en respuesta:', data.error);
+                        alert('Error: ' + (data.error || 'No se pudieron cargar las partidas'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading partidas:', error);
+                    alert('Error al cargar partidas de la cotización');
+                });
+        }
+
+        function renderPartidas() {
+            const container = document.getElementById('partidasContainer');
+            
+            if (partidas.length === 0) {
+                container.innerHTML = '<div class="empty-partidas"><p>No hay partidas en esta cotización</p></div>';
+                document.getElementById('totalsBox').style.display = 'none';
+                return;
+            }
+
+            let html = '<table class="partidas-table"><thead><tr>';
+            html += '<th>Código</th>';
+            html += '<th>Descripción</th>';
+            html += '<th>Cantidad</th>';
+            html += '<th>Unidad</th>';
+            html += '<th>Precio Unitario</th>';
+            html += '<th>Subtotal</th>';
+            html += '<th>Acciones</th>';
+            html += '</tr></thead><tbody>';
+
+            partidas.forEach((partida, index) => {
+                html += `<tr>
+                    <td>${partida.codigo || 'N/A'}</td>
+                    <td>${partida.descripcion || partida.refaccion || 'Sin descripción'}</td>
+                    <td>${partida.cantidad || 1}</td>
+                    <td>${partida.unidad || 'SER'}</td>
+                    <td>$${parseFloat(partida.precio_unitario || partida.precio || 0).toFixed(2)}</td>
+                    <td>$${parseFloat(partida.subtotal || partida.total || 0).toFixed(2)}</td>
+                    <td><button type="button" class="btn-delete-partida" onclick="deletePartida(${index})">Eliminar</button></td>
+                </tr>`;
+            });
+
+            html += '</tbody></table>';
+            container.innerHTML = html;
+            document.getElementById('totalsBox').style.display = 'block';
+        }
+
+        function deletePartida(index) {
+            if (confirm('¿Eliminar esta partida?')) {
+                partidas.splice(index, 1);
+                renderPartidas();
+                updateTotals();
+                document.getElementById('submitBtn').disabled = partidas.length === 0;
+            }
+        }
+
+        function updateTotals() {
+            // Normalize partidas to have consistent field names - INCLUIR TODOS LOS CAMPOS
+            const normalizedPartidas = partidas.map(p => ({
+                codigo: p.codigo || 'N/A',
+                descripcion: p.descripcion || p.refaccion || 'Sin descripción',
+                cantidad: parseFloat(p.cantidad || 1),
+                unidad: p.unidad || 'SER',
+                precio_unitario: parseFloat(p.precio_unitario || p.precio || 0),
+                subtotal: parseFloat(p.subtotal || p.total || 0)
+            }));
+
+            const subtotal = normalizedPartidas.reduce((sum, p) => sum + p.subtotal, 0);
+            const ivaPercent = parseFloat(document.getElementById('iva_porcentaje').value) || 16;
+            const iva = subtotal * (ivaPercent / 100);
+            const total = subtotal + iva;
+
+            document.getElementById('subtotalDisplay').textContent = '$' + subtotal.toFixed(2);
+            document.getElementById('ivaPercent').textContent = ivaPercent.toFixed(2);
+            document.getElementById('ivaDisplay').textContent = '$' + iva.toFixed(2);
+            document.getElementById('totalDisplay').textContent = '$' + total.toFixed(2);
+
+            // Update hidden field
+            document.getElementById('partidas_json').value = JSON.stringify(normalizedPartidas);
+        }
+
+        function clearPartidas() {
+            partidas = [];
+            renderPartidas();
+            document.getElementById('submitBtn').disabled = true;
+        }
+
+        // Prevent form submission if no partidas
+        document.getElementById('facturaForm').addEventListener('submit', function(e) {
+            if (partidas.length === 0) {
+                e.preventDefault();
+                alert('Debe seleccionar una cotización con partidas');
+                return false;
+            }
+        });
+    </script>
+</body>
+</html>

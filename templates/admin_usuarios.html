@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Usuarios - INAIR</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+    <style>
+        .puesto-container {
+            position: relative;
+        }
+
+        .puesto-wrapper {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .puesto-wrapper select {
+            flex: 1;
+        }
+
+        .btn-add-puesto {
+            padding: 8px 12px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.2s;
+        }
+
+        .btn-add-puesto:hover {
+            background: #218838;
+        }
+
+        .new-puesto-input {
+            display: none;
+            margin-top: 8px;
+        }
+
+        .new-puesto-input.show {
+            display: flex;
+            gap: 8px;
+        }
+
+        .new-puesto-input input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+        }
+
+        .btn-info {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .btn-info:hover {
+            background: #138496;
+        }
+
+        .alert {
+            padding: 12px 20px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-danger {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert.show {
+            display: block;
+        }
+
+        /* Mobile Responsive Fixes */
+        @media (max-width: 768px) {
+            .admin-header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+
+            .user-info {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+                width: 100%;
+            }
+
+            .user-info .btn {
+                width: 100%;
+                margin: 0 !important;
+            }
+
+            .table-container {
+                padding: 10px;
+            }
+
+            .table-response-wrapper {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                margin-bottom: 20px;
+                border-radius: 8px;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            }
+
+            table {
+                min-width: 800px;
+                /* Force minimum width to trigger scroll */
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="admin-container">
+        <div class="admin-header">
+            <h1>👤 Gestión de Usuarios</h1>
+            <div class="user-info">
+                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="history.back()">Atrás</button>
+                <a href="{{ url_for('dashboard_redirect') }}" class="btn btn-secondary btn-sm">Volver al Panel</a>
+                <a href="{{ url_for('logout') }}" class="btn btn-danger btn-sm">Cerrar Sesión</a>
+            </div>
+        </div>
+
+        <div id="alert-success" class="alert alert-success"></div>
+        <div id="alert-danger" class="alert alert-danger"></div>
+
+        <div class="table-container">
+            <div class="table-header">
+                <h2>Lista de Usuarios</h2>
+                <button class="btn btn-primary" onclick="openModal('addUserModal')">+ Agregar Usuario</button>
+            </div>
+
+            <div class="table-response-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Usuario</th>
+                            <th>Nombre</th>
+                            <th>Puesto</th>
+                            <th>Teléfono</th>
+                            <th>Email</th>
+                            <th>Prefijo</th>
+                            <th>Rol</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                        <tr>
+                            <td><strong>{{ user.username }}</strong></td>
+                            <td>{{ user.nombre }}</td>
+                            <td>{{ user.puesto or '-' }}</td>
+                            <td>{{ user.telefono or '-' }}</td>
+                            <td>{{ user.email or '-' }}</td>
+                            <td><span class="badge badge-admin">{{ user.prefijo }}</span></td>
+                            <td>
+                                {% if user.role == 'admin' %}
+                                <span class="badge badge-admin">Administrador</span>
+                                {% else %}
+                                <span class="badge badge-technician">Técnico</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-info"
+                                    onclick="editUser({{ user.id }}, '{{ user.username }}', '{{ user.nombre }}', '{{ user.prefijo }}', '{{ user.role }}', '{{ user.puesto or '' }}', '{{ user.telefono or '' }}', '{{ user.email or '' }}', '{{ user.email_smtp or '' }}', `{{ (user.firma_email or '') | replace('`', '\\`') | replace('\n', '\\n') }}`)">Editar</button>
+                                {% if user.username != session.user %}
+                                <button class="btn btn-sm btn-danger"
+                                    onclick="deleteUser({{ user.id }}, '{{ user.username }}')">Eliminar</button>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add User Modal -->
+    <div id="addUserModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Agregar Usuario</h2>
+                <button class="close-modal" onclick="closeModal('addUserModal')">&times;</button>
+            </div>
+            <form method="POST" action="{{ url_for('admin_usuarios_nuevo') }}" autocomplete="off">
+                <div class="form-group">
+                    <label>Usuario (login) *</label>
+                    <input type="text" name="username" required pattern="[a-z0-9]+"
+                        title="Solo letras minúsculas y números" autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label>Contraseña *</label>
+                    <input type="password" name="password" required minlength="6" autocomplete="new-password">
+                </div>
+                <div class="form-group">
+                    <label>Nombre Completo *</label>
+                    <input type="text" name="nombre" required autocomplete="off">
+                </div>
+                <div class="form-group puesto-container">
+                    <label>Puesto</label>
+                    <div class="puesto-wrapper">
+                        <select name="puesto" id="add_puesto">
+                            <option value="">-- Seleccionar --</option>
+                            {% for puesto in puestos %}
+                            <option value="{{ puesto.nombre }}">{{ puesto.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                        <button type="button" class="btn-add-puesto" onclick="toggleNewPuesto('add')"
+                            title="Agregar nuevo puesto">+</button>
+                    </div>
+                    <div class="new-puesto-input" id="new-puesto-add">
+                        <input type="text" id="new-puesto-name-add" placeholder="Nombre del nuevo puesto...">
+                        <button type="button" class="btn btn-success btn-sm"
+                            onclick="createNewPuesto('add')">Crear</button>
+                        <button type="button" class="btn btn-secondary btn-sm"
+                            onclick="toggleNewPuesto('add')">Cancelar</button>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Teléfono</label>
+                        <input type="tel" name="telefono" autocomplete="off">
+                    </div>
+                    <div class="form-group">
+                        <label>Email Personal</label>
+                        <input type="email" name="email" autocomplete="off">
+                    </div>
+                </div>
+
+                <!-- SMTP Configuration Section -->
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                    <h4 style="color: #d20000; margin-bottom: 10px; font-size: 0.9em;">
+                        📧 Configuración SMTP (para envío de emails)
+                    </h4>
+                    <p style="font-size: 0.85em; color: #666; margin-bottom: 10px;">
+                        Opcional: Solo completa si este usuario enviará emails automáticos (cotizaciones, reportes,
+                        etc.)
+                    </p>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Email SMTP</label>
+                            <input type="email" name="email_smtp" placeholder="usuario@inair.com.mx" autocomplete="off">
+                            <small style="color: #888;">Email corporativo para envíos</small>
+                        </div>
+                        <div class="form-group">
+                            <label>Contraseña SMTP</label>
+                            <input type="password" name="password_smtp" autocomplete="new-password">
+                            <small style="color: #888;">Contraseña del email corporativo</small>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>✍️ Firma de Email (Texto)</label>
+                        <textarea name="firma_email" rows="4"
+                            placeholder="Ej: Ing. Juan Pérez&#10;Gerente de Ventas&#10;INAIR&#10;Tel: (123) 456-7890"></textarea>
+                        <small style="color: #888;">Esta firma se agregará automáticamente en los emails que envíes.
+                            Puedes incluir HTML para dar formato.</small>
+                    </div>
+                    <div class="form-group">
+                        <label>🖼️ Logo/Imagen de Firma</label>
+                        <input type="file" name="firma_imagen" accept="image/*"
+                            onchange="previewFirmaImage(this, 'preview-new')">
+                        <small style="color: #888;">Sube tu logo o imagen de firma (PNG, JPG). Se incluirá
+                            automáticamente en los emails.</small>
+                        <div id="preview-new" style="margin-top: 10px;"></div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Prefijo (para folios) *</label>
+                        <input type="text" name="prefijo" required maxlength="2" pattern="[A-Z]+"
+                            title="1-2 letras mayúsculas" autocomplete="off">
+                    </div>
+                    <div class="form-group">
+                        <label>Rol *</label>
+                        <select name="role" required>
+                            <option value="technician">Técnico</option>
+                            <option value="admin">Administrador</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">Crear Usuario</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit User Modal -->
+    <div id="editUserModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Editar Usuario: <span id="edit_username_display"></span></h2>
+                <button class="close-modal" onclick="closeModal('editUserModal')">&times;</button>
+            </div>
+            <form id="editUserForm" method="POST" autocomplete="off" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label>Nueva Contraseña (dejar vacío para mantener actual)</label>
+                    <input type="password" name="password" minlength="6" autocomplete="new-password">
+                </div>
+                <div class="form-group">
+                    <label>Nombre Completo *</label>
+                    <input type="text" name="nombre" id="edit_nombre" required autocomplete="off">
+                </div>
+                <div class="form-group puesto-container">
+                    <label>Puesto</label>
+                    <div class="puesto-wrapper">
+                        <select name="puesto" id="edit_puesto">
+                            <option value="">-- Seleccionar --</option>
+                            {% for puesto in puestos %}
+                            <option value="{{ puesto.nombre }}">{{ puesto.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                        <button type="button" class="btn-add-puesto" onclick="toggleNewPuesto('edit')"
+                            title="Agregar nuevo puesto">+</button>
+                    </div>
+                    <div class="new-puesto-input" id="new-puesto-edit">
+                        <input type="text" id="new-puesto-name-edit" placeholder="Nombre del nuevo puesto...">
+                        <button type="button" class="btn btn-success btn-sm"
+                            onclick="createNewPuesto('edit')">Crear</button>
+                        <button type="button" class="btn btn-secondary btn-sm"
+                            onclick="toggleNewPuesto('edit')">Cancelar</button>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Teléfono</label>
+                        <input type="tel" name="telefono" id="edit_telefono" autocomplete="off">
+                    </div>
+                    <div class="form-group">
+                        <label>Email Personal</label>
+                        <input type="email" name="email" id="edit_email" autocomplete="off">
+                    </div>
+                </div>
+
+                <!-- SMTP Configuration Section -->
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                    <h4 style="color: #d20000; margin-bottom: 10px; font-size: 0.9em;">
+                        📧 Configuración SMTP (para envío de emails)
+                    </h4>
+                    <p style="font-size: 0.85em; color: #666; margin-bottom: 10px;">
+                        Opcional: Solo completa si este usuario enviará emails automáticos (cotizaciones, reportes,
+                        etc.)
+                    </p>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Email SMTP</label>
+                            <input type="email" name="email_smtp" id="edit_email_smtp"
+                                placeholder="usuario@inair.com.mx" autocomplete="off">
+                            <small style="color: #888;">Email corporativo para envíos</small>
+                        </div>
+                        <div class="form-group">
+                            <label>Contraseña SMTP</label>
+                            <input type="password" name="password_smtp" id="edit_password_smtp"
+                                placeholder="Dejar vacío para mantener actual" autocomplete="new-password">
+                            <small style="color: #888;">Contraseña del email corporativo</small>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>✍️ Firma de Email (Texto)</label>
+                        <textarea name="firma_email" id="edit_firma_email" rows="4"
+                            placeholder="Ej: Ing. Juan Pérez&#10;Gerente de Ventas&#10;INAIR&#10;Tel: (123) 456-7890"></textarea>
+                        <small style="color: #888;">Esta firma se agregará automáticamente en los emails que envíes.
+                            Puedes incluir HTML para dar formato.</small>
+                    </div>
+                    <div class="form-group">
+                        <label>🖼️ Logo/Imagen de Firma</label>
+                        <input type="file" name="firma_imagen" id="edit_firma_imagen" accept="image/*"
+                            onchange="previewFirmaImage(this, 'preview-edit')">
+                        <small style="color: #888;">Sube tu logo o imagen de firma (PNG, JPG). Dejar vacío para mantener
+                            la actual.</small>
+                        <div id="preview-edit" style="margin-top: 10px;"></div>
+                        <div id="current-firma-imagen" style="margin-top: 10px;"></div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Prefijo (para folios) *</label>
+                        <input type="text" name="prefijo" id="edit_prefijo" required maxlength="2" pattern="[A-Z]+"
+                            title="1-2 letras mayúsculas" autocomplete="off">
+                    </div>
+                    <div class="form-group">
+                        <label>Rol *</label>
+                        <select name="role" id="edit_role" required>
+                            <option value="technician">Técnico</option>
+                            <option value="admin">Administrador</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function showAlert(type, message) {
+            const alert = document.getElementById('alert-' + type);
+            alert.textContent = message;
+            alert.classList.add('show');
+            setTimeout(() => alert.classList.remove('show'), 4000);
+        }
+
+        function openModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.classList.add('active');
+            if (modalId === 'addUserModal') {
+                const form = modal.querySelector('form');
+                if (form) form.reset();
+                // Hide new puesto input
+                document.getElementById('new-puesto-add').classList.remove('show');
+            }
+        }
+
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.classList.remove('active');
+            // Hide new puesto inputs
+            document.getElementById('new-puesto-add').classList.remove('show');
+            document.getElementById('new-puesto-edit').classList.remove('show');
+        }
+
+        function editUser(id, username, nombre, prefijo, role, puesto, telefono, email, email_smtp, firma_email) {
+            document.getElementById('edit_username_display').textContent = username;
+            document.getElementById('editUserForm').action = '/admin/usuarios/editar/' + id;
+            document.getElementById('edit_nombre').value = nombre;
+            document.getElementById('edit_prefijo').value = prefijo;
+            document.getElementById('edit_role').value = role;
+            document.getElementById('edit_telefono').value = telefono || '';
+            document.getElementById('edit_email').value = email || '';
+            document.getElementById('edit_email_smtp').value = email_smtp || '';
+            document.getElementById('edit_firma_email').value = firma_email || '';
+            // Note: We don't populate password_smtp for security (it stays empty)
+
+            // Set puesto - check if it exists in the select
+            const puestoSelect = document.getElementById('edit_puesto');
+            let found = false;
+            for (let i = 0; i < puestoSelect.options.length; i++) {
+                if (puestoSelect.options[i].value === puesto) {
+                    puestoSelect.value = puesto;
+                    found = true;
+                    break;
+                }
+            }
+            if (!found && puesto) {
+                // Puesto doesn't exist in list, add it temporarily
+                const opt = document.createElement('option');
+                opt.value = puesto;
+                opt.textContent = puesto;
+                puestoSelect.appendChild(opt);
+                puestoSelect.value = puesto;
+            }
+
+            // Hide new puesto input
+            document.getElementById('new-puesto-edit').classList.remove('show');
+
+            openModal('editUserModal');
+        }
+
+        function deleteUser(id, username) {
+            if (confirm(`¿Estás seguro de eliminar al usuario "${username}"?`)) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = `/admin/usuarios/eliminar/${id}`;
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+
+        function toggleNewPuesto(context) {
+            const container = document.getElementById('new-puesto-' + context);
+            container.classList.toggle('show');
+            if (container.classList.contains('show')) {
+                document.getElementById('new-puesto-name-' + context).focus();
+            }
+        }
+
+        function createNewPuesto(context) {
+            const input = document.getElementById('new-puesto-name-' + context);
+            const nombre = input.value.trim();
+
+            if (!nombre) {
+                showAlert('danger', 'Ingresa un nombre para el puesto');
+                input.focus();
+                return;
+            }
+
+            fetch('/api/puestos', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nombre: nombre, permisos: 'formulario' })
+            })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        showAlert('success', 'Puesto "' + nombre + '" creado correctamente');
+
+                        // Add new puesto to both selects
+                        ['add_puesto', 'edit_puesto'].forEach(selectId => {
+                            const select = document.getElementById(selectId);
+                            const opt = document.createElement('option');
+                            opt.value = nombre;
+                            opt.textContent = nombre;
+                            select.appendChild(opt);
+                        });
+
+                        // Select the new puesto in the current context
+                        const currentSelect = document.getElementById(context + '_puesto');
+                        currentSelect.value = nombre;
+
+                        // Hide the input and clear it
+                        input.value = '';
+                        toggleNewPuesto(context);
+                    } else {
+                        showAlert('danger', data.error || 'Error al crear puesto');
+                    }
+                })
+                .catch(() => showAlert('danger', 'Error de conexión'));
+        }
+
+        // Handle Enter key in new puesto input
+        document.querySelectorAll('.new-puesto-input input').forEach(input => {
+            input.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const context = this.id.includes('add') ? 'add' : 'edit';
+                    createNewPuesto(context);
+                }
+            });
+        });
+
+        // Preview signature image before upload
+        function previewFirmaImage(input, previewId) {
+            const preview = document.getElementById(previewId);
+            preview.innerHTML = '';
+
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.style.maxWidth = '300px';
+                    img.style.maxHeight = '150px';
+                    img.style.border = '2px solid #ddd';
+                    img.style.borderRadius = '8px';
+                    img.style.padding = '10px';
+                    img.style.backgroundColor = '#f9f9f9';
+                    preview.appendChild(img);
+
+                    const info = document.createElement('small');
+                    info.textContent = '✅ Imagen cargada - Se guardará al crear/editar el usuario';
+                    info.style.display = 'block';
+                    info.style.color = '#28a745';
+                    info.style.marginTop = '5px';
+                    preview.appendChild(info);
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        window.onclick = function (event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.classList.remove('active');
+                // Hide new puesto inputs
+                document.getElementById('new-puesto-add').classList.remove('show');
+                document.getElementById('new-puesto-edit').classList.remove('show');
+            }
+        }
+    </script>
+</body>
+
+</html>

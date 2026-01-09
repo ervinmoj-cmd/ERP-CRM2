@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cotizaciones - INAIR</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+    <style>
+        .badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            color: white;
+        }
+
+        .badge-usd {
+            background-color: #28a745;
+        }
+
+        .badge-mxn {
+            background-color: #007bff;
+        }
+
+        /* Mobile Responsive Fixes */
+        @media (max-width: 768px) {
+            .admin-header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+
+            .user-info {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+                width: 100%;
+            }
+
+            .user-info .btn {
+                width: 100%;
+                margin: 0 !important;
+            }
+
+            .table-container {
+                padding: 10px;
+            }
+
+            .table-header {
+                flex-direction: column;
+                gap: 15px;
+                align-items: stretch !important;
+            }
+
+            .table-header>div {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            #searchInput {
+                width: 100% !important;
+            }
+
+            .table-response-wrapper {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                margin-bottom: 20px;
+                border-radius: 8px;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            }
+
+            table {
+                min-width: 800px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="admin-container">
+        <div class="admin-header">
+            <h1>📄 Gestión de Cotizaciones</h1>
+            <div class="user-info">
+                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="history.back()">Atrás</button>
+                <a href="{{ url_for('dashboard_redirect') }}" class="btn btn-secondary btn-sm">Volver al Panel</a>
+                <a href="{{ url_for('logout') }}" class="btn btn-danger btn-sm">Cerrar Sesión</a>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <div class="table-header">
+                <div style="display: flex; gap: 10px; align-items: center; flex: 1;">
+                    <h2>Historial de Cotizaciones</h2>
+                    <input type="text" id="searchInput" placeholder="Buscar por folio o cliente..."
+                        style="padding: 8px; border: 1px solid #ddd; border-radius: 4px; width: 300px;"
+                        onkeyup="filterTable()">
+                </div>
+                <a href="{{ url_for('admin_cotizaciones_nueva') }}" class="btn btn-primary">+ Nueva Cotización</a>
+            </div>
+
+            {% if cotizaciones %}
+            <div class="table-response-wrapper">
+                <table id="cotizacionesTable">
+                    <thead>
+                        <tr>
+                            <th>Folio</th>
+                            <th>Fecha</th>
+                            <th>Cliente</th>
+                            <th>Referencia</th>
+                            <th>Total</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for cot in cotizaciones %}
+                        <tr>
+                            <td><strong>{{ cot.folio }}</strong></td>
+                            <td>{{ cot.fecha }}</td>
+                            <td>{{ cot.cliente_nombre }}</td>
+                            <td>{{ cot.referencia }}</td>
+                            <td>
+                                ${{ "%.2f"|format(cot.total) }}
+                                <span
+                                    class="badge {% if cot.moneda == 'USD' %}badge-usd{% else %}badge-mxn{% endif %}">{{
+                                    cot.moneda }}</span>
+                            </td>
+                            <td>
+                                <a href="{{ url_for('admin_cotizaciones_pdf', id=cot.id) }}"
+                                    class="btn btn-sm btn-secondary" target="_blank" title="Vista Previa">👁️</a>
+                                <a href="{{ url_for('admin_cotizaciones_pdf', id=cot.id) }}?download=true"
+                                    class="btn btn-sm btn-primary" title="Descargar">📥</a>
+                                <a href="{{ url_for('admin_cotizaciones_editar', id=cot.id) }}"
+                                    class="btn btn-sm btn-primary">Editar</a>
+                                <button class="btn btn-sm btn-danger"
+                                    onclick="deleteCotizacion({{ cot.id }}, '{{ cot.folio }}')">Eliminar</button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <div style="font-size: 64px; margin-bottom: 20px; opacity: 0.5;">📄</div>
+                <h3>No hay cotizaciones registradas</h3>
+                <p>Crea la primera cotización para tus clientes</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+        function deleteCotizacion(id, folio) {
+            if (confirm(`¿Estás seguro de eliminar la cotización "${folio}"?`)) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = `/admin/cotizaciones/eliminar/${id}`;
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+
+        function filterTable() {
+            const searchInput = document.getElementById('searchInput').value.toLowerCase();
+            const table = document.getElementById('cotizacionesTable');
+            const tr = table.getElementsByTagName('tr');
+
+            for (let i = 1; i < tr.length; i++) {
+                const tdFolio = tr[i].getElementsByTagName('td')[0];
+                const tdCliente = tr[i].getElementsByTagName('td')[2];
+
+                if (tdFolio && tdCliente) {
+                    const folioValue = tdFolio.textContent || tdFolio.innerText;
+                    const clienteValue = tdCliente.textContent || tdCliente.innerText;
+
+                    if (folioValue.toLowerCase().indexOf(searchInput) > -1 ||
+                        clienteValue.toLowerCase().indexOf(searchInput) > -1) {
+                        tr[i].style.display = "";
+                    } else {
+                        tr[i].style.display = "none";
+                    }
+                }
+            }
+        }
+    </script>
+</body>
+
+</html>

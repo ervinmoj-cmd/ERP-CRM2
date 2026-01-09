@@ -1,0 +1,1170 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if deal %}Editar{% else %}Nuevo{% endif %} Trato - CRM INAIR</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .form-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        .form-header {
+            background: linear-gradient(135deg, #d20000, #ff4444);
+            color: white;
+            padding: 25px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .form-header h1 {
+            font-size: 1.4em;
+        }
+
+        .form-body {
+            padding: 30px;
+        }
+
+        .form-section {
+            margin-bottom: 25px;
+            padding-bottom: 25px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .form-section:last-child {
+            border-bottom: none;
+        }
+
+        .form-section h3 {
+            color: #1a1a2e;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-weight: 500;
+            color: #444;
+            margin-bottom: 6px;
+            font-size: 0.9em;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            border-color: #d20000;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(210, 0, 0, 0.1);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1em;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #d20000, #ff4444);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(210, 0, 0, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        /* Activities Section */
+        .activities-list {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 10px;
+        }
+
+        .activity-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            background: white;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            gap: 10px;
+        }
+
+        .activity-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .activity-item.completed {
+            opacity: 0.6;
+            text-decoration: line-through;
+        }
+
+        .activity-type-icon {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #1a1a2e;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .activity-details {
+            flex: 1;
+        }
+
+        .activity-details strong {
+            display: block;
+            color: #1a1a2e;
+        }
+
+        .activity-details small {
+            color: #666;
+        }
+
+        .activity-actions button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.2em;
+            padding: 5px;
+        }
+
+        .add-activity-form {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .add-activity-form select,
+        .add-activity-form input {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .add-activity-form button {
+            padding: 8px 15px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        /* Links Section */
+        .linked-items {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .linked-item {
+            background: #e9ecef;
+            padding: 8px 12px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .linked-item a {
+            color: #d20000;
+            text-decoration: none;
+        }
+
+        .linked-item .unlink {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #dc3545;
+        }
+
+        .link-selector {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .link-selector select {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .link-selector button {
+            padding: 8px 15px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="form-container">
+        <div class="form-header">
+            <h1>{% if deal %}✏️ Editar Trato{% else %}➕ Nuevo Trato{% endif %}</h1>
+            <div style="display: flex; gap: 10px;">
+                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="history.back()">Atrás</button>
+                <a href="{{ url_for('admin_crm') }}" class="btn btn-secondary btn-sm">← Volver</a>
+            </div>
+        </div>
+
+        <div class="form-body">
+            <form method="POST" id="dealForm" enctype="multipart/form-data">
+                <div class="form-section">
+                    <h3>📋 Información del Trato</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Título del Trato *</label>
+                            <input type="text" name="titulo" required value="{{ deal.titulo if deal else '' }}"
+                                placeholder="Ej: Venta de compresor...">
+                        </div>
+                        <div class="form-group">
+                            <label>Vendedor</label>
+                            <input type="text" id="vendedorNombre" 
+                                value="{% if deal and vendedor_info %}{{ vendedor_info.nombre }}{% elif current_user %}{{ current_user.nombre }}{% endif %}" 
+                                readonly style="background-color: #f5f5f5; cursor: not-allowed;"
+                                placeholder="Se carga automáticamente">
+                            <input type="hidden" name="vendedor_id" id="vendedorId" 
+                                value="{% if deal and deal.vendedor_id %}{{ deal.vendedor_id }}{% elif current_user %}{{ current_user.id }}{% endif %}">
+                        </div>
+                        <div class="form-group">
+                            <label>Etapa</label>
+                            <select name="etapa">
+                                {% for stage in stages %}
+                                <option value="{{ stage }}" {% if deal and deal.etapa==stage %}selected{% elif not deal
+                                    and loop.first %}selected{% endif %}>{{ stage }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Valor Estimado</label>
+                            <input type="number" step="0.01" name="valor_estimado" id="valorEstimado"
+                                value="{{ deal.valor_estimado if deal else '0' }}" readonly
+                                style="background-color: #f5f5f5; cursor: not-allowed; -moz-appearance: textfield;"
+                                onkeydown="return false;" onpaste="return false;" oninput="return false;">
+                            <style>
+                                #valorEstimado::-webkit-outer-spin-button,
+                                #valorEstimado::-webkit-inner-spin-button {
+                                    -webkit-appearance: none;
+                                    margin: 0;
+                                }
+                            </style>
+                            <small id="valorEstimadoHint" style="color: #666; font-size: 0.85em; display: block; margin-top: 4px;">
+                                Calculado automáticamente desde cotizaciones vinculadas
+                            </small>
+                        </div>
+                        <div class="form-group">
+                            <label>Moneda</label>
+                            <select name="moneda">
+                                <option value="USD" {% if deal and deal.moneda=='USD' %}selected{% elif not deal
+                                    %}selected{% endif %}>USD</option>
+                                <option value="MXN" {% if deal and deal.moneda=='MXN' %}selected{% endif %}>MXN</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Fecha Cierre Estimada</label>
+                            <input type="date" name="fecha_cierre_estimada"
+                                value="{{ deal.fecha_cierre_estimada if deal else '' }}">
+                        </div>
+                        <div class="form-group">
+                            <label>Fecha de Creación</label>
+                            <input type="text" name="fecha_creacion" readonly id="fechaCreacion"
+                                value="{% if deal and deal.created_at %}{{ deal.created_at[:10] }}{% else %}{{ '' }}{% endif %}"
+                                style="background-color: #f5f5f5; cursor: not-allowed;"
+                                placeholder="Se asignará automáticamente">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group" style="grid-column: 1 / -1;">
+                            <label>Producto/Servicio</label>
+                            <input type="text" name="producto_servicio" 
+                                value="{{ deal.producto_servicio if deal else '' }}"
+                                placeholder="Ej: Compresor, Mantenimiento, Refacciones...">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3>👤 Cliente y Contacto</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Cliente</label>
+                            <select name="cliente_id" id="clienteSelect" onchange="loadContacts()">
+                                <option value="">-- Seleccionar Cliente --</option>
+                                {% for client in clients %}
+                                <option value="{{ client.id }}" {% if deal and deal.cliente_id==client.id %}selected{%
+                                    endif %}>{{ client.nombre }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Contacto</label>
+                            <select name="contacto_nombre" id="contactoSelect" onchange="updateEmailFromContact()">
+                                <option value="">-- Seleccionar --</option>
+                                {% if deal and deal.contacto_nombre %}
+                                <option value="{{ deal.contacto_nombre }}" selected>{{ deal.contacto_nombre }}</option>
+                                {% endif %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>📧 Email del Cliente</label>
+                            <input type="email" name="email" id="clienteEmail"
+                                value="{{ deal.email if deal else '' }}"
+                                placeholder="email@cliente.com">
+                        </div>
+                    </div>
+                </div>
+        </div>
+    </div>
+    </div>
+
+    {% if deal and deal.cotizaciones %}
+    <!-- Email Sending Section - ELIMINADO: Ahora se maneja desde el chat de correos -->
+    <!-- Los mensajes se escriben en el panel de chat y se guardan como borradores -->
+    {% endif %}
+
+    <div class="form-section">
+        <h3>📝 Notas Adicionales</h3>
+        <div class="form-group">
+            <textarea name="notas_texto" id="notasTexto" rows="6"
+                placeholder="Escribe notas adicionales sobre el trato..."></textarea>
+        </div>
+        
+        <!-- Imágenes -->
+        <div class="form-group" style="margin-top: 15px;">
+            <label>Imágenes (máximo 15)</label>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px;">
+                <input type="file" id="imagenInput" accept="image/*" multiple style="display: none;" onchange="handleImageUpload(event)">
+                <button type="button" onclick="document.getElementById('imagenInput').click()" 
+                    class="btn" style="background: #28a745; color: white; padding: 8px 15px; font-size: 0.9em;">
+                    📷 Agregar Imágenes
+                </button>
+                <span id="imagenCount" style="color: #666; font-size: 0.9em; align-self: center;">0/15 imágenes</span>
+            </div>
+            <div id="imagenesPreview" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; margin-top: 15px;"></div>
+        </div>
+        
+        <!-- Correos adjuntos -->
+        <div class="form-group" style="margin-top: 15px;">
+            <label>Correos Adjuntos (.eml o .msg) - Arrastra archivos aquí o haz clic para seleccionar</label>
+            <div id="correoDropZone" 
+                style="border: 2px dashed #007bff; border-radius: 8px; padding: 20px; text-align: center; background: #f8f9fa; margin-top: 10px; cursor: pointer; transition: all 0.3s;"
+                ondrop="handleCorreoDrop(event)" 
+                ondragover="handleDragOver(event)" 
+                ondragleave="handleDragLeave(event)"
+                onclick="document.getElementById('correoInput').click()">
+                <div style="color: #007bff; font-size: 2em; margin-bottom: 10px;">📧</div>
+                <div style="color: #666; font-size: 0.9em;">Arrastra archivos .eml o .msg aquí o haz clic para seleccionar</div>
+            </div>
+            <input type="file" id="correoInput" accept=".eml,.msg,message/rfc822,application/vnd.ms-outlook" multiple style="display: none;" onchange="handleCorreoUpload(event)">
+            <div id="correosPreview" style="margin-top: 15px;"></div>
+        </div>
+        
+        <!-- Campo oculto para guardar JSON completo -->
+        <input type="hidden" name="notas" id="notasJson">
+    </div>
+
+    {% if deal %}
+    <!-- Activities Section (only for existing deals) -->
+    <div class="form-section">
+        <h3>📅 Actividades</h3>
+        <div class="activities-list">
+            {% if deal.actividades %}
+            {% for act in deal.actividades %}
+            <div class="activity-item {% if act.completada %}completed{% endif %}">
+                <div class="activity-type-icon">
+                    {% if act.tipo == 'Llamada' %}📞{% elif act.tipo == 'Reunión' %}🤝{% elif act.tipo ==
+                    'Email' %}📧{% elif act.tipo == 'Tarea' %}✅{% else %}🔔{% endif %}
+                </div>
+                <div class="activity-details">
+                    <strong>{{ act.tipo }}</strong>
+                    <small>{{ act.descripcion or '' }} - {{ act.fecha_programada or 'Sin fecha' }}</small>
+                </div>
+                <div class="activity-actions">
+                    {% if not act.completada %}
+                    <button type="button" onclick="completeActivity({{ act.id }})" title="Completar">✓</button>
+                    {% endif %}
+                    <button type="button" onclick="deleteActivity({{ act.id }})" title="Eliminar">🗑️</button>
+                </div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <p style="color:#888;">Sin actividades programadas</p>
+            {% endif %}
+        </div>
+
+        <div class="add-activity-form">
+            <select id="activityType">
+                <option value="Llamada">📞 Llamada</option>
+                <option value="Reunión">🤝 Reunión</option>
+                <option value="Email">📧 Email</option>
+                <option value="Tarea">✅ Tarea</option>
+                <option value="Recordatorio">🔔 Recordatorio</option>
+            </select>
+            <input type="text" id="activityDesc" placeholder="Descripción...">
+            <input type="datetime-local" id="activityDate">
+            <button type="button" onclick="addActivity()">+ Agregar</button>
+        </div>
+    </div>
+
+    <!-- Linked Cotizaciones -->
+    <div class="form-section">
+        <h3>📄 Cotizaciones Vinculadas</h3>
+        <div class="linked-items" id="linkedCotizaciones">
+            {% if deal.cotizaciones %}
+            {% for cot in deal.cotizaciones %}
+            <div class="linked-item" data-id="{{ cot.id }}">
+                <a href="{{ url_for('admin_cotizaciones_pdf', id=cot.id) }}" target="_blank" title="Ver PDF de la cotización">📄 {{ cot.folio }}</a>
+                <span>${{ '{:,.2f}'.format(cot.total or 0) }} {{ cot.moneda }}</span>
+                <button type="button" class="unlink" onclick="unlinkCotizacion({{ cot.id }})">×</button>
+            </div>
+            {% endfor %}
+            {% else %}
+            <p style="color:#888;">Sin cotizaciones vinculadas</p>
+            {% endif %}
+        </div>
+        <div class="link-selector">
+            <select id="cotizacionSelect">
+                <option value="">-- Seleccionar Cotización --</option>
+                {% for cot in cotizaciones %}
+                <option value="{{ cot.id }}">{{ cot.folio }} - {{ cot.cliente_nombre }} (${{
+                    '{:,.0f}'.format(cot.total or 0) }})</option>
+                {% endfor %}
+            </select>
+            <button type="button" onclick="linkCotizacion()">Vincular</button>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="form-actions">
+        <a href="{{ url_for('admin_crm') }}" class="btn btn-secondary">Cancelar</a>
+        <button type="submit" class="btn btn-primary">💾 Guardar Trato</button>
+    </div>
+    </form>
+    </div>
+    </div>
+
+    <script>
+        var dealId = {{ deal.id if deal else 'null' }};
+        var contactosData = {}; // Almacenar datos de contactos para acceso rápido
+
+        function loadContacts() {
+            var clientId = document.getElementById('clienteSelect').value;
+            var contactSelect = document.getElementById('contactoSelect');
+            var emailInput = document.getElementById('clienteEmail');
+            
+            // Guardar el contacto y email actuales antes de limpiar (si estamos editando)
+            var currentContact = contactSelect.value;
+            var currentEmail = emailInput.value;
+            
+            // Limpiar contactos al cambiar cliente
+            contactSelect.innerHTML = '<option value="">-- Seleccionar --</option>';
+            contactosData = {};
+            
+            // NO limpiar el email si ya tiene un valor (puede ser del deal existente)
+            // Solo limpiar si estamos cambiando de cliente (no en carga inicial)
+            var isInitialLoad = !currentContact && !currentEmail;
+            if (isInitialLoad) {
+                emailInput.value = '';
+            }
+
+            if (clientId) {
+                fetch('/api/cliente/' + clientId)
+                    .then(function (r) { return r.json(); })
+                    .then(function (data) {
+                        // Guardar email del cliente principal para uso posterior
+                        if (data.email) {
+                            contactosData[''] = data.email; // Email del cliente principal
+                        }
+                        
+                        // NO auto-fill email from client si ya hay un valor
+                        // Solo auto-fill si el campo está completamente vacío
+                        // Esto evita sobrescribir el email del contacto seleccionado
+                        if (data.email && !emailInput.value.trim()) {
+                            emailInput.value = data.email;
+                            console.log('✅ Email auto-cargado desde cliente (campo vacío):', data.email);
+                        } else if (emailInput.value.trim()) {
+                            console.log('ℹ️ Email ya tiene valor, no se sobrescribe:', emailInput.value);
+                        }
+                        
+                        // Agregar contacto principal si existe y guardar su email
+                        if (data.contacto) {
+                            var opt = document.createElement('option');
+                            opt.value = data.contacto;
+                            opt.textContent = data.contacto + ' (Principal)';
+                            contactSelect.appendChild(opt);
+                            
+                            // El contacto principal usa el email del cliente
+                            if (data.email) {
+                                contactosData[data.contacto] = data.email;
+                            }
+                        }
+                        
+                        // Agregar contactos adicionales y guardar sus emails
+                        if (data.contactos && Array.isArray(data.contactos)) {
+                            console.log('📋 Cargando contactos adicionales:', data.contactos.length);
+                            data.contactos.forEach(function (c) {
+                                var opt = document.createElement('option');
+                                opt.value = c.nombre;
+                                opt.textContent = c.nombre + (c.puesto ? ' - ' + c.puesto : '');
+                                contactSelect.appendChild(opt);
+                                
+                                // Guardar email del contacto para acceso rápido
+                                // IMPORTANTE: Usar el nombre exacto como clave
+                                if (c.email) {
+                                    contactosData[c.nombre] = c.email;
+                                    console.log('   ✅ Contacto adicional guardado:', c.nombre, '→', c.email);
+                                } else {
+                                    console.log('   ⚠️ Contacto adicional sin email:', c.nombre);
+                                }
+                            });
+                            console.log('📋 contactosData después de cargar adicionales:', contactosData);
+                        } else {
+                            console.log('⚠️ No hay contactos adicionales o no es un array');
+                        }
+                        
+                        // Restaurar contacto seleccionado si existe (al cargar página de edición)
+                        if (currentContact) {
+                            // Verificar si el contacto existe en la lista cargada
+                            for (var i = 0; i < contactSelect.options.length; i++) {
+                                if (contactSelect.options[i].value === currentContact) {
+                                    contactSelect.value = currentContact;
+                                    // Siempre actualizar email desde el contacto seleccionado
+                                    // Usar setTimeout para asegurar que contactosData esté completo
+                                    setTimeout(function() {
+                                        updateEmailFromContact();
+                                    }, 100);
+                                    break;
+                                }
+                            }
+                        }
+                    });
+            }
+        }
+
+        function updateEmailFromContact() {
+            var contactSelect = document.getElementById('contactoSelect');
+            var emailInput = document.getElementById('clienteEmail');
+            var selectedContact = contactSelect.value;
+            
+            console.log('🔍 ===== ACTUALIZANDO EMAIL DESDE CONTACTO =====');
+            console.log('   Contacto seleccionado:', selectedContact);
+            console.log('   Email actual en campo:', emailInput.value);
+            console.log('   Datos de contactos disponibles:', contactosData);
+            
+            // Si no hay contacto seleccionado, volver al email del cliente principal
+            if (selectedContact === '') {
+                if (contactosData['']) {
+                    emailInput.value = contactosData[''];
+                    console.log('✅ Email restaurado al del cliente principal:', contactosData['']);
+                } else {
+                    console.log('⚠️ No hay email del cliente principal disponible');
+                }
+                return;
+            }
+            
+            // Buscar email del contacto seleccionado en cache primero
+            if (contactosData[selectedContact]) {
+                var emailToSet = contactosData[selectedContact];
+                emailInput.value = emailToSet;
+                console.log('✅ Email actualizado desde cache:', emailToSet);
+                console.log('   Verificación - Email en campo después de actualizar:', emailInput.value);
+                return;
+            }
+            
+            // Si no está en cache, buscar en el API
+            console.log('⚠️ Contacto seleccionado pero sin email en cache, buscando en API...');
+            var clientId = document.getElementById('clienteSelect').value;
+            if (clientId) {
+                fetch('/api/cliente/' + clientId)
+                    .then(function (r) { return r.json(); })
+                    .then(function (data) {
+                        var foundEmail = null;
+                        
+                        // Verificar contacto principal
+                        if (data.contacto === selectedContact && data.email) {
+                            foundEmail = data.email;
+                            console.log('   Email encontrado en contacto principal:', foundEmail);
+                        }
+                        
+                        // Buscar en contactos adicionales
+                        if (!foundEmail && data.contactos && Array.isArray(data.contactos)) {
+                            console.log('   Buscando en', data.contactos.length, 'contactos adicionales...');
+                            data.contactos.forEach(function (c) {
+                                console.log('   Comparando:', c.nombre, '===', selectedContact, '?', c.nombre === selectedContact);
+                                if (c.nombre === selectedContact) {
+                                    if (c.email) {
+                                        foundEmail = c.email;
+                                        console.log('   ✅ Email encontrado en contacto adicional:', foundEmail, 'para', c.nombre);
+                                    } else {
+                                        console.log('   ⚠️ Contacto adicional encontrado pero sin email:', c.nombre);
+                                    }
+                                }
+                            });
+                        } else {
+                            console.log('   ⚠️ No hay contactos adicionales o no es un array');
+                        }
+                        
+                        if (foundEmail) {
+                            emailInput.value = foundEmail;
+                            contactosData[selectedContact] = foundEmail; // Guardar en cache
+                            console.log('✅ Email encontrado y actualizado en campo:', foundEmail);
+                            console.log('   Verificación - Email en campo:', emailInput.value);
+                        } else {
+                            console.log('⚠️ No se encontró email para el contacto:', selectedContact);
+                            // Si no se encuentra email del contacto, mantener el email actual o usar el del cliente
+                            if (!emailInput.value && contactosData['']) {
+                                emailInput.value = contactosData[''];
+                                console.log('   Usando email del cliente como fallback:', contactosData['']);
+                            }
+                        }
+                    })
+                    .catch(function(error) {
+                        console.error('❌ Error al buscar email del contacto:', error);
+                    });
+            } else {
+                console.error('❌ No hay clientId para buscar email del contacto');
+            }
+        }
+
+        function addActivity() {
+            if (!dealId) return;
+            var tipo = document.getElementById('activityType').value;
+            var desc = document.getElementById('activityDesc').value;
+            var fecha = document.getElementById('activityDate').value;
+
+            fetch('/api/crm/deal/' + dealId + '/actividad', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ tipo: tipo, descripcion: desc, fecha_programada: fecha })
+            }).then(function () { location.reload(); });
+        }
+
+        function completeActivity(id) {
+            fetch('/api/crm/actividad/' + id + '/completar', { method: 'POST' })
+                .then(function () { location.reload(); });
+        }
+
+        function deleteActivity(id) {
+            if (confirm('¿Eliminar esta actividad?')) {
+                fetch('/api/crm/actividad/' + id, { method: 'DELETE' })
+                    .then(function () { location.reload(); });
+            }
+        }
+
+        function calculateValorEstimado() {
+            var linkedItems = document.querySelectorAll('#linkedCotizaciones .linked-item');
+            var total = 0;
+            
+            linkedItems.forEach(function(item) {
+                // Extraer el valor del texto (formato: $X,XXX.XX MXN)
+                var text = item.textContent;
+                var match = text.match(/\$([\d,]+\.?\d*)/);
+                if (match) {
+                    var value = parseFloat(match[1].replace(/,/g, ''));
+                    if (!isNaN(value)) {
+                        total += value;
+                    }
+                }
+            });
+            
+            // Actualizar el campo valor estimado
+            var valorInput = document.getElementById('valorEstimado');
+            var hint = document.getElementById('valorEstimadoHint');
+            if (valorInput) {
+                // Solo actualizar si hay cotizaciones vinculadas
+                if (linkedItems.length > 0) {
+                    if (total > 0) {
+                        valorInput.value = total.toFixed(2);
+                    }
+                    valorInput.readOnly = true;
+                    valorInput.style.backgroundColor = '#f5f5f5';
+                    valorInput.style.cursor = 'not-allowed';
+                    if (hint) hint.style.display = 'block';
+                } else {
+                    // Si no hay cotizaciones, permitir edición manual
+                    valorInput.readOnly = false;
+                    valorInput.style.backgroundColor = '';
+                    valorInput.style.cursor = '';
+                    if (hint) hint.style.display = 'none';
+                }
+            }
+        }
+
+        function linkCotizacion() {
+            if (!dealId) return;
+            var cotId = document.getElementById('cotizacionSelect').value;
+            if (!cotId) return;
+
+            fetch('/api/crm/deal/' + dealId + '/link-cotizacion', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ cotizacion_id: parseInt(cotId) })
+            }).then(function () { 
+                // Recalcular valor estimado después de vincular
+                setTimeout(function() {
+                    location.reload();
+                }, 100);
+            });
+        }
+
+        function unlinkCotizacion(cotId) {
+            if (!dealId) return;
+            if (!confirm('¿Desvincular esta cotización?')) return;
+            
+            fetch('/api/crm/deal/' + dealId + '/unlink-cotizacion', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ cotizacion_id: cotId })
+            }).then(function () { 
+                // Recalcular valor estimado después de desvincular
+                setTimeout(function() {
+                    location.reload();
+                }, 100);
+            });
+        }
+        
+        // Calcular valor estimado al cargar la página si hay cotizaciones vinculadas
+        setTimeout(function() {
+            calculateValorEstimado();
+        }, 300);
+
+        // Load contacts on page load if client is selected
+        if (document.getElementById('clienteSelect').value) {
+            // Cargar contactos primero
+            loadContacts();
+            
+            // Después de cargar contactos, restaurar el contacto y email seleccionados si existen
+            setTimeout(function() {
+                var contactSelect = document.getElementById('contactoSelect');
+                var emailInput = document.getElementById('clienteEmail');
+                
+                // Si hay un contacto seleccionado en el deal, restaurarlo
+                {% if deal and deal.contacto_nombre %}
+                var contactoNombre = {{ deal.contacto_nombre|tojson|safe }};
+                if (contactoNombre) {
+                    // Buscar y seleccionar el contacto en el dropdown
+                    for (var i = 0; i < contactSelect.options.length; i++) {
+                        if (contactSelect.options[i].value === contactoNombre) {
+                            contactSelect.value = contactoNombre;
+                            // Actualizar email desde el contacto seleccionado
+                            updateEmailFromContact();
+                            break;
+                        }
+                    }
+                }
+                {% endif %}
+                
+                // Si hay un email en el deal pero no se actualizó desde contacto, mantenerlo
+                {% if deal and deal.email %}
+                var dealEmail = {{ deal.email|tojson|safe }};
+                if (dealEmail && !emailInput.value) {
+                    emailInput.value = dealEmail;
+                }
+                {% endif %}
+            }, 500); // Esperar a que loadContacts termine de cargar los contactos
+        }
+
+        // Establecer fecha de creación si es un trato nuevo
+        {% if not deal %}
+        var fechaCreacionInput = document.getElementById('fechaCreacion');
+        if (fechaCreacionInput && !fechaCreacionInput.value) {
+            var today = new Date();
+            var year = today.getFullYear();
+            var month = String(today.getMonth() + 1).padStart(2, '0');
+            var day = String(today.getDate()).padStart(2, '0');
+            fechaCreacionInput.value = year + '-' + month + '-' + day;
+        }
+        {% endif %}
+
+        // ========== NOTAS MEJORADAS ==========
+        var notasData = {
+            texto: '',
+            imagenes: [],
+            correos: []
+        };
+
+        // Cargar notas existentes si hay deal
+        {% if deal and deal.notas %}
+        try {
+            var notasExistentes = {{ deal.notas|tojson|safe }};
+            if (typeof notasExistentes === 'string') {
+                // Intentar parsear como JSON
+                try {
+                    notasExistentes = JSON.parse(notasExistentes);
+                } catch(parseErr) {
+                    // Si no es JSON válido, tratar como texto plano
+                    notasExistentes = notasExistentes;
+                }
+            }
+            
+            if (notasExistentes && typeof notasExistentes === 'object' && (notasExistentes.texto !== undefined || notasExistentes.text !== undefined)) {
+                // Nuevo formato JSON - soportar tanto "texto" como "text" para compatibilidad
+                notasData = {
+                    texto: notasExistentes.texto || notasExistentes.text || '',
+                    imagenes: notasExistentes.imagenes || [],
+                    correos: notasExistentes.correos || []
+                };
+                document.getElementById('notasTexto').value = notasData.texto;
+                // Renderizar después de un pequeño delay para asegurar que el DOM esté listo
+                setTimeout(function() {
+                    renderImagenes();
+                    renderCorreos();
+                }, 100);
+            } else {
+                // Si es texto plano, convertir a nuevo formato
+                notasData.texto = (typeof notasExistentes === 'string') ? notasExistentes : '';
+                document.getElementById('notasTexto').value = notasData.texto;
+            }
+        } catch(e) {
+            console.error('Error cargando notas:', e);
+            // Si falla el parse, tratar como texto plano
+            var notasTexto = {{ deal.notas|tojson|safe }};
+            notasData.texto = (typeof notasTexto === 'string') ? notasTexto : '';
+            document.getElementById('notasTexto').value = notasData.texto;
+        }
+        {% endif %}
+
+        function handleImageUpload(event) {
+            var files = Array.from(event.target.files);
+            var remaining = 15 - notasData.imagenes.length;
+            
+            if (files.length > remaining) {
+                alert('Solo puedes agregar ' + remaining + ' imagen(es) más. Máximo 15 imágenes.');
+                files = files.slice(0, remaining);
+            }
+
+            files.forEach(function(file) {
+                if (notasData.imagenes.length >= 15) return;
+                
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    notasData.imagenes.push({
+                        nombre: file.name,
+                        data: e.target.result, // Base64
+                        tipo: file.type
+                    });
+                    updateNotasJson();
+                    renderImagenes();
+                };
+                reader.readAsDataURL(file);
+            });
+            
+            event.target.value = ''; // Reset input
+        }
+
+        function renderImagenes() {
+            var container = document.getElementById('imagenesPreview');
+            if (!container) return;
+            
+            container.innerHTML = '';
+            var countElement = document.getElementById('imagenCount');
+            if (countElement) {
+                countElement.textContent = notasData.imagenes.length + '/15 imágenes';
+            }
+            
+            notasData.imagenes.forEach(function(img, index) {
+                var div = document.createElement('div');
+                div.style.cssText = 'position: relative; border: 1px solid #ddd; border-radius: 4px; overflow: hidden;';
+                
+                // Asegurar que la imagen tenga el prefijo data: si no lo tiene
+                var imgSrc = img.data;
+                if (imgSrc && !imgSrc.startsWith('data:')) {
+                    // Si no tiene prefijo, agregarlo según el tipo
+                    var mimeType = img.tipo || 'image/png';
+                    imgSrc = 'data:' + mimeType + ';base64,' + imgSrc;
+                }
+                
+                div.innerHTML = `
+                    <img src="${imgSrc}" style="width: 100%; height: 120px; object-fit: cover; display: block;" 
+                         onerror="this.style.display='none'; this.parentElement.querySelector('.img-error').style.display='block';">
+                    <div class="img-error" style="display: none; padding: 20px; text-align: center; color: #999; font-size: 0.8em;">
+                        Error al cargar imagen
+                    </div>
+                    <button type="button" onclick="removeImagen(${index})" 
+                        style="position: absolute; top: 5px; right: 5px; background: #dc3545; color: white; border: none; border-radius: 50%; width: 25px; height: 25px; cursor: pointer; font-size: 14px;">×</button>
+                    <div style="padding: 5px; font-size: 0.75em; color: #666; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">${img.nombre || 'Imagen ' + (index + 1)}</div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function removeImagen(index) {
+            notasData.imagenes.splice(index, 1);
+            updateNotasJson();
+            renderImagenes();
+        }
+
+        function handleDragOver(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            event.currentTarget.style.borderColor = '#0056b3';
+            event.currentTarget.style.background = '#e3f2fd';
+        }
+
+        function handleDragLeave(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            event.currentTarget.style.borderColor = '#007bff';
+            event.currentTarget.style.background = '#f8f9fa';
+        }
+
+        function handleCorreoDrop(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            event.currentTarget.style.borderColor = '#007bff';
+            event.currentTarget.style.background = '#f8f9fa';
+            
+            var files = Array.from(event.dataTransfer.files);
+            processCorreoFiles(files);
+        }
+
+        function handleCorreoUpload(event) {
+            var files = Array.from(event.target.files);
+            processCorreoFiles(files);
+            event.target.value = ''; // Reset input
+        }
+
+        function processCorreoFiles(files) {
+            files.forEach(function(file) {
+                var fileName = file.name.toLowerCase();
+                var isValidEmail = fileName.endsWith('.eml') || 
+                                  fileName.endsWith('.msg') || 
+                                  file.type === 'message/rfc822' ||
+                                  file.type === 'application/vnd.ms-outlook';
+                
+                if (!isValidEmail) {
+                    alert('Solo se permiten archivos .eml o .msg. El archivo "' + file.name + '" será ignorado.');
+                    return;
+                }
+                
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    // Guardar como base64 para poder reconstruir el archivo
+                    notasData.correos.push({
+                        nombre: file.name,
+                        data: e.target.result.split(',')[1], // Solo el base64 sin el prefijo
+                        size: file.size,
+                        tipo: fileName.endsWith('.msg') ? 'msg' : 'eml'
+                    });
+                    updateNotasJson();
+                    renderCorreos();
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function renderCorreos() {
+            var container = document.getElementById('correosPreview');
+            container.innerHTML = '';
+            
+            if (notasData.correos.length === 0) {
+                container.innerHTML = '<p style="color: #888; font-size: 0.9em;">Sin correos adjuntos</p>';
+                return;
+            }
+            
+            notasData.correos.forEach(function(correo, index) {
+                var div = document.createElement('div');
+                div.style.cssText = 'display: flex; align-items: center; gap: 10px; padding: 10px; background: #f8f9fa; border-radius: 4px; margin-bottom: 8px;';
+                div.innerHTML = `
+                    <span style="font-size: 1.5em;">📧</span>
+                    <div style="flex: 1;">
+                        <strong>${correo.nombre}</strong>
+                        <div style="font-size: 0.85em; color: #666;">${formatFileSize(correo.size)}</div>
+                    </div>
+                    <button type="button" onclick="openCorreo(${index})" 
+                        style="background: #007bff; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.85em;">
+                        Abrir
+                    </button>
+                    <button type="button" onclick="removeCorreo(${index})" 
+                        style="background: #dc3545; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.85em;">
+                        Eliminar
+                    </button>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function removeCorreo(index) {
+            notasData.correos.splice(index, 1);
+            updateNotasJson();
+            renderCorreos();
+        }
+
+        function openCorreo(index) {
+            var correo = notasData.correos[index];
+            // Crear un blob del archivo (.eml o .msg)
+            var binary = atob(correo.data);
+            var bytes = new Uint8Array(binary.length);
+            for (var i = 0; i < binary.length; i++) {
+                bytes[i] = binary.charCodeAt(i);
+            }
+            
+            // Determinar el tipo MIME según la extensión
+            var mimeType = correo.tipo === 'msg' ? 'application/vnd.ms-outlook' : 'message/rfc822';
+            var blob = new Blob([bytes], { type: mimeType });
+            var url = URL.createObjectURL(blob);
+            
+            // Crear un enlace temporal y abrirlo
+            var a = document.createElement('a');
+            a.href = url;
+            a.download = correo.nombre;
+            a.click();
+            
+            // Limpiar después de un tiempo
+            setTimeout(function() {
+                URL.revokeObjectURL(url);
+            }, 100);
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            var k = 1024;
+            var sizes = ['Bytes', 'KB', 'MB'];
+            var i = Math.floor(Math.log(bytes) / Math.log(k));
+            return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+        }
+
+        function updateNotasJson() {
+            // Actualizar texto desde textarea
+            var textoElement = document.getElementById('notasTexto');
+            if (textoElement) {
+                notasData.texto = textoElement.value;
+            }
+            // Guardar en campo oculto como JSON - usar "texto" para consistencia
+            var jsonElement = document.getElementById('notasJson');
+            if (jsonElement) {
+                // Asegurar que siempre use "texto" y no "text"
+                var dataToSave = {
+                    texto: notasData.texto,
+                    imagenes: notasData.imagenes,
+                    correos: notasData.correos
+                };
+                jsonElement.value = JSON.stringify(dataToSave);
+            }
+        }
+
+        // Función para manejar selección de archivo OC
+        function handleOCFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const fileInfo = document.getElementById('ocFileInfo');
+                const fileName = document.getElementById('ocFileName');
+                fileInfo.style.display = 'block';
+                fileName.textContent = 'Archivo seleccionado: ' + file.name + ' (' + formatBytes(file.size) + ')';
+            }
+        }
+
+        // Actualizar JSON cuando cambia el texto
+        document.getElementById('notasTexto').addEventListener('input', updateNotasJson);
+        
+        // Actualizar JSON antes de enviar el formulario
+        document.getElementById('dealForm').addEventListener('submit', function(e) {
+            updateNotasJson();
+            
+            // DEBUG: Verificar que el email se está enviando correctamente
+            var emailInput = document.getElementById('clienteEmail');
+            var contactSelect = document.getElementById('contactoSelect');
+            console.log('📤 ENVIANDO FORMULARIO:');
+            console.log('   - Contacto seleccionado:', contactSelect.value);
+            console.log('   - Email en campo:', emailInput.value);
+            console.log('   - Email será enviado:', emailInput.value);
+            
+            // Asegurar que si hay un contacto seleccionado, el email correspondiente esté en el campo
+            if (contactSelect.value && !emailInput.value) {
+                console.warn('⚠️ Hay contacto seleccionado pero NO hay email. Intentando actualizar...');
+                updateEmailFromContact();
+                // Esperar un momento para que se actualice
+                setTimeout(function() {
+                    console.log('   - Email después de actualizar:', emailInput.value);
+                }, 200);
+            }
+        });
+    </script>
+</body>
+
+</html>

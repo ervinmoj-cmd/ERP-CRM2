@@ -1,0 +1,108 @@
+╔══════════════════════════════════════════════════════════════╗
+║  📧 CONFIGURACIÓN DE EMAIL PARA ENVÍO AUTOMÁTICO             ║
+╚══════════════════════════════════════════════════════════════╝
+
+✅ SERVIDOR DETECTADO: GoDaddy (smtp.secureserver.net)
+✅ EMAIL CONFIGURADO: emoreno@inair.com.mx
+
+═══════════════════════════════════════════════════════════════
+
+📋 PASO 1: Configura el archivo de prueba
+═══════════════════════════════════════════════════════════════
+
+1. Abre el archivo: test_email.py
+
+2. Busca estas líneas (aproximadamente línea 13-14):
+
+   SMTP_PASSWORD = ""
+   TEST_EMAIL_TO = ""
+
+3. Completa con tus datos:
+
+   SMTP_PASSWORD = "tu_contraseña_aquí"
+   TEST_EMAIL_TO = "tu_email_personal@gmail.com"
+
+4. Guarda el archivo (Ctrl + S)
+
+═══════════════════════════════════════════════════════════════
+
+📋 PASO 2: Ejecuta la prueba
+═══════════════════════════════════════════════════════════════
+
+Opción A) Doble click en:
+   👉 EJECUTAR_PRUEBA.bat
+
+Opción B) En la terminal escribe:
+   python test_email.py
+
+═══════════════════════════════════════════════════════════════
+
+📋 PASO 3: Verifica el resultado
+═══════════════════════════════════════════════════════════════
+
+✅ SI FUNCIONA:
+   - Verás: "🎉 ¡ÉXITO! Configuración SMTP correcta"
+   - Recibirás un email de prueba
+   - Continúa al PASO 4
+
+❌ SI FALLA:
+   - Verás el error específico
+   - Revisa:
+     • Contraseña correcta
+     • Internet funcionando
+     • No hay firewall bloqueando el puerto 587
+   
+   Errores comunes:
+   
+   "535 Authentication failed"
+   → La contraseña es incorrecta, verifícala
+   
+   "Timeout"
+   → Verifica tu conexión a internet o firewall
+
+═══════════════════════════════════════════════════════════════
+
+📋 PASO 4: Configura el sistema (SOLO SI PASO 2 FUNCIONÓ)
+═══════════════════════════════════════════════════════════════
+
+1. Abre el archivo: email_sender.py
+
+2. Busca la línea (aproximadamente línea 13):
+
+   SMTP_PASSWORD = ""
+
+3. Agrega LA MISMA contraseña que funcionó en la prueba:
+
+   SMTP_PASSWORD = "tu_contraseña_aquí"
+
+4. Guarda el archivo (Ctrl + S)
+
+5. Reinicia el servidor:
+   - Detén el servidor actual (Ctrl+C)
+   - Ejecuta: python app.py
+
+═══════════════════════════════════════════════════════════════
+
+🎉 ¡LISTO! El sistema ya puede enviar emails automáticamente
+═══════════════════════════════════════════════════════════════
+
+Cuando un vendedor mueva un trato a "Cotización Enviada",
+el sistema enviará automáticamente el PDF al cliente.
+
+═══════════════════════════════════════════════════════════════
+
+📞 AYUDA ADICIONAL
+═══════════════════════════════════════════════════════════════
+
+Si necesitas ayuda con:
+- La contraseña de emoreno@inair.com.mx
+- Acceso al panel de GoDaddy
+- Permisos de SMTP
+
+Contacta al administrador de IT o al proveedor de hosting.
+
+═══════════════════════════════════════════════════════════════
+
+
+
+

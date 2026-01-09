@@ -1,0 +1,32 @@
+/* DIAGNÓSTICO DEL PROBLEMA DEL DROPDOWN */
+
+Estructura HTML actual:
+
+1. <tr onclick="toggleDetails({{ pi.id }})" style="cursor: pointer;"> (línea 91)
+   - Esta es la fila principal de resumen
+   - Al hacer clic en esta fila, se expanden/contraen los detalles
+   
+2. <tr id="details-{{ pi.id }}" style="display: none;"> (línea 120)
+   - Esta es la fila de detalles (expandible)
+   - DENTRO de esta fila hay un <td colspan="7"> (línea 121)
+   - DENTRO de ese <td> hay un <div> (línea 122)
+   - DENTRO del <div> hay otro <table> (línea 135)
+   - DENTRO de ese <table> hay <tbody> (línea 147)
+   - DENTRO del <tbody> hay un bucle {% for item in items_list %} (línea 148)
+   - Cada iteración crea un <tr> (línea 149)
+   - Ese <tr> contiene varios <td>
+   - Uno de esos <td> tiene el dropdown <select> (línea 165 ahora con onclick="event.stopPropagation()")
+
+PROBLEMA IDENTIFICADO:
+El <td> de la línea 165 ahora tiene onclick="event.stopPropagation()", 
+y el <select> también tiene onclick="event.stopPropagation()".
+
+POSIBLE CAUSA:
+Cuando se hace clic en el <select> para abrirlo, se dispara correctamente el stopPropagation.
+Sin embargo, cuando se hace clic en una OPCIÓN dentro del dropdown, el evento <change> 
+se dispara pero ANTES de eso, puede haber un evento de clic que se propaga.
+
+SOLUCIÓN ADICIONAL NECESARIA:
+1. Agregar stopPropagation al <tr> de los items (línea 149)
+2. Verificar que el onchange no tenga problemas
+3. Posiblemente remover el cursor:pointer del tr principal en la sección de detalles

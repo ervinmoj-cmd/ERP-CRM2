@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solicitudes de Factura - Finanzas</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+    <style>
+        .page-container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; background: white; }
+        th, td { padding: 10px; border-bottom: 1px solid #eee; text-align: left; }
+        th { background: #f8f9fa; }
+        .btn { padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; }
+        .btn-primary { background: #007bff; color: white; }
+        .badge { padding: 4px 8px; border-radius: 10px; font-size: 12px; }
+        .badge.pending { background: #fff3cd; color: #856404; }
+        .badge.facturada { background: #d4edda; color: #155724; }
+        .badge.in_progress { background: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <div class="page-container">
+        <div class="header">
+            <div>
+                <h1>🧾 Solicitudes de Factura</h1>
+                <p class="text-muted">Generadas automáticamente desde OCu</p>
+            </div>
+            <div>
+                <a href="{{ url_for('admin_finanzas') }}" class="btn">← Finanzas</a>
+            </div>
+        </div>
+
+        <table id="frTable">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Fecha</th>
+                    <th>Cliente</th>
+                    <th>Folio OCu</th>
+                    <th>Estado</th>
+                    <th>Notas</th>
+                    <th>Documentos</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td colspan="8" style="text-align:center; padding: 20px;">Cargando...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        function loadFinanceRequests() {
+            fetch("/api/finance_requests")
+                .then(r => r.json())
+                .then(data => {
+                    const tb = document.querySelector("#frTable tbody");
+                    tb.innerHTML = "";
+                    if (!data.success || !data.requests || data.requests.length === 0) {
+                        tb.innerHTML = '<tr><td colspan="8" style="text-align:center; padding: 20px;">Sin solicitudes</td></tr>';
+                        return;
+                    }
+                    
+                    // Obtener ocu_id de URL si viene de notificación
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const highlightOcuId = urlParams.get('ocu_id');
+                    
+                    data.requests.forEach(fr => {
+                        const tr = document.createElement("tr");
+                        const isHighlighted = highlightOcuId && fr.ocu_id == highlightOcuId;
+                        if (isHighlighted) {
+                            tr.style.backgroundColor = '#fff3cd';
+                            tr.style.borderLeft = '4px solid #ffc107';
+                        }
+                        
+                        // Construir enlaces a documentos
+                        let documentosHtml = '<div style="display:flex; flex-direction:column; gap:4px;">';
+                        if (fr.cotizacion_id) {
+                            documentosHtml += `<a href="/admin/cotizaciones/pdf/${fr.cotizacion_id}" target="_blank" class="btn btn-sm" style="font-size:11px; padding:4px 8px;">📄 Cotización</a>`;
+                        }
+                        if (fr.oc_cliente_file_path) {
+                            documentosHtml += `<a href="/static/${fr.oc_cliente_file_path}" target="_blank" class="btn btn-sm" style="font-size:11px; padding:4px 8px;">📋 OC Cliente</a>`;
+                        }
+                        if (!fr.cotizacion_id && !fr.oc_cliente_file_path) {
+                            documentosHtml += '<span style="color:#999; font-size:11px;">Sin documentos</span>';
+                        }
+                        documentosHtml += '</div>';
+                        
+                        // Determinar qué botones mostrar según el tipo de OCu
+                        let accionHtml = '';
+                        if (fr.factura_id) {
+                            // Si ya existe factura, mostrar botón "Ver"
+                            accionHtml = `<a href="/admin/finanzas/facturas/${fr.factura_id}" class="btn btn-primary" style="text-decoration: none; display: inline-block;">Ver factura</a>`;
+                        } else if (fr.es_parcial) {
+                            // Si es OCu parcial, mostrar dos opciones
+                            accionHtml = `
+                                <div style="display: flex; flex-direction: column; gap: 5px;">
+                                    <button class="btn btn-primary" onclick="generarFactura(${fr.id})" style="font-size: 11px; padding: 5px 10px;">
+                                        Facturar parcial
+                                    </button>
+                                    <button class="btn" onclick="esperarOrdenCompleta(${fr.id})" style="background: #6c757d; color: white; font-size: 11px; padding: 5px 10px;">
+                                        Esperar orden completa
+                                    </button>
+                                </div>
+                            `;
+                        } else {
+                            // Si es OCu completa, mostrar botón "Generar factura"
+                            accionHtml = `<button class="btn btn-primary" onclick="generarFactura(${fr.id})">Generar factura</button>`;
+                        }
+                        
+                        // Mejorar las notas para mostrar información de disponibilidad
+                        let notasHtml = fr.notas || '';
+                        if (fr.es_parcial) {
+                            notasHtml = `OCu parcial - ${fr.items_disponibles_count || 0} partida(s) disponible(s), ${fr.items_faltantes_count || 0} faltante(s)`;
+                        } else if (fr.items_disponibles_count > 0) {
+                            notasHtml = `OCu completa - ${fr.items_disponibles_count || 0} partida(s) disponible(s)`;
+                        }
+                        
+                        tr.innerHTML = `
+                            <td>${fr.id}</td>
+                            <td>${fr.created_at || ''}</td>
+                            <td>${fr.cliente_nombre || ''}</td>
+                            <td>${fr.folio_ocu || ''} (OCu ${fr.ocu_id || ''})</td>
+                            <td><span class="badge ${fr.status || 'pending'}">${fr.status || 'pending'}</span></td>
+                            <td>${notasHtml}</td>
+                            <td>${documentosHtml}</td>
+                            <td>${accionHtml}</td>
+                        `;
+                        tb.appendChild(tr);
+                    });
+                })
+                .catch(() => {
+                    document.querySelector("#frTable tbody").innerHTML = '<tr><td colspan="8" style="text-align:center; padding: 20px;">Error al cargar</td></tr>';
+                });
+        }
+
+        function generarFactura(id) {
+            fetch(`/api/finance_requests/${id}/generar_factura`, { method: 'POST' })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Factura generada. ID: ' + data.factura_id);
+                        if (data.factura_id) {
+                            window.location.href = `/admin/finanzas/facturas/${data.factura_id}`;
+                        } else {
+                            loadFinanceRequests();
+                        }
+                    } else {
+                        alert('Error: ' + (data.error || 'No se pudo generar'));
+                    }
+                })
+                .catch(err => alert('Error: ' + err.message));
+        }
+
+        function esperarOrdenCompleta(frId) {
+            if (confirm('¿Desea esperar hasta que la orden esté completa antes de facturar?')) {
+                fetch(`/api/finance_requests/${frId}/esperar_orden_completa`, { method: 'POST' })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert('Solicitud marcada para esperar orden completa. Se notificará cuando esté lista.');
+                            loadFinanceRequests();
+                        } else {
+                            alert('Error: ' + (data.error || 'No se pudo actualizar'));
+                        }
+                    })
+                    .catch(err => alert('Error: ' + err.message));
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", loadFinanceRequests);
+    </script>
+</body>
+</html>
+

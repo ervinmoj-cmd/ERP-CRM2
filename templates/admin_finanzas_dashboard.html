@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finanzas - INAIR</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+    <style>
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .stat-card.green {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+        .stat-card.red {
+            background: linear-gradient(135deg, #ee0979 0%, #ff6a00 100%);
+        }
+        .stat-card.orange {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        .stat-card.blue {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        .stat-card h3 {
+            font-size: 14px;
+            margin: 0 0 10px 0;
+            opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .stat-label {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+        .finanzas-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        .finanzas-card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            text-align: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            text-decoration: none;
+            color: #2c3e50;
+            border: 2px solid transparent;
+        }
+        .finanzas-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            border-color: #667eea;
+        }
+        .finanzas-card .icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+        .finanzas-card h3 {
+            margin: 10px 0;
+            color: #2c3e50;
+        }
+        .finanzas-card p {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="admin-container">
+        <div class="admin-header">
+            <h1>💰 Administración Financiera</h1>
+            <div class="header-actions">
+                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="history.back()">Atrás</button>
+                <a href="{{ url_for('dashboard_redirect') }}" class="btn btn-secondary btn-sm">Volver al Panel</a>
+                <a href="{{ url_for('logout') }}" class="btn btn-danger btn-sm">Cerrar Sesión</a>
+            </div>
+        </div>
+
+        <!-- Financial Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Por Cobrar</h3>
+                <div class="stat-value">${{ "%.2f"|format(stats.por_cobrar) }}</div>
+                <div class="stat-label">Facturas pendientes</div>
+            </div>
+
+            <div class="stat-card red">
+                <h3>Facturas Vencidas</h3>
+                <div class="stat-value">{{ stats.facturas_vencidas }}</div>
+                <div class="stat-label">Requieren atención</div>
+            </div>
+
+            <div class="stat-card green">
+                <h3>Ingresos del Mes</h3>
+                <div class="stat-value">${{ "%.2f"|format(stats.ingresos_mes) }}</div>
+                <div class="stat-label">{{ now().strftime('%B %Y') }}</div>
+            </div>
+
+            <div class="stat-card orange">
+                <h3>Gastos del Mes</h3>
+                <div class="stat-value">${{ "%.2f"|format(stats.gastos_mes) }}</div>
+                <div class="stat-label">{{ now().strftime('%B %Y') }}</div>
+            </div>
+
+            <div class="stat-card {% if stats.balance_mes >= 0 %}blue{% else %}red{% endif %}">
+                <h3>Balance del Mes</h3>
+                <div class="stat-value">${{ "%.2f"|format(stats.balance_mes) }}</div>
+                <div class="stat-label">{% if stats.balance_mes >= 0 %}Positivo{% else %}Negativo{% endif %}</div>
+            </div>
+        </div>
+
+        <!-- Module Access Cards -->
+        <h2 style="margin: 30px 0 20px 0; color: #2c3e50;">Módulos Financieros</h2>
+        <div class="finanzas-grid">
+            <a href="{{ url_for('admin_facturas') }}" class="finanzas-card">
+                <div class="icon">📄</div>
+                <h3>Facturas</h3>
+                <p>Crear y gestionar facturas</p>
+            </a>
+
+            <a href="{{ url_for('admin_finanzas_solicitudes_factura') }}" class="finanzas-card">
+                <div class="icon">🧾</div>
+                <h3>Solicitudes de Factura</h3>
+                <p>Generadas desde OCu</p>
+            </a>
+
+            <a href="{{ url_for('admin_facturas') }}#por-cobrar" class="finanzas-card">
+                <div class="icon">💳</div>
+                <h3>Cuentas por Cobrar</h3>
+                <p>Seguimiento de pagos pendientes</p>
+            </a>
+
+            <a href="{{ url_for('admin_remisiones') }}" class="finanzas-card">
+                <div class="icon">📦</div>
+                <h3>Remisiones</h3>
+                <p>Entregas con o sin factura</p>
+            </a>
+
+            <a href="{{ url_for('admin_gastos') }}" class="finanzas-card">
+                <div class="icon">💸</div>
+                <h3>Gastos</h3>
+                <p>Registrar y controlar egresos</p>
+            </a>
+
+            <a href="{{ url_for('admin_flujo_caja') }}" class="finanzas-card">
+                <div class="icon">📊</div>
+                <h3>Flujo de Caja</h3>
+                <p>Análisis de ingresos y gastos</p>
+            </a>
+        </div>
+    </div>
+</body>
+</html>
+
+
+
+
+
+

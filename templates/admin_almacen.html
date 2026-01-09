@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Almacén - INAIR</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+</head>
+
+<body>
+    <div class="admin-container">
+        <div class="admin-header">
+            <h1>📦 Gestión de Almacén</h1>
+            <div class="user-info">
+                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="history.back()">Atrás</button>
+                <a href="{{ url_for('dashboard_redirect') }}" class="btn btn-secondary btn-sm">Volver al Panel</a>
+                <a href="{{ url_for('logout') }}" class="btn btn-danger btn-sm">Cerrar Sesión</a>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <div class="table-header">
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <h2>Inventario de Refacciones</h2>
+                    <div class="search-box">
+                        <input type="text" id="searchInput" placeholder="Buscar por número de parte o descripción..."
+                            onkeyup="filterTable()"
+                            style="padding: 8px; border: 1px solid #ddd; border-radius: 4px; width: 300px;">
+                        <select id="locationFilter" onchange="filterTable()"
+                            style="padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                            <option value="">Todas las ubicaciones</option>
+                            <option value="Mexicali">Mexicali</option>
+                            <option value="Tijuana">Tijuana</option>
+                        </select>
+                        <select id="availabilityFilter" onchange="filterTable()"
+                            style="margin-left: 10px; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                            <option value="all">Todo</option>
+                            <option value="stock">Con Stock</option>
+                            <option value="reserved">Con Apartados</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <button class="btn btn-secondary" onclick="openModal('bulkUploadModal')"
+                        style="margin-right: 10px;">📤 Carga Masiva</button>
+                    <button class="btn btn-primary" onclick="openModal('addRefaccionModal')">+ Agregar
+                        Refacción</button>
+                </div>
+            </div>
+
+            {% if refacciones %}
+            <div class="table-responsive" style="overflow-x: auto;">
+                <table id="refaccionesTable">
+                    <thead>
+                        <tr>
+                            <th>Núm. Parte</th>
+                            <th>Descripción</th>
+                            <th>Unidad</th>
+                            <th>Stock Total</th>
+                            <th>Apartados</th>
+                            <th>Disponible</th>
+                            <th>Ubicación</th>
+                            <th>Ubicación Esp.</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ref in refacciones %}
+                        <tr onclick="openDetailModal({{ ref.id }})" style="cursor: pointer;">
+                            <td><strong>{{ ref.numero_parte }}</strong></td>
+                            <td>{{ ref.descripcion }}</td>
+                            <td>{{ ref.unidad or '-' }}</td>
+                            <td>
+                                <span class="badge badge-secondary">{{ ref.cantidad }}</span>
+                            </td>
+                            <td>
+                                {% if ref.apartados > 0 %}
+                                <span class="badge badge-info">{{ ref.apartados }}</span>
+                                {% else %}
+                                -
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% set disponible = ref.cantidad - ref.apartados %}
+                                <span
+                                    class="badge {% if disponible <= 0 %}badge-danger{% elif disponible < 5 %}badge-warning{% else %}badge-success{% endif %}">
+                                    {{ disponible }}
+                                </span>
+                            </td>
+                            <td>{{ ref.ubicacion or '-' }}</td>
+                            <td>{{ ref.ubicacion_especifica or '-' }}</td>
+                            <td onclick="event.stopPropagation()">
+                                <button class="btn btn-sm btn-secondary"
+                                    onclick='editRefaccion({{ ref.id|tojson }}, {{ ref.numero_parte|tojson|replace("'
+                                    \''", "&#39;" ) }}, {{ ref.descripcion|tojson|replace("'\''", "&#39;" ) }}, {{
+                                    ref.unidad|tojson|replace("'\''", "&#39;" ) }}, {{ ref.cantidad|tojson }}, {{
+                                    ref.ubicacion|tojson|replace("'\''", "&#39;" ) }}, {{
+                                    ref.detalles_importacion|tojson|replace("'\''", "&#39;" ) }}, {{
+                                    ref.ubicacion_especifica|tojson|replace("'\''", "&#39;" ) }})'>Editar</button>
+                                <button class="btn btn-sm btn-outline-secondary"
+                                    onclick='deleteRefaccion({{ ref.id|tojson }}, {{ ref.numero_parte|tojson|replace("'
+                                    \''", "&#39;" ) }})'>Eliminar</button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <div style="font-size: 64px; margin-bottom: 20px; opacity: 0.5;">📦</div>
+                <h3>No hay refacciones registradas</h3>
+                <p>Comienza agregando tu primera refacción al inventario</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Add Refaccion Modal -->
+    <div id="addRefaccionModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Agregar Refacción</h2>
+                <button class="close-modal" onclick="closeModal('addRefaccionModal')">&times;</button>
+            </div>
+            <form method="POST" action="{{ url_for('admin_almacen_nueva') }}" onsubmit="return validateAddRefaccion()">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Número de Parte *</label>
+                        <input type="text" name="numero_parte" id="add_numero_parte" required
+                            onblur="autofillRefaccion()">
+                    </div>
+                    <div class="form-group">
+                        <label>Unidad</label>
+                        <input type="text" name="unidad" id="add_unidad" placeholder="pza, lt, kit...">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Descripción *</label>
+                    <input type="text" name="descripcion" id="add_descripcion" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Cantidad</label>
+                        <input type="number" name="cantidad" id="add_cantidad" value="0" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Ubicación</label>
+                        <select name="ubicacion" id="add_ubicacion">
+                            <option value="">Seleccione...</option>
+                            <option value="Mexicali">Mexicali</option>
+                            <option value="Tijuana">Tijuana</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Ubicación Específica (ej. B-4-5)</label>
+                    <input type="text" name="ubicacion_especifica" id="add_ubicacion_especifica"
+                        placeholder="Pasillo-Estante-Nivel">
+                </div>
+                <div class="form-group">
+                    <label>Detalles de Importación / Notas</label>
+                    <textarea name="detalles_importacion" id="add_detalles" rows="3"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Guardar Refacción</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Refaccion Modal -->
+    <div id="editRefaccionModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Editar Refacción</h2>
+                <button class="close-modal" onclick="closeModal('editRefaccionModal')">&times;</button>
+            </div>
+            <form id="editRefaccionForm" method="POST">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Número de Parte *</label>
+                        <input type="text" name="numero_parte" id="edit_numero_parte" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Unidad</label>
+                        <input type="text" name="unidad" id="edit_unidad">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Descripción *</label>
+                    <input type="text" name="descripcion" id="edit_descripcion" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Cantidad</label>
+                        <input type="number" name="cantidad" id="edit_cantidad" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Ubicación</label>
+                        <select name="ubicacion" id="edit_ubicacion">
+                            <option value="">Seleccione...</option>
+                            <option value="Mexicali">Mexicali</option>
+                            <option value="Tijuana">Tijuana</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Ubicación Específica</label>
+                    <input type="text" name="ubicacion_especifica" id="edit_ubicacion_especifica">
+                </div>
+                <div class="form-group">
+                    <label>Detalles de Importación / Notas</label>
+                    <textarea name="detalles_importacion" id="edit_detalles" rows="3"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Actualizar Refacción</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- DETAIL MODAL -->
+    <div id="detailRefaccionModal" class="modal">
+        <div class="modal-content" style="max-width: 900px;">
+            <div class="modal-header">
+                <h2 id="detailTitle">Detalles de Refacción</h2>
+                <button class="close-modal" onclick="closeModal('detailRefaccionModal')">&times;</button>
+            </div>
+
+            <div class="tabs" style="border-bottom: 1px solid #ddd; margin-bottom: 20px;">
+                <button class="tab-btn active" onclick="switchDetailTab('infoTab')">Información General</button>
+                <button class="tab-btn" onclick="switchDetailTab('reservasTab')">Reservas / Apartados</button>
+            </div>
+
+            <!-- INFO TAB -->
+            <div id="infoTab" class="detail-tab-content" style="display: block;">
+                <div class="info-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div>
+                        <p><strong>Número de Parte:</strong> <span id="det_numero_parte"></span></p>
+                        <p><strong>Descripción:</strong> <span id="det_descripcion"></span></p>
+                        <p><strong>Unidad:</strong> <span id="det_unidad"></span></p>
+                    </div>
+                    <div>
+                        <p><strong>Ubicación:</strong> <span id="det_ubicacion"></span></p>
+                        <p><strong>Ubicación Esp.:</strong> <span id="det_ubicacion_esp"></span></p>
+                        <div style="background: #f8f9fa; padding: 10px; border-radius: 5px; margin-top: 10px;">
+                            <p><strong>Stock Total (Físico):</strong> <span id="det_stock_total"
+                                    style="font-size: 1.2em; font-weight: bold;"></span></p>
+                            <p><strong>Apartados:</strong> <span id="det_stock_apartado"
+                                    style="color: #ffc107; font-weight: bold;"></span></p>
+                            <p><strong>Disponible Real:</strong> <span id="det_stock_disponible"
+                                    style="font-size: 1.2em; font-weight: bold; color: #28a745;"></span></p>
+                        </div>
+                    </div>
+                </div>
+                <div style="margin-top: 20px;">
+                    <label><strong>Detalles de Importación:</strong></label>
+                    <div id="det_importacion"
+                        style="background: #eee; padding: 10px; border-radius: 4px; mapin-top: 5px; min-height: 50px;">
+                    </div>
+                </div>
+            </div>
+
+            <!-- RESERVAS TAB -->
+            <div id="reservasTab" class="detail-tab-content" style="display: none;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h3>Apartados Activos</h3>
+                    <button class="btn btn-sm btn-primary" onclick="showAddReservaForm()">+ Nuevo Apartado</button>
+                </div>
+
+                <!-- Add Reservation Form (Hidden by default) -->
+                <div id="addReservaForm"
+                    style="display: none; background: #f0f4f8; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+                    <h4>Agregar Apartado</h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Cliente</label>
+                            <select id="res_cliente" class="form-control" style="width: 100%;">
+                                <!-- Populated dynamically or load all attached -->
+                                <option value="">Seleccione Cliente...</option>
+                                {% for cliente in clientes %}
+                                <!-- Assuming clients available in context, otherwise fetch -->
+                                <option value="{{ cliente.id }}">{{ cliente.nombre }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Orden de Compra</label>
+                            <input type="text" id="res_oc" placeholder="Opcional">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Cantidad</label>
+                            <input type="number" id="res_cantidad" min="1" value="1">
+                        </div>
+                        <div class="form-group" style="display: flex; align-items: flex-end;">
+                            <button class="btn btn-success" onclick="saveReservation()">Apartar</button>
+                            <button class="btn btn-secondary" onclick="hideAddReservaForm()"
+                                style="margin-left: 10px;">Cancelar</button>
+                        </div>
+                    </div>
+                </div>
+
+                <table class="table" style="width: 100%;">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Cliente</th>
+                            <th>OC</th>
+                            <th>Cantidad</th>
+                            <th>Status</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reservasList">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+
+
+    <!-- Bulk Upload Modal -->
+    <div id="bulkUploadModal" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h2>Carga Masiva de Refacciones</h2>
+                <button class="close-modal" onclick="closeModal('bulkUploadModal')">&times;</button>
+            </div>
+
+            <div class="tabs" style="margin-bottom: 20px; border-bottom: 1px solid #ddd;">
+                <button class="tab-btn active" onclick="switchTab('pasteTab')"
+                    style="padding: 10px; border: none; background: none; cursor: pointer; border-bottom: 2px solid #007bff;">Copiar
+                    y Pegar</button>
+                <button class="tab-btn" onclick="switchTab('fileTab')"
+                    style="padding: 10px; border: none; background: none; cursor: pointer;">Subir Excel</button>
+            </div>
+
+            <div id="pasteTab" class="tab-content">
+                <p style="font-size: 0.9em; color: #666; margin-bottom: 10px;">
+                    Copia y pega tus datos desde Excel. El orden de las columnas debe ser:<br>
+                    <strong>Número de Parte | Descripción | Cantidad | Unidad | Ubicación | Ubicación
+                        Específica</strong>
+                </p>
+                <textarea id="pasteArea" rows="10" style="width: 100%; padding: 10px; font-family: monospace;"
+                    placeholder="PEGA TUS DATOS AQUÍ..."></textarea>
+                <button class="btn btn-primary" onclick="processPaste()" style="margin-top: 10px;">Procesar
+                    Datos</button>
+            </div>
+
+            <div id="fileTab" class="tab-content" style="display: none;">
+                <p style="margin-bottom: 20px;">Sube un archivo Excel (.xlsx) con la misma estructura de columnas.
+                </p>
+                <input type="file" id="fileInput" accept=".xlsx, .xls">
+                <button class="btn btn-primary" onclick="uploadFile()" style="margin-top: 10px;">Subir
+                    Archivo</button>
+            </div>
+
+            <div id="uploadStatus" style="margin-top: 15px; display: none;"></div>
+        </div>
+    </div>
+
+    <style>
+        .badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            color: white;
+            display: inline-block;
+            min-width: 20px;
+            text-align: center;
+        }
+
+        .badge-success {
+            background-color: #28a745;
+        }
+
+        .badge-warning {
+            background-color: #ffc107;
+            color: #333;
+        }
+
+        .badge-danger {
+            background-color: #dc3545;
+        }
+
+        .badge-secondary {
+            background-color: #6c757d;
+        }
+
+        .badge-info {
+            background-color: #17a2b8;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #666;
+            border-bottom: 2px solid transparent;
+        }
+
+        .tab-btn.active {
+            font-weight: bold;
+            color: #007bff;
+            border-bottom: 2px solid #007bff;
+        }
+
+        .modal-content {
+            border-radius: 8px;
+            padding: 20px;
+        }
+    </style>
+
+    <script>
+        let currentRefaccionId = null;
+
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+            if (modalId === 'bulkUploadModal') {
+                document.getElementById('uploadStatus').style.display = 'none';
+                document.getElementById('pasteArea').value = '';
+                document.getElementById('fileInput').value = '';
+            }
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
+            document.getElementById(tabId).style.display = 'block';
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        function switchDetailTab(tabId) {
+            document.querySelectorAll('.detail-tab-content').forEach(el => el.style.display = 'none');
+            document.getElementById(tabId).style.display = 'block';
+            // Update active state logic for detail tabs if needed, simple toggle here
+            // Assuming the button click handles the class toggle visually?
+            // Let's add simple logic for visual
+            const btns = document.querySelectorAll('#detailRefaccionModal .tab-btn');
+            btns.forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        // Autofill existing refaccion on add modal
+        function autofillRefaccion() {
+            const num = document.getElementById('add_numero_parte').value.trim();
+            if (!num) return;
+            fetch(`/api/almacen/refaccion/${encodeURIComponent(num)}`)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success && data.refaccion) {
+                        const ref = data.refaccion;
+                        document.getElementById('add_descripcion').value = ref.descripcion || '';
+                        document.getElementById('add_unidad').value = ref.unidad || '';
+                        document.getElementById('add_ubicacion').value = ref.ubicacion || '';
+                        document.getElementById('add_ubicacion_especifica').value = ref.ubicacion_especifica || '';
+                        document.getElementById('add_detalles').value = ref.detalles_importacion || '';
+                        // Cantidad se deja editable para sumar stock
+                    } else {
+                        // limpiar para alta nueva
+                        document.getElementById('add_descripcion').value = '';
+                        document.getElementById('add_unidad').value = '';
+                        document.getElementById('add_ubicacion').value = '';
+                        document.getElementById('add_ubicacion_especifica').value = '';
+                        document.getElementById('add_detalles').value = '';
+                    }
+                })
+                .catch(() => { });
+        }
+
+        function validateAddRefaccion() {
+            const desc = document.getElementById('add_descripcion').value.trim();
+            if (!desc) {
+                alert('La descripción es obligatoria.');
+                return false;
+            }
+            return true;
+        }
+
+        function editRefaccion(id, numero_parte, descripcion, unidad, cantidad, ubicacion, detalles, ubicacion_especifica) {
+            event.stopPropagation(); // Prevent row click
+            document.getElementById('edit_numero_parte').value = numero_parte;
+            document.getElementById('edit_descripcion').value = descripcion;
+            document.getElementById('edit_unidad').value = unidad || '';
+            document.getElementById('edit_cantidad').value = cantidad;
+            document.getElementById('edit_ubicacion').value = ubicacion || '';
+            document.getElementById('edit_ubicacion_especifica').value = ubicacion_especifica || '';
+            document.getElementById('edit_detalles').value = detalles || '';
+
+            document.getElementById('editRefaccionForm').action = `/admin/almacen/editar/${id}`;
+            openModal('editRefaccionModal');
+        }
+
+        function deleteRefaccion(id, numero_parte) {
+            event.stopPropagation(); // Prevent row click
+            if (confirm(`¿Estás seguro de eliminar la refacción "${numero_parte}"?`)) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = `/admin/almacen/eliminar/${id}`;
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+
+        function filterTable() {
+            const searchInput = document.getElementById('searchInput').value.toLowerCase();
+            const locationFilter = document.getElementById('locationFilter').value.toLowerCase();
+            const availabilityFilter = document.getElementById('availabilityFilter').value;
+
+            const table = document.getElementById('refaccionesTable');
+            const tr = table.getElementsByTagName('tr');
+
+            for (let i = 1; i < tr.length; i++) {
+                const tdPart = tr[i].getElementsByTagName('td')[0];
+                const tdDesc = tr[i].getElementsByTagName('td')[1];
+                const tdTotal = tr[i].getElementsByTagName('td')[3];
+                const tdApartados = tr[i].getElementsByTagName('td')[4];
+                const tdLoc = tr[i].getElementsByTagName('td')[6];
+
+                if (tdPart && tdDesc && tdLoc) {
+                    const partValue = tdPart.textContent || tdPart.innerText;
+                    const descValue = tdDesc.textContent || tdDesc.innerText;
+                    const locValue = tdLoc.textContent || tdLoc.innerText;
+
+                    // Parse numeric values from badges
+                    const totalQty = parseInt(tdTotal.textContent.trim()) || 0;
+
+                    // Apartados can be "-" or number inside a badge
+                    let reservedQty = 0;
+                    const apartadosText = tdApartados.textContent.trim();
+                    if (apartadosText !== '-') {
+                        reservedQty = parseInt(apartadosText) || 0;
+                    }
+
+                    const matchesSearch = partValue.toLowerCase().indexOf(searchInput) > -1 ||
+                        descValue.toLowerCase().indexOf(searchInput) > -1;
+
+                    const matchesLocation = locationFilter === "" || locValue.toLowerCase() === locationFilter;
+
+                    let matchesAvailability = true;
+                    if (availabilityFilter === 'stock') {
+                        matchesAvailability = (totalQty - reservedQty) > 0;
+                    } else if (availabilityFilter === 'reserved') {
+                        matchesAvailability = reservedQty > 0;
+                    }
+
+                    if (matchesSearch && matchesLocation && matchesAvailability) {
+                        tr[i].style.display = "";
+                    } else {
+                        tr[i].style.display = "none";
+                    }
+                }
+            }
+        }
+
+        // --- DETAIL & RESERVATION LOGIC ---
+
+        async function openDetailModal(id) {
+            currentRefaccionId = id;
+            openModal('detailRefaccionModal');
+
+            // Fetch data
+            try {
+                const response = await fetch(`/api/almacen/detalles/${id}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    const ref = data.refaccion;
+                    const stats = data.stats;
+
+                    document.getElementById('detailTitle').innerText = `${ref.numero_parte} - ${ref.descripcion}`;
+                    document.getElementById('det_numero_parte').innerText = ref.numero_parte;
+                    document.getElementById('det_descripcion').innerText = ref.descripcion;
+                    document.getElementById('det_unidad').innerText = ref.unidad || '-';
+                    document.getElementById('det_ubicacion').innerText = ref.ubicacion || '-';
+                    document.getElementById('det_ubicacion_esp').innerText = ref.ubicacion_especifica || '-';
+                    document.getElementById('det_importacion').innerText = ref.detalles_importacion || 'Sin detalles';
+
+                    document.getElementById('det_stock_total').innerText = stats.total;
+                    document.getElementById('det_stock_apartado').innerText = stats.reserved;
+                    document.getElementById('det_stock_disponible').innerText = stats.available;
+
+                    renderReservations(data.reservas);
+                }
+            } catch (e) {
+                console.error("Error loading details", e);
+                alert("Error cargando detalles");
+            }
+        }
+
+        function renderReservations(reservas) {
+            const tbody = document.getElementById('reservasList');
+            tbody.innerHTML = '';
+
+            if (!reservas || reservas.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 20px;">No hay apartados activos</td></tr>';
+                return;
+            }
+
+            reservas.forEach(res => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${new Date(res.fecha_reserva).toLocaleDateString()}</td>
+                    <td>${res.cliente_nombre || 'N/A'}</td>
+                    <td>${res.orden_compra || '-'}</td>
+                    <td><strong>${res.cantidad}</strong></td>
+                    <td><span class="badge badge-warning">${res.status}</span></td>
+                    <td>
+                        <button class="btn btn-sm btn-danger" onclick="deleteReserva(${res.id})">Liberar</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function showAddReservaForm() {
+            document.getElementById('addReservaForm').style.display = 'block';
+        }
+
+        function hideAddReservaForm() {
+            document.getElementById('addReservaForm').style.display = 'none';
+        }
+
+        async function saveReservation() {
+            const clienteId = document.getElementById('res_cliente').value;
+            const oc = document.getElementById('res_oc').value;
+            const cantidad = document.getElementById('res_cantidad').value;
+
+            if (!clienteId || cantidad <= 0) {
+                alert("Seleccione un cliente y una cantidad válida.");
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/almacen/reservar', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        refaccion_id: currentRefaccionId,
+                        cliente_id: clienteId,
+                        orden_compra: oc,
+                        cantidad: cantidad
+                    })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    hideAddReservaForm();
+                    // Refetch details to update UI
+                    openDetailModal(currentRefaccionId);
+                    alert("Apartado creado exitosamente.");
+                } else {
+                    alert("Error: " + result.error);
+                }
+            } catch (e) {
+                alert("Error de conexión");
+            }
+        }
+
+        async function deleteReserva(id) {
+            if (!confirm("¿Está seguro de cancelar este apartado? La cantidad volverá a estar disponible.")) return;
+
+            try {
+                const response = await fetch(`/api/almacen/reservar/eliminar/${id}`, {
+                    method: 'POST'
+                });
+                const result = await response.json();
+                if (result.success) {
+                    // Refetch details to update UI
+                    openDetailModal(currentRefaccionId);
+                } else {
+                    alert("Error: " + result.error);
+                }
+            } catch (e) {
+                alert("Error de conexión");
+            }
+        }
+
+        async function processPaste() {
+            const text = document.getElementById('pasteArea').value;
+            if (!text.trim()) return;
+
+            const lines = text.trim().split('\n');
+            const items = lines.map(line => line.split('\t')); // Assume tab-separated from Excel
+
+            const statusDiv = document.getElementById('uploadStatus');
+            statusDiv.style.display = 'block';
+            statusDiv.innerHTML = 'Procesando...';
+
+            try {
+                const response = await fetch('/admin/almacen/carga_masiva', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ items: items })
+                });
+                const result = await response.json();
+
+                if (result.success) {
+                    statusDiv.innerHTML = `<span style="color: green;">✅ Se agregaron ${result.count} refacciones exitosamente. Recargando...</span>`;
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    statusDiv.innerHTML = `<span style="color: red;">❌ Error: ${result.error}</span>`;
+                }
+            } catch (e) {
+                statusDiv.innerHTML = `<span style="color: red;">❌ Error de conexión: ${e}</span>`;
+            }
+        }
+
+        async function uploadFile() {
+            const fileInput = document.getElementById('fileInput');
+            if (!fileInput.files.length) return;
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+
+            const statusDiv = document.getElementById('uploadStatus');
+            statusDiv.style.display = 'block';
+            statusDiv.innerHTML = 'Subiendo archivo...';
+
+            try {
+                const response = await fetch('/admin/almacen/carga_masiva', {
+                    method: 'POST',
+                    body: formData
+                });
+                const result = await response.json();
+
+                if (result.success) {
+                    statusDiv.innerHTML = `<span style="color: green;">✅ Se agregaron ${result.count} refacciones exitosamente. Recargando...</span>`;
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    statusDiv.innerHTML = `<span style="color: red;">❌ Error: ${result.error}</span>`;
+                }
+            } catch (e) {
+                statusDiv.innerHTML = `<span style="color: red;">❌ Error de conexión: ${e}</span>`;
+            }
+        }
+
+        window.onclick = function (event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.classList.remove('active');
+            }
+        }
+    </script>
+</body>
+
+</html>

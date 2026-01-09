@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if deal %}Editar{% else %}Nuevo{% endif %} Servicio - CRM INAIR</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .form-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        .form-header {
+            background: linear-gradient(135deg, #d20000, #ff4444);
+            color: white;
+            padding: 25px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .form-header h1 {
+            font-size: 1.4em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-body {
+            padding: 30px;
+        }
+
+        .form-section {
+            margin-bottom: 25px;
+            padding-bottom: 25px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .form-section:last-child {
+            border-bottom: none;
+        }
+
+        .form-section h3 {
+            color: #1a1a2e;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-weight: 500;
+            color: #444;
+            margin-bottom: 6px;
+            font-size: 0.9em;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: all 0.3s;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            border-color: #d20000;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(210, 0, 0, 0.1);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1em;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #d20000, #ff4444);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(210, 0, 0, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .btn-small {
+            padding: 8px 15px;
+            font-size: 0.9em;
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        /* Equipment Section */
+        .equipment-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 15px;
+        }
+
+        .equipment-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-left: 4px solid #d20000;
+        }
+
+        .equipment-item:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+
+        .equipment-info {
+            flex: 1;
+        }
+
+        .equipment-info strong {
+            display: block;
+            color: #1a1a2e;
+            margin-bottom: 5px;
+        }
+
+        .equipment-info small {
+            color: #666;
+            display: block;
+        }
+
+        .equipment-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-icon {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.3em;
+            padding: 8px;
+            transition: all 0.3s;
+        }
+
+        .btn-icon:hover {
+            transform: scale(1.2);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .empty-state-icon {
+            font-size: 3em;
+            margin-bottom: 10px;
+            opacity: 0.5;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 0;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 85vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            animation: slideDown 0.3s;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #d20000, #ff4444);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            font-size: 1.3em;
+        }
+
+        .close {
+            color: white;
+            font-size: 2em;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .close:hover {
+            opacity: 0.8;
+        }
+
+        .modal-body {
+            padding: 25px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .modal-footer {
+            padding: 15px 25px;
+            border-top: 1px solid #eee;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 500;
+        }
+
+        .badge-info {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="form-container">
+        <div class="form-header">
+            <h1>🔧 {% if deal %}Editar{% else %}Nuevo{% endif %} Servicio</h1>
+            <a href="{{ url_for('admin_crm') }}" class="btn btn-secondary">← Volver</a>
+        </div>
+
+        <div class="form-body">
+            <form method="POST" id="servicioForm">
+                <input type="hidden" name="tipo_deal" value="servicio">
+
+                <!-- Información del Servicio -->
+                <div class="form-section">
+                    <h3>📋 Información del Servicio</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Folio</label>
+                            <input type="text" name="folio" id="folioInput" readonly
+                                value="{% if deal and deal.folio %}{{ deal.folio }}{% else %}Se generará al guardar{% endif %}"
+                                style="background-color: #f5f5f5; cursor: not-allowed; font-weight: 600; color: #d20000;">
+                        </div>
+                        <div class="form-group">
+                            <label>Fecha de Creación *</label>
+                            <input type="date" name="fecha_creacion" id="fechaCreacion" required readonly
+                                value="{% if deal and deal.created_at %}{{ deal.created_at[:10] }}{% else %}{{ '' }}{% endif %}"
+                                style="background-color: #f5f5f5; cursor: not-allowed;">
+                        </div>
+                        <div class="form-group">
+                            <label>Título del Servicio *</label>
+                            <input type="text" name="titulo" required value="{{ deal.titulo if deal else '' }}"
+                                placeholder="Ej: Mantenimiento preventivo...">
+                        </div>
+                        <div class="form-group">
+                            <label>Etapa</label>
+                            <select name="etapa">
+                                {% for stage in stages %}
+                                <option value="{{ stage.stage_name }}" {% if deal and deal.etapa==stage.stage_name
+                                    %}selected {% elif not deal and loop.first %}selected{% endif %}>
+                                    {{ stage.stage_name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Horas Aproximadas</label>
+                            <input type="number" name="tiempo_estimado_horas" step="0.5" min="0"
+                                value="{{ deal.tiempo_estimado_horas if deal and deal.tiempo_estimado_horas else '' }}"
+                                placeholder="Ej: 2.5">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cliente -->
+                <div class="form-section">
+                    <h3>👤 Cliente</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Cliente *</label>
+                            <select name="cliente_id" id="clienteSelect" onchange="loadContacts()" required>
+                                <option value="">-- Seleccionar Cliente --</option>
+                                {% for client in clients %}
+                                <option value="{{ client.id }}" {% if deal and deal.cliente_id==client.id %}selected{%
+                                    endif %}>
+                                    {{ client.nombre }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Contacto</label>
+                            <select name="contacto_nombre" id="contactoSelect">
+                                <option value="">-- Seleccionar --</option>
+                                {% if deal and deal.contacto_nombre %}
+                                <option value="{{ deal.contacto_nombre }}" selected>{{ deal.contacto_nombre }}</option>
+                                {% endif %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>📧 Email del Cliente</label>
+                            <input type="email" name="email" id="clienteEmail" value="{{ deal.email if deal else '' }}"
+                                placeholder="email@cliente.com">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Técnicos Participantes -->
+                <div class="form-section">
+                    <h3>👷 Técnicos Participantes</h3>
+                    <div id="tecnicosList" class="equipment-list">
+                        <!-- Técnicos will be listed here -->
+                    </div>
+                    <div style="margin-top: 15px;">
+                        <button type="button" class="btn btn-success btn-small" onclick="openTecnicoModal()">
+                            ➕ Agregar Técnico
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Equipos -->
+                <div class="form-section">
+                    <h3>🔧 Equipos del Servicio</h3>
+                    <div id="equipmentList" class="equipment-list">
+                        <!-- Equipments will be listed here -->
+                    </div>
+                    <div style="margin-top: 15px;">
+                        <button type="button" class="btn btn-success btn-small" onclick="openEquipmentModal()">
+                            ➕ Agregar Equipo
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Notas -->
+                <div class="form-section">
+                    <h3>📝 Notas</h3>
+                    <div class="form-group">
+                        <textarea name="notas"
+                            placeholder="Notas adicionales sobre el servicio...">{{ deal.notas if deal else '' }}</textarea>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <a href="{{ url_for('admin_crm') }}" class="btn btn-secondary">Cancelar</a>
+                    <button type="submit" class="btn btn-primary">💾 Guardar Servicio</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Técnico Modal -->
+    <div id="tecnicoModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="tecnicoModalTitle">Agregar Técnico</h2>
+                <span class="close" onclick="closeTecnicoModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label>Técnico *</label>
+                    <select id="tecnicoSelect" required>
+                        <option value="">-- Seleccionar Técnico --</option>
+                        {% for user in users %}
+                        {% if user.puesto == 'Técnico de Servicio' %}
+                        <option value="{{ user.id }}">{{ user.nombre }} ({{ user.username }})</option>
+                        {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Puntos</label>
+                    <input type="number" id="tecnicoPuntos" min="0" step="1" value="0" placeholder="0">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeTecnicoModal()">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="saveTecnico()">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Equipment Modal -->
+    <div id="equipmentModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Agregar Equipo</h2>
+                <span class="close" onclick="closeEquipmentModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <!-- Client Equipment Selector -->
+                <div id="clientEquipmentSection"
+                    style="margin-bottom: 20px; padding: 15px; background: #f0f8ff; border-radius: 8px; border-left: 4px solid #1976d2;">
+                    <h4 style="margin-bottom: 10px; color: #1976d2;">📋 Equipos del Cliente</h4>
+                    <div id="clientEquipmentList" style="max-height: 200px; overflow-y: auto;">
+                        <!-- Client equipment will be loaded here -->
+                    </div>
+                </div>
+
+                <div style="text-align: center; margin: 15px 0; color: #999; font-weight: 500;">
+                    — O CREAR NUEVO —
+                </div>
+
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label>Tipo de Equipo *</label>
+                    <input type="text" id="equipTipo" required placeholder="Ej: Compresor de Aire">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Modelo</label>
+                        <input type="text" id="equipModelo" placeholder="Ej: XAS 185">
+                    </div>
+                    <div class="form-group">
+                        <label>Serie</label>
+                        <input type="text" id="equipSerie" placeholder="Ej: WAA123456">
+                    </div>
+                </div>
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label>Descripción del Servicio *</label>
+                    <textarea id="equipDescripcion" required placeholder="Ej: Cambio de aceite y filtros..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Detalles Adicionales (Opcional)</label>
+                    <textarea id="equipDetalles"
+                        placeholder="Información adicional, piezas requeridas, observaciones..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeEquipmentModal()">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="saveEquipment()">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .client-equipment-item {
+            background: white;
+            padding: 12px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+        }
+
+        .client-equipment-item:hover {
+            border-color: #1976d2;
+            transform: translateX(3px);
+        }
+
+        .client-equipment-item strong {
+            display: block;
+            color: #1a1a2e;
+            margin-bottom: 4px;
+        }
+
+        .client-equipment-item small {
+            color: #666;
+            font-size: 0.85em;
+        }
+    </style>
+
+    <script>
+        let equipments = [];
+        let tecnicos = [];
+        let editingIndex = -1;
+        let editingTecnicoIndex = -1;
+        const dealId = {{ deal.id if deal else 'null' }};
+        const currentUserId = {{ session.get('user_id', 0) if session else 0 }};
+
+        // Pre-cargar fecha actual si es nuevo servicio
+        {% if not deal %}
+        window.addEventListener('DOMContentLoaded', function () {
+            const fechaInput = document.getElementById('fechaCreacion');
+            if (fechaInput && !fechaInput.value) {
+                const today = new Date().toISOString().split('T')[0];
+                fechaInput.value = today;
+            }
+        });
+        {% endif %}
+
+        // Load existing equipments and technicians if editing
+        {% if deal %}
+        window.addEventListener('DOMContentLoaded', function () {
+            fetch('/api/crm/deal/{{ deal.id }}/equipos')
+                .then(r => r.json())
+                .then(data => {
+                    equipments = data;
+                    renderEquipments();
+                });
+            
+            fetch('/api/crm/deal/{{ deal.id }}/tecnicos')
+                .then(r => r.json())
+                .then(data => {
+                    tecnicos = data.map(t => ({
+                        tecnico_id: t.tecnico_id,
+                        nombre: t.nombre,
+                        puntos: t.puntos || 0
+                    }));
+                    renderTecnicos();
+                });
+        });
+        {% endif %}
+
+        function loadContacts() {
+            const clientId = document.getElementById('clienteSelect').value;
+            const contactSelect = document.getElementById('contactoSelect');
+            const emailInput = document.getElementById('clienteEmail');
+
+            contactSelect.innerHTML = '<option value="">-- Seleccionar --</option>';
+            emailInput.value = ''; // Clear email when client changes
+
+            if (clientId) {
+                fetch('/api/cliente/' + clientId)
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.email) {
+                            emailInput.value = data.email;
+                        }
+
+                        if (data.contacto) {
+                            const opt = document.createElement('option');
+                            opt.value = data.contacto;
+                            opt.textContent = data.contacto + ' (Principal)';
+                            contactSelect.appendChild(opt);
+                        }
+                        if (data.contactos) {
+                            data.contactos.forEach(c => {
+                                const opt = document.createElement('option');
+                                opt.value = c.nombre;
+                                opt.textContent = c.nombre + (c.puesto ? ' - ' + c.puesto : '');
+                                contactSelect.appendChild(opt);
+                            });
+                        }
+                    });
+            }
+        }
+
+        function openEquipmentModal(index = -1) {
+            editingIndex = index;
+            const modal = document.getElementById('equipmentModal');
+            const modalTitle = document.getElementById('modalTitle');
+
+            if (index >= 0) {
+                // Editing existing equipment
+                const equip = equipments[index];
+                modalTitle.textContent = 'Editar Equipo';
+                document.getElementById('equipTipo').value = equip.tipo_equipo || '';
+                document.getElementById('equipModelo').value = equip.modelo || '';
+                document.getElementById('equipSerie').value = equip.serie || '';
+                document.getElementById('equipDescripcion').value = equip.descripcion_servicio || '';
+                document.getElementById('equipDetalles').value = equip.detalles_adicionales || '';
+            } else {
+                // Adding new equipment
+                modalTitle.textContent = 'Agregar Equipo';
+                document.getElementById('equipTipo').value = '';
+                document.getElementById('equipModelo').value = '';
+                document.getElementById('equipSerie').value = '';
+                document.getElementById('equipDescripcion').value = '';
+                document.getElementById('equipDetalles').value = '';
+
+                // Load client equipment if client is selected
+                loadClientEquipment();
+            }
+
+            modal.style.display = 'block';
+        }
+
+        function loadClientEquipment() {
+            const clientId = document.getElementById('clienteSelect').value;
+            const container = document.getElementById('clientEquipmentList');
+            const section = document.getElementById('clientEquipmentSection');
+
+            console.log('Loading equipment for client:', clientId);
+
+            if (!clientId) {
+                section.style.display = 'none';
+                return;
+            }
+
+            section.style.display = 'block';
+            container.innerHTML = '<p style="text-align: center; color: #999;">Cargando...</p>';
+
+            fetch(`/api/equipos/${clientId}`)
+                .then(r => {
+                    console.log('API Response status:', r.status);
+                    return r.json();
+                })
+                .then(data => {
+                    console.log('Equipment data:', data);
+                    if (!data || data.length === 0) {
+                        container.innerHTML = '<p style="text-align: center; color: #999; font-size: 0.9em;">Sin equipos registrados</p>';
+                        return;
+                    }
+
+                    container.innerHTML = data.map(eq => `
+                        <div class="client-equipment-item" onclick='selectClientEquipment(${JSON.stringify(eq)})'>
+                            <strong>${eq.tipo_equipo || 'Sin tipo'}</strong>
+                            <small>
+                                ${eq.modelo ? `Modelo: ${eq.modelo}` : ''}
+                                ${eq.serie ? ` | Serie: ${eq.serie}` : ''}
+                            </small>
+                        </div>
+                    `).join('');
+                })
+                .catch(err => {
+                    console.error('Error loading equipment:', err);
+                    container.innerHTML = '<p style="text-align: center; color: #d20000; font-size: 0.9em;">Error al cargar equipos</p>';
+                });
+        }
+
+        function selectClientEquipment(equipment) {
+            document.getElementById('equipTipo').value = equipment.tipo_equipo || '';
+            document.getElementById('equipModelo').value = equipment.modelo || '';
+            document.getElementById('equipSerie').value = equipment.serie || '';
+            // Focus on description
+            document.getElementById('equipDescripcion').focus();
+        }
+
+        function closeEquipmentModal() {
+            document.getElementById('equipmentModal').style.display = 'none';
+            editingIndex = -1;
+        }
+
+        function saveEquipment() {
+            const tipo = document.getElementById('equipTipo').value.trim();
+            const descripcion = document.getElementById('equipDescripcion').value.trim();
+
+            if (!tipo || !descripcion) {
+                alert('Por favor complete al menos el tipo de equipo y la descripción del servicio.');
+                return;
+            }
+
+            const equipment = {
+                tipo_equipo: tipo,
+                modelo: document.getElementById('equipModelo').value.trim(),
+                serie: document.getElementById('equipSerie').value.trim(),
+                descripcion_servicio: descripcion,
+                detalles_adicionales: document.getElementById('equipDetalles').value.trim()
+            };
+
+            if (editingIndex >= 0) {
+                // Update existing
+                equipment.id = equipments[editingIndex].id;
+                equipments[editingIndex] = equipment;
+            } else {
+                // Add new
+                equipments.push(equipment);
+            }
+
+            renderEquipments();
+            closeEquipmentModal();
+        }
+
+        function deleteEquipment(index) {
+            if (confirm('¿Eliminar este equipo?')) {
+                equipments.splice(index, 1);
+                renderEquipments();
+            }
+        }
+
+        function renderEquipments() {
+            const container = document.getElementById('equipmentList');
+
+            if (equipments.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🔧</div>
+                        <p>No hay equipos agregados. Haz clic en "Agregar Equipo" para comenzar.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = equipments.map((equip, index) => `
+                <div class="equipment-item" onclick="openEquipmentModal(${index})">
+                    <div class="equipment-info">
+                        <strong>${equip.tipo_equipo}</strong>
+                        <small>
+                            ${equip.modelo ? `Modelo: ${equip.modelo}` : ''}
+                            ${equip.serie ? ` | Serie: ${equip.serie}` : ''}
+                        </small>
+                        <small style="color: #d20000; font-weight: 500; margin-top: 4px;">
+                            🛠️ ${equip.descripcion_servicio}
+                        </small>
+                    </div>
+                    <div class="equipment-actions">
+                        <button type="button" class="btn-icon" onclick="event.stopPropagation(); deleteEquipment(${index})" title="Eliminar">
+                            🗑️
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Técnicos functions
+        function openTecnicoModal() {
+            editingTecnicoIndex = -1;
+            const modal = document.getElementById('tecnicoModal');
+            document.getElementById('tecnicoSelect').value = '';
+            document.getElementById('tecnicoPuntos').value = '0';
+            modal.style.display = 'block';
+        }
+
+        function closeTecnicoModal() {
+            document.getElementById('tecnicoModal').style.display = 'none';
+            editingTecnicoIndex = -1;
+        }
+
+        function saveTecnico() {
+            const tecnicoId = parseInt(document.getElementById('tecnicoSelect').value);
+            const puntos = parseInt(document.getElementById('tecnicoPuntos').value) || 0;
+
+            if (!tecnicoId) {
+                alert('Por favor seleccione un técnico.');
+                return;
+            }
+
+            // Check if already added
+            if (tecnicos.some(t => t.tecnico_id === tecnicoId) && editingTecnicoIndex < 0) {
+                alert('Este técnico ya está agregado.');
+                return;
+            }
+
+            // Get técnico name
+            const tecnicoOption = document.getElementById('tecnicoSelect').options[document.getElementById('tecnicoSelect').selectedIndex];
+            const tecnicoNombre = tecnicoOption.text;
+
+            const tecnico = {
+                tecnico_id: tecnicoId,
+                nombre: tecnicoNombre,
+                puntos: puntos
+            };
+
+            if (editingTecnicoIndex >= 0) {
+                tecnicos[editingTecnicoIndex] = tecnico;
+            } else {
+                tecnicos.push(tecnico);
+            }
+
+            renderTecnicos();
+            closeTecnicoModal();
+        }
+
+        function editTecnico(index) {
+            editingTecnicoIndex = index;
+            const tecnico = tecnicos[index];
+            document.getElementById('tecnicoSelect').value = tecnico.tecnico_id;
+            document.getElementById('tecnicoPuntos').value = tecnico.puntos;
+            document.getElementById('tecnicoModal').style.display = 'block';
+        }
+
+        function deleteTecnico(index) {
+            if (confirm('¿Eliminar este técnico?')) {
+                tecnicos.splice(index, 1);
+                renderTecnicos();
+            }
+        }
+
+        function renderTecnicos() {
+            const container = document.getElementById('tecnicosList');
+
+            if (tecnicos.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">👷</div>
+                        <p>No hay técnicos agregados. Haz clic en "Agregar Técnico" para comenzar.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = tecnicos.map((tec, index) => `
+                <div class="equipment-item" onclick="editTecnico(${index})">
+                    <div class="equipment-info">
+                        <strong>${tec.nombre}</strong>
+                        <small style="color: #d20000; font-weight: 500; margin-top: 4px;">
+                            ⭐ Puntos: ${tec.puntos}
+                        </small>
+                    </div>
+                    <div class="equipment-actions">
+                        <button type="button" class="btn-icon" onclick="event.stopPropagation(); deleteTecnico(${index})" title="Eliminar">
+                            🗑️
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Initialize técnicos list on page load
+        renderTecnicos();
+
+        // Handle form submission
+        document.getElementById('servicioForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            if (equipments.length === 0) {
+                alert('Debe agregar al menos un equipo al servicio.');
+                return;
+            }
+
+            // Add equipments as hidden field
+            const equipInput = document.createElement('input');
+            equipInput.type = 'hidden';
+            equipInput.name = 'equipments';
+            equipInput.value = JSON.stringify(equipments);
+            this.appendChild(equipInput);
+
+            // Add tecnicos as hidden field
+            const tecnicosInput = document.createElement('input');
+            tecnicosInput.type = 'hidden';
+            tecnicosInput.name = 'tecnicos';
+            tecnicosInput.value = JSON.stringify(tecnicos);
+            this.appendChild(tecnicosInput);
+
+            this.submit();
+        });
+
+        // Close modal on outside click
+        window.onclick = function (event) {
+            const equipmentModal = document.getElementById('equipmentModal');
+            const tecnicoModal = document.getElementById('tecnicoModal');
+            if (event.target === equipmentModal) {
+                closeEquipmentModal();
+            }
+            if (event.target === tecnicoModal) {
+                closeTecnicoModal();
+            }
+        }
+
+        // Load contacts if client is pre-selected
+        if (document.getElementById('clienteSelect').value) {
+            loadContacts();
+        }
+    </script>
+</body>
+
+</html>

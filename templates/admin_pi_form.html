@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if pi %}Editar{% else %}Nueva{% endif %} PI - INAIR</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+    <style>
+        .form-section {
+            background: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 15px;
+        }
+
+        .form-section h3 {
+            margin: 0 0 12px 0;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 8px;
+            color: #d20000;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 10px;
+        }
+
+        .form-group label {
+            font-size: 12px;
+            margin-bottom: 4px;
+            display: block;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            padding: 8px 10px;
+            font-size: 13px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 8px;
+            font-size: 12px;
+        }
+
+        .items-table th,
+        .items-table td {
+            border: 1px solid #ddd;
+            padding: 6px;
+            text-align: left;
+        }
+
+        .items-table th {
+            background-color: #1a1a2e;
+            color: white;
+            font-size: 11px;
+        }
+
+        .items-table input,
+        .items-table select {
+            width: 100%;
+            padding: 4px 6px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+
+        .totals-area {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 12px;
+        }
+
+        .totals-table {
+            width: 280px;
+        }
+
+        .totals-table td {
+            padding: 4px;
+            text-align: right;
+            font-size: 13px;
+        }
+
+        .totals-table input {
+            text-align: right;
+            font-weight: bold;
+        }
+
+        .btn-remove {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn-remove:hover {
+            background: #c82333;
+        }
+
+        .autocomplete-container {
+            position: relative;
+        }
+
+        .autocomplete-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .autocomplete-results.show {
+            display: block;
+        }
+
+        .autocomplete-item {
+            padding: 8px 10px;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+            font-size: 12px;
+        }
+
+        .autocomplete-item:hover {
+            background: #f0f0f0;
+        }
+
+        /* Toggle Group Styles */
+        .flex-row-group {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .flex-grow-1 {
+            flex-grow: 1;
+        }
+
+        .btn-toggle {
+            padding: 8px 12px;
+            background: #f0f0f0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .btn-toggle:hover {
+            background: #e0e0e0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="admin-container">
+        <div class="admin-header">
+            <h1>{% if pi %}✏️ Editar{% else %}📄 Nueva{% endif %} Proforma Invoice (PI)</h1>
+            <div class="user-info">
+                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="history.back()">Atrás</button>
+                <a href="{{ url_for('admin_pis') }}" class="btn btn-secondary btn-sm">← Volver</a>
+            </div>
+        </div>
+
+        <form method="POST" id="piForm">
+            {% if deal_id %}
+            <input type="hidden" name="deal_id" value="{{ deal_id }}">
+            {% endif %}
+            <div class="form-section">
+                <h3>📋 Información General</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Folio</label>
+                        <input type="text" name="folio" id="folioInput" value="{{ pi.folio if pi else next_folio }}"
+                            readonly style="background: #f0f0f0; font-weight: bold; color: #d20000;">
+                    </div>
+                    <div class="form-group">
+                        <label>Fecha *</label>
+                        <input type="date" name="fecha" value="{{ pi.fecha if pi else '' }}" required id="fechaInput">
+                    </div>
+                    <div class="form-group">
+                        <label>Moneda</label>
+                        <select name="moneda" id="monedaSelect">
+                            <option value="USD" {% if pi and pi.moneda=='USD' %}selected{% endif %}>USD</option>
+                            <option value="MXN" {% if pi and pi.moneda=='MXN' %}selected{% endif %}>MXN</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <!-- Solicitado Por (Internal User) -->
+                    <div class="form-group">
+                        <label>Solicitado Por (Usuario)</label>
+                        <input type="text" list="users_list" name="solicitado_por"
+                            value="{{ pi.solicitado_por if pi else '' }}" placeholder="Nombre del usuario">
+                        <datalist id="users_list">
+                            {% for u in users %}
+                            <option value="{{ u.username }}">{{ u.username }}</option>
+                            {% endfor %}
+                        </datalist>
+                    </div>
+
+                    <!-- Cliente (External Client) -->
+                    <div class="form-group">
+                        <label>Cliente</label>
+                        <div class="flex-row-group">
+                            <select id="clienteSelect" class="flex-grow-1" onchange="onClientSelectChange()">
+                                <option value="">-- Seleccionar --</option>
+                                {% for c in clients %}
+                                <option value="{{ c.id }}" data-nombre="{{ c.nombre }}" {% if (pi and
+                                    pi.cliente_id==c.id) or (not pi and cliente_id_arg and cliente_id_arg|int==c.id)
+                                    %}selected{% endif %}>
+                                    {{ c.nombre }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <input type="text" id="clienteInputManual" class="flex-grow-1" style="display:none;"
+                                placeholder="Escribir nombre del cliente..." oninput="syncManualClient()">
+                            <button type="button" class="btn-toggle" onclick="toggleField('cliente')"
+                                title="Alternar Manual/Lista">✏️</button>
+                        </div>
+                        <!-- Hidden fields for submission -->
+                        <input type="hidden" id="cliente_id" name="cliente_id"
+                            value="{{ pi.cliente_id if pi else '' }}">
+                        <input type="hidden" id="cliente_nombre" name="cliente_nombre"
+                            value="{{ pi.cliente_nombre if pi else '' }}">
+                    </div>
+
+                    <!-- Quote Link -->
+                    <div class="form-group">
+                        <label>Enlace a Cotización</label>
+                        <div class="flex-row-group">
+                            <select id="cotizacionSelect" class="flex-grow-1" onchange="onCotizacionSelectChange()">
+                                <option value="">-- Seleccionar Cliente Primero --</option>
+                                <!-- Populated dynamically -->
+                            </select>
+                            <input type="text" id="cotizacionInputManual" class="flex-grow-1" style="display:none;"
+                                disabled placeholder="Manual (No vinculable)">
+                            <button type="button" class="btn-toggle" onclick="toggleField('cotizacion')"
+                                title="Alternar Manual/Lista">✏️</button>
+                        </div>
+                        <input type="hidden" id="cotizacion_id" name="cotizacion_id"
+                            value="{{ pi.cotizacion_id if pi else '' }}">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <!-- Orden de Compra -->
+                    <div class="form-group">
+                        <label>Enlace a Orden de Compra (Opcional)</label>
+                        <div class="flex-row-group">
+                            <select id="ocSelect" class="flex-grow-1" onchange="onOCSelectChange()">
+                                <option value="">-- Ninguna --</option>
+                                {% for oc in compras %}
+                                <option value="{{ oc.id }}" data-folio="{{ oc.folio }}"
+                                    data-proveedor-id="{{ oc.proveedor_id }}"
+                                    data-proveedor-nombre="{{ oc.proveedor_nombre }}" {% if pi and
+                                    pi.orden_compra_id==oc.id %}selected{% endif %}>
+                                    {{ oc.folio }} - {{ oc.proveedor_nombre }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <input type="text" id="ocInputManual" class="flex-grow-1" style="display:none;" disabled
+                                placeholder="Manual (Solo referencia)">
+                            <button type="button" class="btn-toggle" onclick="toggleField('oc')"
+                                title="Alternar Manual/Lista">✏️</button>
+                        </div>
+                        <input type="hidden" id="orden_compra_id" name="orden_compra_id"
+                            value="{{ pi.orden_compra_id if pi else '' }}">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3>👤 Proveedor</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Seleccionar Proveedor</label>
+                        <select id="proveedorSelect" name="proveedor_id" onchange="fillSupplierInfo()">
+                            <option value="">-- Manual --</option>
+                            {% for p in suppliers %}
+                            <option value="{{ p.id }}" data-nombre="{{ p.nombre_empresa }}"
+                                data-atencion="{{ p.contacto_nombre }}" {% if pi and pi.proveedor_id==p.id %}selected{%
+                                endif %}>
+                                {{ p.nombre_empresa }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Nombre Proveedor *</label>
+                        <input type="text" name="proveedor_nombre" id="proveedor_nombre"
+                            value="{{ pi.proveedor_nombre if pi else '' }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Atención a</label>
+                        <input type="text" name="atencion_a" id="atencion_a" value="{{ pi.atencion_a if pi else '' }}">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Referencia / Proyecto</label>
+                        <input type="text" name="referencia" id="referenciaInput"
+                            value="{{ pi.referencia if pi else '' }}" placeholder="Ej: Proyecto Alpha">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3>📦 Partidas</h3>
+                <table class="items-table" id="itemsTable">
+                    <thead>
+                        <tr>
+                            <th style="width: 35px;">#</th>
+                            <th style="width: 55px;">Cant.</th>
+                            <th style="width: 55px;">Unidad</th>
+                            <th style="width: 120px;">No. Parte</th>
+                            <th>Descripción</th>
+                            <th style="width: 100px;">Estatus</th>
+                            <th style="width: 80px;">Entrega</th>
+                            <th style="width: 85px;">P. Unitario</th>
+                            <th style="width: 85px;">Importe</th>
+                            <th style="width: 35px;"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if pi and pi['items'] %}
+                        {% for item in pi['items'] %}
+                        <tr>
+                            <td><input type="number" name="item_linea[]" value="{{ item.linea }}" readonly
+                                    style="background:#f5f5f5;"></td>
+                            <td><input type="number" step="0.01" name="item_cantidad[]" value="{{ item.cantidad }}"
+                                    oninput="calculateRow(this)"></td>
+                            <td><input type="text" name="item_unidad[]" value="{{ item.unidad }}"></td>
+                            <td class="autocomplete-container">
+                                <input type="text" name="item_numero_parte[]" value="{{ item.numero_parte }}"
+                                    class="parte-input" oninput="searchProducto(this)">
+                                <div class="autocomplete-results"></div>
+                            </td>
+                            <td><input type="text" name="item_descripcion[]" value="{{ item.descripcion }}"></td>
+                            <td>
+                                <select name="item_estatus[]">
+                                    <option value="Pendiente" {% if item.estatus=='Pendiente' %}selected{% endif %}>
+                                        Pendiente</option>
+                                    <option value="Recibido" {% if item.estatus=='Recibido' %}selected{% endif %}>
+                                        Recibido</option>
+                                    <option value="Cancelado" {% if item.estatus=='Cancelado' %}selected{% endif %}>
+                                        Cancelado</option>
+                                    <option value="En Tránsito" {% if item.estatus=='En Tránsito' %}selected{% endif %}>
+                                        En Tránsito</option>
+                                </select>
+                            </td>
+                            <td><input type="text" name="item_tiempo_entrega[]" value="{{ item.tiempo_entrega_item }}">
+                            </td>
+                            <td><input type="number" step="0.01" name="item_precio_unitario[]"
+                                    value="{{ item.precio_unitario }}" oninput="calculateRow(this)"></td>
+                            <td><input type="number" step="0.01" name="item_importe[]" value="{{ item.importe }}"
+                                    readonly style="background:#f5f5f5;"></td>
+                            <td><button type="button" class="btn-remove" onclick="removeRow(this)">&times;</button></td>
+                        </tr>
+                        {% endfor %}
+                        {% else %}
+                        <tr>
+                            <td><input type="number" name="item_linea[]" value="1" readonly style="background:#f5f5f5;">
+                            </td>
+                            <td><input type="number" step="0.01" name="item_cantidad[]" value="1"
+                                    oninput="calculateRow(this)"></td>
+                            <td><input type="text" name="item_unidad[]" value="PZA"></td>
+                            <td class="autocomplete-container">
+                                <input type="text" name="item_numero_parte[]" placeholder="Buscar..."
+                                    class="parte-input" oninput="searchProducto(this)">
+                                <div class="autocomplete-results"></div>
+                            </td>
+                            <td><input type="text" name="item_descripcion[]" placeholder="Descripción..."></td>
+                            <td>
+                                <select name="item_estatus[]">
+                                    <option value="Pendiente">Pendiente</option>
+                                    <option value="Recibido">Recibido</option>
+                                    <option value="Cancelado">Cancelado</option>
+                                    <option value="En Tránsito">En Tránsito</option>
+                                </select>
+                            </td>
+                            <td><input type="text" name="item_tiempo_entrega[]" value="1-2 semanas"></td>
+                            <td><input type="number" step="0.01" name="item_precio_unitario[]" value="0"
+                                    oninput="calculateRow(this)"></td>
+                            <td><input type="number" step="0.01" name="item_importe[]" value="0" readonly
+                                    style="background:#f5f5f5;"></td>
+                            <td><button type="button" class="btn-remove" onclick="removeRow(this)">&times;</button></td>
+                        </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+                <button type="button" class="btn btn-secondary btn-sm" onclick="addRow()" style="margin-top: 10px;">+
+                    Agregar Partida</button>
+
+                <div class="totals-area">
+                    <table class="totals-table">
+                        <tr>
+                            <td>Subtotal:</td>
+                            <td><input type="number" step="0.01" name="subtotal" id="subtotal" readonly
+                                    value="{{ pi.subtotal if pi else '0.00' }}" style="background:#f5f5f5;"></td>
+                        </tr>
+                        <tr>
+                            <td>IVA (%):</td>
+                            <td><input type="number" step="0.01" name="iva_porcentaje" id="iva_porcentaje"
+                                    value="{{ pi.iva_porcentaje if pi else '16' }}" oninput="calculateTotals()"></td>
+                        </tr>
+                        <tr>
+                            <td>IVA Monto:</td>
+                            <td><input type="number" step="0.01" name="iva_monto" id="iva_monto" readonly
+                                    value="{{ pi.iva_monto if pi else '0.00' }}" style="background:#f5f5f5;"></td>
+                        </tr>
+                        <tr style="font-size: 1.1em; color: #d20000;">
+                            <td><strong>Total:</strong></td>
+                            <td><input type="number" step="0.01" name="total" id="total" readonly
+                                    value="{{ pi.total if pi else '0.00' }}"
+                                    style="background:#f5f5f5; color: #d20000;"></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3>📝 Notas</h3>
+                <div class="form-group">
+                    <label>Notas</label>
+                    <textarea name="notas" rows="3">{{ pi.notas if pi else '' }}</textarea>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px; font-size: 1em;">💾 Guardar
+                PI</button>
+        </form>
+    </div>
+
+    <script>
+        function fillSupplierInfo() {
+            var select = document.getElementById('proveedorSelect');
+            var option = select.options[select.selectedIndex];
+            if (option.value) {
+                document.getElementById('proveedor_nombre').value = option.dataset.nombre || '';
+                document.getElementById('atencion_a').value = option.dataset.atencion || '';
+            }
+        }
+
+        // --- Toggle Logic ---
+        function toggleField(type) { // type: 'cliente', 'cotizacion', 'oc'
+            var select = document.getElementById(type + 'Select');
+            var input = document.getElementById(type + 'InputManual');
+
+            if (select.style.display === 'none') {
+                // Switch to List Mode
+                select.style.display = 'block';
+                input.style.display = 'none';
+                input.disabled = true; // Disable manual input so it's not sent if not active? Actually we handle sync via JS
+                // When switching back to list, we might want to re-run the select change logic
+                if (type === 'cliente') onClientSelectChange();
+            } else {
+                // Switch to Manual Mode
+                select.style.display = 'none';
+                input.style.display = 'block';
+                input.disabled = false;
+
+                // Clear IDs
+                if (type === 'cliente') {
+                    document.getElementById('cliente_id').value = '';
+                    syncManualClient();
+                } else if (type === 'cotizacion') {
+                    document.getElementById('cotizacion_id').value = '';
+                } else if (type === 'oc') {
+                    document.getElementById('orden_compra_id').value = '';
+                }
+            }
+        }
+
+        // --- Client Logic ---
+        function onClientSelectChange() {
+            var select = document.getElementById('clienteSelect');
+            var val = select.value;
+            var option = select.options[select.selectedIndex];
+
+            // Set ID and Name
+            document.getElementById('cliente_id').value = val;
+            document.getElementById('cliente_nombre').value = option.dataset.nombre || '';
+
+            // Filter Quotes
+            var cotSelect = document.getElementById('cotizacionSelect');
+            cotSelect.innerHTML = '<option value="">-- Cargar... --</option>';
+
+            if (val) {
+                // Add timestamp to prevent caching
+                fetch('/api/finanzas/cotizaciones/' + val + '?t=' + new Date().getTime())
+                    .then(r => {
+                        if (!r.ok) throw new Error("HTTP " + r.status);
+                        return r.json();
+                    })
+                    .then(data => {
+                        cotSelect.innerHTML = '<option value="">-- Seleccionar --</option>';
+                        if (data.success && data.cotizaciones) {
+                            data.cotizaciones.forEach(c => {
+                                var opt = document.createElement('option');
+                                opt.value = c.id;
+                                opt.innerText = c.folio + " - " + (c.referencia || "Sin Ref");
+                                cotSelect.appendChild(opt);
+                            });
+                        }
+                    })
+                    .catch(e => {
+                        console.error(e);
+                        cotSelect.innerHTML = '<option value="">-- Error: ' + e.message + ' --</option>';
+                    });
+            } else {
+                cotSelect.innerHTML = '<option value="">-- Seleccionar Cliente Primero --</option>';
+            }
+        }
+
+        function syncManualClient() {
+            var input = document.getElementById('clienteInputManual');
+            document.getElementById('cliente_nombre').value = input.value;
+            document.getElementById('cliente_id').value = ''; // Ensure ID is empty for manual
+        }
+
+        // --- Quote Logic ---
+        function onCotizacionSelectChange() {
+            var select = document.getElementById('cotizacionSelect');
+            var val = select.value;
+            document.getElementById('cotizacion_id').value = val;
+
+            if (val) {
+                fillFromCotizacionId(val);
+            }
+        }
+
+        function fillFromCotizacionId(cotId) {
+            fetch('/api/cotizaciones/detalle/' + cotId)
+                .then(r => r.json())
+                .then(cot => {
+                    if (cot.error) return;
+                    // Fill Items
+                    var tbody = document.querySelector('#itemsTable tbody');
+                    tbody.innerHTML = '';
+                    if (cot.items && cot.items.length > 0) {
+                        cot.items.forEach((item, index) => {
+                            var newRow = document.createElement('tr');
+                            var lineNum = index + 1;
+                            newRow.innerHTML = `
+                                <td><input type="number" name="item_linea[]" value="${lineNum}" readonly style="background:#f5f5f5;"></td>
+                                <td><input type="number" step="0.01" name="item_cantidad[]" value="${item.cantidad}" oninput="calculateRow(this)"></td>
+                                <td><input type="text" name="item_unidad[]" value="${item.unidad || 'PZA'}"></td>
+                                <td class="autocomplete-container">
+                                    <input type="text" name="item_numero_parte[]" value="${item.numero_parte || ''}" class="parte-input" oninput="searchProducto(this)">
+                                    <div class="autocomplete-results"></div>
+                                </td>
+                                <td><input type="text" name="item_descripcion[]" value="${item.descripcion || ''}"></td>
+                                <td>
+                                    <select name="item_estatus[]">
+                                        <option value="Pendiente">Pendiente</option>
+                                        <option value="Recibido">Recibido</option>
+                                        <option value="Cancelado">Cancelado</option>
+                                        <option value="En Tránsito">En Tránsito</option>
+                                    </select>
+                                </td>
+                                <td><input type="text" name="item_tiempo_entrega[]" value="${item.tiempo_entrega_item || '1-2 semanas'}"></td>
+                                <td><input type="number" step="0.01" name="item_precio_unitario[]" value="${item.precio_unitario || 0}" oninput="calculateRow(this)"></td>
+                                <td><input type="number" step="0.01" name="item_importe[]" value="${item.importe || 0}" readonly style="background:#f5f5f5;"></td>
+                                <td><button type="button" class="btn-remove" onclick="removeRow(this)">&times;</button></td>
+                            `;
+                            tbody.appendChild(newRow);
+                        });
+                        calculateTotals();
+                    }
+                    if (cot.moneda) {
+                        document.getElementById('monedaSelect').value = cot.moneda;
+                    }
+                });
+        }
+
+        // --- OC Logic ---
+        function onOCSelectChange() {
+            var select = document.getElementById('ocSelect');
+            var val = select.value;
+            document.getElementById('orden_compra_id').value = val;
+
+            if (val) {
+                var option = select.options[select.selectedIndex];
+                var provId = option.dataset.proveedorId;
+                var provNombre = option.dataset.proveedorNombre;
+
+                if (provId) {
+                    var provSelect = document.getElementById('proveedorSelect');
+                    provSelect.value = provId;
+                    fillSupplierInfo();
+                } else if (provNombre) {
+                    document.getElementById('proveedor_nombre').value = provNombre;
+                }
+                var folio = option.dataset.folio;
+                document.getElementById('referenciaInput').value = "OC: " + folio;
+            }
+        }
+
+        // --- Items and Calculation Logic (Simplified from Cotizaciones) ---
+        function calculateRow(input) {
+            var row = input.closest('tr');
+            var cantidad = parseFloat(row.querySelector('input[name="item_cantidad[]"]').value) || 0;
+            var precio = parseFloat(row.querySelector('input[name="item_precio_unitario[]"]').value) || 0;
+            var importe = cantidad * precio;
+            row.querySelector('input[name="item_importe[]"]').value = importe.toFixed(2);
+            calculateTotals();
+        }
+
+        function calculateTotals() {
+            var importes = document.querySelectorAll('input[name="item_importe[]"]');
+            var subtotal = 0;
+            importes.forEach(function (input) {
+                subtotal += parseFloat(input.value) || 0;
+            });
+            var ivaPct = parseFloat(document.getElementById('iva_porcentaje').value) || 0;
+            var ivaMonto = subtotal * (ivaPct / 100);
+            var total = subtotal + ivaMonto;
+
+            document.getElementById('subtotal').value = subtotal.toFixed(2);
+            document.getElementById('iva_monto').value = ivaMonto.toFixed(2);
+            document.getElementById('total').value = total.toFixed(2);
+        }
+
+        function addRow() {
+            var tbody = document.querySelector('#itemsTable tbody');
+            var rows = tbody.querySelectorAll('tr');
+            var newLineNum = rows.length + 1;
+            var newRow = document.createElement('tr');
+            newRow.innerHTML = `
+                <td><input type="number" name="item_linea[]" value="${newLineNum}" readonly style="background:#f5f5f5;"></td>
+                <td><input type="number" step="0.01" name="item_cantidad[]" value="1" oninput="calculateRow(this)"></td>
+                <td><input type="text" name="item_unidad[]" value="PZA"></td>
+                <td class="autocomplete-container">
+                    <input type="text" name="item_numero_parte[]" placeholder="Buscar..." class="parte-input" oninput="searchProducto(this)">
+                    <div class="autocomplete-results"></div>
+                </td>
+                <td><input type="text" name="item_descripcion[]" placeholder="Descripción..."></td>
+                <td>
+                    <select name="item_estatus[]">
+                        <option value="Pendiente">Pendiente</option>
+                        <option value="Recibido">Recibido</option>
+                        <option value="Cancelado">Cancelado</option>
+                        <option value="En Tránsito">En Tránsito</option>
+                    </select>
+                </td>
+                <td><input type="text" name="item_tiempo_entrega[]" value="1-2 semanas"></td>
+                <td><input type="number" step="0.01" name="item_precio_unitario[]" value="0" oninput="calculateRow(this)"></td>
+                <td><input type="number" step="0.01" name="item_importe[]" value="0" readonly style="background:#f5f5f5;"></td>
+                <td><button type="button" class="btn-remove" onclick="removeRow(this)">&times;</button></td>
+            `;
+            tbody.appendChild(newRow);
+        }
+
+        function removeRow(btn) {
+            var tbody = document.querySelector('#itemsTable tbody');
+            if (tbody.querySelectorAll('tr').length > 1) {
+                btn.closest('tr').remove();
+                // Renumber
+                var rows = tbody.querySelectorAll('tr');
+                rows.forEach((r, i) => r.querySelector('input[name="item_linea[]"]').value = i + 1);
+                calculateTotals();
+            }
+        }
+
+        // Basic Autocomplete for Products (using same API as Cotizaciones)
+        var searchTimeout;
+        function searchProducto(input) {
+            clearTimeout(searchTimeout);
+            var query = input.value.trim();
+            var resultsDiv = input.nextElementSibling;
+            if (query.length < 2) { resultsDiv.classList.remove('show'); return; }
+
+            searchTimeout = setTimeout(function () {
+                fetch('/api/almacen/buscar-producto?q=' + encodeURIComponent(query))
+                    .then(r => r.json())
+                    .then(productos => {
+                        if (productos.length === 0) {
+                            resultsDiv.innerHTML = '<div class="autocomplete-item">No encontrado</div>';
+                        } else {
+                            var html = '';
+                            productos.forEach(p => {
+                                html += `<div class="autocomplete-item" onclick='selectProducto(this, ${JSON.stringify(p)})'>
+                                    <span style="font-weight:bold; color:#d20000;">${p.numero_parte}</span> - ${p.descripcion}
+                                    <br><small>Stock: ${p.stock}</small>
+                                </div>`;
+                            });
+                            resultsDiv.innerHTML = html;
+                        }
+                        resultsDiv.classList.add('show');
+                    });
+            }, 300);
+        }
+
+        function selectProducto(element, producto) {
+            var row = element.closest('tr');
+            row.querySelector('.parte-input').value = producto.numero_parte;
+            row.querySelector('input[name="item_descripcion[]"]').value = producto.descripcion;
+            row.querySelector('input[name="item_unidad[]"]').value = producto.unidad || 'PZA';
+            element.parentElement.classList.remove('show');
+        }
+
+        document.addEventListener('click', function (e) {
+            if (!e.target.classList.contains('parte-input')) {
+                document.querySelectorAll('.autocomplete-results').forEach(el => el.classList.remove('show'));
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', function () {
+            var fechaInput = document.getElementById('fechaInput');
+            if (!fechaInput.value) {
+                fechaInput.value = new Date().toISOString().split('T')[0];
+            }
+            if (!document.getElementById('proveedorSelect').value && !document.getElementById('proveedor_nombre').value) {
+                // Default state
+            }
+
+            // Sync client selection if pre-selected
+            var clienteSelect = document.getElementById('clienteSelect');
+            if (clienteSelect.value) {
+                onClientSelectChange();
+            }
+
+            calculateTotals();
+        });
+    </script>
+</body>
+
+</html>

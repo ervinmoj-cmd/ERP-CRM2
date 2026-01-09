@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración - INAIR</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/responsive.css') }}">
+    <style>
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 1200px) {
+            .stats-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="admin-container">
+        <div class="admin-header">
+            <h1>🏠 Panel de Administración</h1>
+            <div class="user-info" style="display: flex; align-items: center; gap: 15px;">
+                <span>{{ session.get('nombre', 'Administrador') }}</span>
+                {% include 'components/notifications_bell.html' %}
+                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="history.back()">Atrás</button>
+                <a href="{{ url_for('dashboard_redirect') }}" class="btn btn-secondary btn-sm">Volver al Panel</a>
+                <a href="{{ url_for('logout') }}" class="btn btn-danger btn-sm">Cerrar Sesión</a>
+            </div>
+        </div>
+
+        <!-- Stats Cards - Horizontal Grid -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Total Clientes</h3>
+                <div class="stat-value">{{ stats.total_clients }}</div>
+            </div>
+            <div class="stat-card">
+                <h3>Total Usuarios</h3>
+                <div class="stat-value">{{ stats.total_users }}</div>
+            </div>
+            <div class="stat-card">
+                <h3>Reportes Generados</h3>
+                <div class="stat-value">{{ stats.total_reports }}</div>
+            </div>
+            <div class="stat-card">
+                <h3>Planes Activos</h3>
+                <div class="stat-value">{{ stats.active_plans }}</div>
+            </div>
+            <div class="stat-card">
+                <h3>Refacciones</h3>
+                <div class="stat-value">{{ stats.total_refacciones }}</div>
+            </div>
+        </div>
+
+        <!-- Navigation Cards -->
+        <h2 style="margin-bottom: 20px; color: #2c3e50;">Acceso Rápido</h2>
+        <div class="dashboard-grid">
+            <a href="{{ url_for('admin_clientes') }}" class="nav-card">
+                <div style="font-size: 48px; margin-bottom: 15px;">👥</div>
+                <h3>Clientes</h3>
+                <p>Gestionar clientes y contactos</p>
+            </a>
+
+            <a href="{{ url_for('admin_usuarios') }}" class="nav-card">
+                <div style="font-size: 48px; margin-bottom: 15px;">👤</div>
+                <h3>Usuarios</h3>
+                <p>Administrar usuarios del sistema</p>
+            </a>
+
+            <a href="{{ url_for('admin_historial') }}" class="nav-card">
+                <div style="font-size: 48px; margin-bottom: 15px;">📋</div>
+                <h3>Historial de Servicios</h3>
+                <p>Ver reportes generados</p>
+            </a>
+
+            <a href="{{ url_for('reportes_pendientes') }}" class="nav-card">
+                <div style="font-size: 48px; margin-bottom: 15px;">⏳</div>
+                <h3>Reportes Pendientes de Enviar</h3>
+                <p>Borradores sin enviar</p>
+            </a>
+
+            <a href="{{ url_for('admin_equipos_modulo') }}" class="nav-card">
+                <div style="font-size: 48px; margin-bottom: 15px;">🔧</div>
+                <h3>Equipos</h3>
+                <p>Gestión y calendario de mantenimiento</p>
+            </a>
+
+            <a href="{{ url_for('formulario') }}" class="nav-card">
+                <div style="font-size: 48px; margin-bottom: 15px;">📝</div>
+                <h3>Generar Reporte</h3>
+                <p>Crear nuevo reporte técnico</p>
+            </a>
+
+            <a href="{{ url_for('admin_almacen') }}" class="nav-card">
+                <div style="font-size: 48px; margin-bottom: 15px;">📦</div>
+                <h3>Almacén</h3>
+                <p>Gestionar inventario de refacciones</p>
+            </a>
+
+            <a href="{{ url_for('admin_cotizaciones') }}" class="nav-card">
+                <div style="font-size: 48px; margin-bottom: 15px;">📄</div>
+                <h3>Cotizaciones</h3>
+                <p>Crear y gestionar cotizaciones</p>
+            </a>
+
+            <a href="{{ url_for('admin_pis') }}" class="nav-card">
+                <div style="font-size: 48px; margin-bottom: 15px;">📑</div>
+                <h3>Gestión de PI</h3>
+                <p>Proforma Invoices</p>
+            </a>
+
+            <a href="{{ url_for('admin_remisiones') }}" class="nav-card">
+                <div style="font-size: 48px; margin-bottom: 15px;">📦</div>
+                <h3>Remisiones</h3>
+                <p>Entregas con o sin factura</p>
+            </a>
+
+            <a href="{{ url_for('admin_crm') }}" class="nav-card" style="border: 2px solid #d20000;">
+                <div style="font-size: 48px; margin-bottom: 15px;">📊</div>
+                <h3>CRM</h3>
+                <p>Pipeline de ventas y oportunidades</p>
+            </a>
+
+            <a href="{{ url_for('admin_compras') }}" class="nav-card">
+                <div style="font-size: 48px; margin-bottom: 15px;">🛍️</div>
+                <h3>Compras</h3>
+                <p>Proveedores y Órdenes de Compra</p>
+            </a>
+
+            <a href="{{ url_for('admin_finanzas') }}" class="nav-card">
+                <div style="font-size: 48px; margin-bottom: 15px;">💰</div>
+                <h3>Finanzas</h3>
+                <p>Administración de dinero e ingresos</p>
+            </a>
+        </div>
+    </div>
+</body>
+
+</html>

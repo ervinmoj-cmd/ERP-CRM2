@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compras - INAIR</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Custom Admin CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .admin-header {
+            background: white;
+            padding: 1rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .card {
+            border: none;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container-fluid p-0">
+        <!-- Header -->
+        <div class="admin-header d-flex justify-content-between align-items-center">
+            <h1 class="h3 mb-0 text-dark">🛍️ Gestión de Compras</h1>
+            <div>
+                <a href="{{ url_for('admin_proveedores') }}"
+                    class="btn btn-outline-secondary btn-sm me-2">Proveedores</a>
+                <button type="button" class="btn btn-outline-secondary btn-sm me-2" onclick="history.back()">Atrás</button>
+                <a href="{{ url_for('dashboard_redirect') }}" class="btn btn-secondary btn-sm me-2">Volver al Panel</a>
+                <a href="{{ url_for('logout') }}" class="btn btn-danger btn-sm">Cerrar Sesión</a>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="row mb-4">
+                <div class="col-md-8">
+                    <h2><i class="fas fa-shopping-cart text-primary"></i> Órdenes de Compra</h2>
+                    <p class="text-muted">Gestión de compras y pedidos a proveedores.</p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <a href="{{ url_for('admin_compras_requisiciones') }}" class="btn btn-outline-primary me-2">
+                        🧾 Requisiciones
+                    </a>
+                    <a href="{{ url_for('admin_compras_nueva') }}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Nueva Orden
+                    </a>
+                </div>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th>Folio</th>
+                                    <th>Proveedor</th>
+                                    <th>Fecha</th>
+                                    <th>Entrega</th>
+                                    <th>Total</th>
+                                    <th>Estado</th>
+                                    <th class="text-end">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for c in compras %}
+                                <tr>
+                                    <td>
+                                        <div class="fw-bold text-primary">{{ c.folio }}</div>
+                                        <small class="text-muted">{{ c.creador_nombre }}</small>
+                                    </td>
+                                    <td>{{ c.proveedor_nombre or 'Sin Proveedor' }}</td>
+                                    <td>{{ c.fecha_emision }}</td>
+                                    <td>{{ c.fecha_entrega_estimada or '-' }}</td>
+                                    <td>
+                                        <div class="fw-bold">{{ "${:,.2f}".format(c.total) }} {{ c.moneda }}</div>
+                                    </td>
+                                    <td>
+                                        {% if c.estado == 'Borrador' %}
+                                        <span class="badge bg-secondary">Borrador</span>
+                                        {% elif c.estado == 'Enviada' %}
+                                        <span class="badge bg-primary">Enviada</span>
+                                        {% elif c.estado == 'Recibida' %}
+                                        <span class="badge bg-success">Recibida</span>
+                                        {% elif c.estado == 'Cancelada' %}
+                                        <span class="badge bg-danger">Cancelada</span>
+                                        {% else %}
+                                        <span class="badge bg-light text-dark">{{ c.estado }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end">
+                                        <a href="{{ url_for('admin_compras_pdf', id=c.id) }}" target="_blank"
+                                            class="btn btn-sm btn-outline-primary me-1" title="PDF">
+                                            <i class="fas fa-file-pdf"></i>
+                                        </a>
+                                        <a href="{{ url_for('admin_compras_editar', id=c.id) }}"
+                                            class="btn btn-sm btn-outline-primary" title="Editar">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="7" class="text-center py-4 text-muted">No hay órdenes de compra
+                                        registradas.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

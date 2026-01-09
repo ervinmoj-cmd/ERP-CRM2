@@ -1,0 +1,365 @@
+<!-- Notifications Bell Component - Include this in any page -->
+<style>
+    .notification-bell-global {
+        position: relative;
+        background: #f0f0f0;
+        color: #333;
+        border: none;
+        border-radius: 8px;
+        padding: 10px 15px;
+        cursor: pointer;
+        font-size: 20px;
+        transition: all 0.3s;
+    }
+
+    .notification-bell-global:hover {
+        background: #e0e0e0;
+        transform: scale(1.05);
+    }
+
+    .notification-badge-global {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        background: #d20000;
+        color: white;
+        border-radius: 50%;
+        padding: 2px 6px;
+        font-size: 11px;
+        font-weight: bold;
+        min-width: 18px;
+        text-align: center;
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+    }
+
+    .notifications-dropdown-global {
+        display: none;
+        position: fixed;
+        top: 70px;
+        right: 20px;
+        width: 420px;
+        max-height: 600px;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        z-index: 9999;
+        overflow: hidden;
+    }
+
+    .notifications-dropdown-global.show {
+        display: block;
+        animation: slideDown 0.3s ease-out;
+    }
+
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .notifications-header-global {
+        padding: 18px 20px;
+        background: linear-gradient(135deg, #1a1a2e, #16213e);
+        color: white;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 2px solid #d20000;
+    }
+
+    .notifications-header-global h3 {
+        font-size: 1.15em;
+        margin: 0;
+        font-weight: 600;
+    }
+
+    .mark-all-read-global {
+        background: none;
+        border: none;
+        color: white;
+        text-decoration: underline;
+        cursor: pointer;
+        font-size: 0.85em;
+        opacity: 0.9;
+        transition: opacity 0.2s;
+    }
+
+    .mark-all-read-global:hover {
+        opacity: 1;
+    }
+
+    .notifications-list-global {
+        max-height: 480px;
+        overflow-y: auto;
+    }
+
+    .notification-item-global {
+        padding: 16px 20px;
+        border-bottom: 1px solid #eee;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .notification-item-global:hover {
+        background: #f8f9fa;
+    }
+
+    .notification-item-global.unread {
+        background: #e3f2fd;
+        border-left: 4px solid #2196f3;
+    }
+
+    .notification-item-global.unread:hover {
+        background: #bbdefb;
+    }
+
+    .notification-title-global {
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 6px;
+        font-size: 0.95em;
+    }
+
+    .notification-message-global {
+        font-size: 0.88em;
+        color: #666;
+        margin-bottom: 6px;
+        line-height: 1.4;
+    }
+
+    .notification-time-global {
+        font-size: 0.75em;
+        color: #999;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .notification-type-badge {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 0.7em;
+        font-weight: 600;
+        margin-right: 5px;
+    }
+
+    .badge-mencion {
+        background: #e3f2fd;
+        color: #1976d2;
+    }
+
+    .badge-email {
+        background: #f3e5f5;
+        color: #7b1fa2;
+    }
+
+    .badge-sistema {
+        background: #e8f5e9;
+        color: #388e3c;
+    }
+
+    .no-notifications-global {
+        padding: 50px 20px;
+        text-align: center;
+        color: #999;
+    }
+
+    .no-notifications-global-icon {
+        font-size: 48px;
+        margin-bottom: 10px;
+        opacity: 0.3;
+    }
+</style>
+
+<!-- Bell Button -->
+<button class="notification-bell-global" onclick="toggleNotificationsGlobal()" id="notificationBellGlobal" title="Notificaciones">
+    🔔
+    <span class="notification-badge-global" id="notificationBadgeGlobal" style="display: none;">0</span>
+</button>
+
+<!-- Notifications Dropdown -->
+<div class="notifications-dropdown-global" id="notificationsDropdownGlobal">
+    <div class="notifications-header-global">
+        <h3>🔔 Notificaciones</h3>
+        <button class="mark-all-read-global" onclick="markAllAsReadGlobal()">Marcar todas como leídas</button>
+    </div>
+    <div class="notifications-list-global" id="notificationsListGlobal">
+        <div class="no-notifications-global">
+            <div class="no-notifications-global-icon">🔔</div>
+            <div>Cargando notificaciones...</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ==================== GLOBAL NOTIFICATIONS SYSTEM ====================
+
+    function toggleNotificationsGlobal() {
+        var dropdown = document.getElementById('notificationsDropdownGlobal');
+        dropdown.classList.toggle('show');
+        if (dropdown.classList.contains('show')) {
+            loadNotificationsGlobal();
+        }
+    }
+
+    function loadNotificationsGlobal() {
+        fetch('/api/notifications')
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    updateNotificationBadgeGlobal(data.unread_count);
+                    renderNotificationsGlobal(data.notifications);
+                }
+            })
+            .catch(err => console.error('Error loading notifications:', err));
+    }
+
+    function renderNotificationsGlobal(notifications) {
+        var list = document.getElementById('notificationsListGlobal');
+        if (notifications.length === 0) {
+            list.innerHTML = `
+                <div class="no-notifications-global">
+                    <div class="no-notifications-global-icon">🔔</div>
+                    <div>No hay notificaciones</div>
+                </div>
+            `;
+            return;
+        }
+
+        list.innerHTML = notifications.map(n => {
+            var badgeClass = 'badge-sistema';
+            var badgeText = 'Sistema';
+            
+            if (n.tipo === 'mencion') {
+                badgeClass = 'badge-mencion';
+                badgeText = 'Mención';
+            } else if (n.tipo === 'email') {
+                badgeClass = 'badge-email';
+                badgeText = 'Email';
+            }
+
+            return `
+                <div class="notification-item-global ${n.leido ? '' : 'unread'}" onclick="handleNotificationClickGlobal(${n.id}, ${n.deal_id || 'null'}, '${n.tipo || ''}', ${n.ocu_id || 'null'})">
+                    <div class="notification-title-global">
+                        <span class="notification-type-badge ${badgeClass}">${badgeText}</span>
+                        ${escapeHtmlGlobal(n.titulo)}
+                    </div>
+                    ${n.mensaje ? `<div class="notification-message-global">${escapeHtmlGlobal(n.mensaje)}</div>` : ''}
+                    <div class="notification-time-global">
+                        <span>🕐</span>
+                        <span>${timeAgoGlobal(n.created_at)}</span>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function handleNotificationClickGlobal(notificationId, dealId, tipo, ocuId) {
+        // Mark as read
+        fetch(`/api/notifications/${notificationId}/read`, { method: 'POST' })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    updateNotificationBadgeGlobal(data.unread_count);
+                    // Redirect based on notification type
+                    if (tipo === 'finance_request' || tipo === 'ocu_nueva') {
+                        // Redirect to finance requests page, with ocu_id if available
+                        let url = '/admin/finanzas/solicitudes-factura';
+                        if (ocuId) {
+                            url += '?ocu_id=' + ocuId;
+                        }
+                        window.location.href = url;
+                    } else if (tipo === 'purchase_requisition') {
+                        // Redirect to purchase requisitions page, with ocu_id if available
+                        let url = '/admin/compras/requisiciones';
+                        if (ocuId) {
+                            url += '?ocu_id=' + ocuId;
+                        }
+                        window.location.href = url;
+                    } else if (dealId) {
+                        // Default: redirect to deal (for CRM notifications)
+                        window.location.href = '/admin/crm/ver/' + dealId;
+                    } else {
+                        // Just reload to refresh the notification list
+                        loadNotificationsGlobal();
+                    }
+                }
+            });
+    }
+
+    function markAllAsReadGlobal() {
+        fetch('/api/notifications/mark-all-read', { method: 'POST' })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    updateNotificationBadgeGlobal(0);
+                    loadNotificationsGlobal();
+                }
+            });
+    }
+
+    function updateNotificationBadgeGlobal(count) {
+        var badge = document.getElementById('notificationBadgeGlobal');
+        if (count > 0) {
+            badge.textContent = count > 99 ? '99+' : count;
+            badge.style.display = 'block';
+        } else {
+            badge.style.display = 'none';
+        }
+    }
+
+    function timeAgoGlobal(dateString) {
+        var date = new Date(dateString);
+        var now = new Date();
+        var seconds = Math.floor((now - date) / 1000);
+        
+        if (seconds < 60) return 'Hace un momento';
+        if (seconds < 3600) return `Hace ${Math.floor(seconds / 60)} min`;
+        if (seconds < 86400) return `Hace ${Math.floor(seconds / 3600)} h`;
+        return `Hace ${Math.floor(seconds / 86400)} días`;
+    }
+
+    function escapeHtmlGlobal(text) {
+        if (!text) return '';
+        const map = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        };
+        return text.replace(/[&<>"']/g, m => map[m]);
+    }
+
+    // Load notifications on page load
+    if (typeof loadNotificationsGlobal === 'function') {
+        loadNotificationsGlobal();
+        
+        // Refresh notifications every 30 seconds
+        setInterval(loadNotificationsGlobal, 30000);
+    }
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+        var dropdown = document.getElementById('notificationsDropdownGlobal');
+        var bell = document.getElementById('notificationBellGlobal');
+        if (dropdown && bell && !dropdown.contains(e.target) && !bell.contains(e.target)) {
+            dropdown.classList.remove('show');
+        }
+    });
+</script>
+
+
+
+

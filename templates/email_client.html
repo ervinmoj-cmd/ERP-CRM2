@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Correo - INAIR</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+    <style>
+        .email-container {
+            display: flex;
+            height: calc(100vh - 80px);
+            background: #f5f5f5;
+        }
+        .email-sidebar {
+            width: 200px;
+            background: white;
+            border-right: 1px solid #ddd;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .email-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: white;
+        }
+        .email-header {
+            padding: 16px 24px;
+            border-bottom: 1px solid #ddd;
+            background: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .email-list {
+            flex: 1;
+            overflow-y: auto;
+            background: white;
+        }
+        .email-item {
+            padding: 12px 24px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .email-item:hover {
+            background: #f5f5f5;
+        }
+        .email-item.unread {
+            background: #f0f7ff;
+            font-weight: 500;
+        }
+        .email-item.selected {
+            background: #e3f2fd;
+        }
+        .email-sender {
+            min-width: 200px;
+            font-weight: 500;
+        }
+        .email-subject {
+            flex: 1;
+            color: #666;
+        }
+        .email-date {
+            min-width: 100px;
+            text-align: right;
+            color: #999;
+            font-size: 0.9em;
+        }
+        .email-view {
+            flex: 1;
+            padding: 24px;
+            overflow-y: auto;
+            background: white;
+            display: none;
+        }
+        .email-view.active {
+            display: block;
+        }
+        .compose-btn {
+            width: 100%;
+            padding: 12px;
+            background: #d20000;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+        .compose-btn:hover {
+            background: #b00000;
+        }
+        .folder-btn {
+            width: 100%;
+            padding: 10px;
+            text-align: left;
+            background: none;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+            margin-bottom: 4px;
+        }
+        .folder-btn:hover {
+            background: #f5f5f5;
+        }
+        .folder-btn.active {
+            background: #e3f2fd;
+            color: #1976d2;
+            font-weight: 500;
+        }
+        .compose-form {
+            display: none;
+            padding: 24px;
+            background: white;
+            border-top: 1px solid #ddd;
+        }
+        .compose-form.active {
+            display: block;
+        }
+        .compose-input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 8px;
+        }
+        .compose-body {
+            width: 100%;
+            min-height: 300px;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: inherit;
+        }
+        .sync-status {
+            font-size: 0.85em;
+            color: #666;
+            margin-left: 12px;
+        }
+        .sync-status.syncing {
+            color: #1976d2;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <div class="admin-header">
+            <h1>📧 Correo</h1>
+            <div class="user-info">
+                <span>{{ user.nombre }} - {{ email_account or 'Sin correo configurado' }}</span>
+                <a href="{{ url_for('user_dashboard') }}" class="btn btn-secondary btn-sm">← Volver</a>
+            </div>
+        </div>
+
+        {% if not email_account or not has_password %}
+        <div style="padding: 40px; text-align: center; background: #fff3cd; border-radius: 8px; margin: 20px;">
+            <h2>⚠️ Correo no configurado</h2>
+            <p>Para usar el módulo de correo, necesitas configurar tu email y contraseña SMTP en tu perfil de usuario.</p>
+            <a href="{{ url_for('admin_usuarios') }}" class="btn btn-primary">Configurar Correo</a>
+        </div>
+        {% else %}
+        <div class="email-container">
+            <!-- Sidebar -->
+            <div class="email-sidebar">
+                <button class="compose-btn" onclick="showCompose()">✉️ Redactar</button>
+                
+                <div style="margin-top: 20px;">
+                    <button class="folder-btn active" id="folder-inbox" onclick="switchFolder('INBOX')">
+                        📥 Recibidos
+                    </button>
+                    <button class="folder-btn" id="folder-sent" onclick="switchFolder('SENT')">
+                        📤 Enviados
+                    </button>
+                </div>
+            </div>
+
+            <!-- Main Area -->
+            <div class="email-main">
+                <div class="email-header">
+                    <h2 id="folder-title">Recibidos</h2>
+                    <div style="display: flex; align-items: center;">
+                        <span class="sync-status" id="sync-status">Última sincronización: nunca</span>
+                        <button onclick="syncEmails()" class="btn btn-primary btn-sm" style="margin-left: 12px;">
+                            🔄 Sincronizar
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Email List -->
+                <div class="email-list" id="email-list">
+                    <div style="text-align: center; padding: 40px; color: #999;">
+                        Cargando correos...
+                    </div>
+                </div>
+
+                <!-- Email View -->
+                <div class="email-view" id="email-view">
+                    <div id="email-view-content"></div>
+                </div>
+
+                <!-- Compose Form -->
+                <div class="compose-form" id="compose-form">
+                    <div style="margin-bottom: 12px;">
+                        <input type="text" id="compose-to" class="compose-input" placeholder="Para: email@ejemplo.com">
+                        <input type="text" id="compose-cc" class="compose-input" placeholder="CC: copia@email.com">
+                        <input type="text" id="compose-subject" class="compose-input" placeholder="Asunto">
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <input type="file" id="compose-attachments" multiple style="display: none;" onchange="handleAttachments()">
+                        <button onclick="document.getElementById('compose-attachments').click()" class="btn btn-secondary btn-sm">
+                            📎 Adjuntar
+                        </button>
+                        <div id="attachments-list" style="margin-top: 8px;"></div>
+                    </div>
+                    <textarea id="compose-body" class="compose-body" placeholder="Escribe tu mensaje..."></textarea>
+                    <div style="margin-top: 12px; display: flex; gap: 8px;">
+                        <button onclick="sendEmail()" class="btn btn-primary">📤 Enviar</button>
+                        <button onclick="closeCompose()" class="btn btn-secondary">Cancelar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <script>
+        let currentFolder = 'INBOX';
+        let selectedEmail = null;
+        let emailCache = {};
+        let syncInterval = null;
+
+        // Load emails on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadEmails();
+            // Auto-sync every 5 minutes
+            syncInterval = setInterval(() => {
+                syncEmails(true); // Silent sync
+            }, 5 * 60 * 1000); // 5 minutes
+        });
+
+        function switchFolder(folder) {
+            currentFolder = folder;
+            selectedEmail = null;
+            
+            // Update UI
+            document.querySelectorAll('.folder-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`folder-${folder.toLowerCase()}`).classList.add('active');
+            document.getElementById('folder-title').textContent = folder === 'INBOX' ? 'Recibidos' : 'Enviados';
+            
+            // Hide email view and compose
+            document.getElementById('email-view').classList.remove('active');
+            document.getElementById('compose-form').classList.remove('active');
+            
+            // Load emails
+            loadEmails();
+        }
+
+        function loadEmails() {
+            const container = document.getElementById('email-list');
+            container.innerHTML = '<div style="text-align: center; padding: 40px; color: #999;">Cargando correos...</div>';
+            
+            fetch(`/api/email/inbox?folder=${currentFolder}&limit=50&since_days=30`)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        renderEmailList(data.emails || []);
+                    } else {
+                        container.innerHTML = `<div style="text-align: center; padding: 40px; color: #dc3545;">Error: ${data.error || 'Error desconocido'}</div>`;
+                    }
+                })
+                .catch(err => {
+                    console.error('Error loading emails:', err);
+                    container.innerHTML = '<div style="text-align: center; padding: 40px; color: #dc3545;">Error al cargar correos</div>';
+                });
+        }
+
+        function renderEmailList(emails) {
+            const container = document.getElementById('email-list');
+            if (!container) return;
+            
+            if (emails.length === 0) {
+                container.innerHTML = '<div style="text-align: center; padding: 40px; color: #999;">No hay correos en esta carpeta</div>';
+                return;
+            }
+            
+            container.innerHTML = emails.map(email => {
+                const date = new Date(email.date).toLocaleString('es-MX', { 
+                    day: '2-digit', 
+                    month: 'short', 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                });
+                const isSelected = selectedEmail === email.uid ? 'selected' : '';
+                const isUnread = !email.is_read ? 'unread' : '';
+                const hasAttachments = email.has_attachments ? '📎' : '';
+                
+                return `
+                    <div class="email-item ${isSelected} ${isUnread}" onclick="viewEmail('${email.uid}')">
+                        <div class="email-sender">${escapeHtml(email.from || email.from_email || 'Sin remitente')}</div>
+                        <div class="email-subject">${escapeHtml(email.subject || '(Sin asunto)')} ${hasAttachments}</div>
+                        <div class="email-date">${date}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function viewEmail(uid) {
+            selectedEmail = uid;
+            loadEmails(); // Refresh to highlight selected
+            
+            const view = document.getElementById('email-view');
+            const content = document.getElementById('email-view-content');
+            view.classList.add('active');
+            content.innerHTML = '<div style="text-align: center; padding: 40px; color: #999;">Cargando correo...</div>';
+            
+            // Check cache
+            if (emailCache[uid]) {
+                renderEmailView(emailCache[uid]);
+                return;
+            }
+            
+            // Fetch email
+            fetch(`/api/email/inbox?folder=${currentFolder}&limit=100&since_days=30`)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        const email = data.emails.find(e => e.uid === uid);
+                        if (email) {
+                            emailCache[uid] = email;
+                            renderEmailView(email);
+                        }
+                    }
+                });
+        }
+
+        function renderEmailView(email) {
+            const content = document.getElementById('email-view-content');
+            const date = new Date(email.date).toLocaleString('es-MX', { 
+                day: '2-digit', 
+                month: 'long', 
+                year: 'numeric',
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+            
+            let body = email.body || '';
+            const isHtml = body.includes('<') && body.includes('>');
+            if (!isHtml) {
+                body = escapeHtml(body).replace(/\n/g, '<br>');
+            }
+            
+            let attachmentsHtml = '';
+            if (email.attachments && email.attachments.length > 0) {
+                attachmentsHtml = '<div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #ddd;"><strong>Adjuntos:</strong><div style="margin-top: 12px;">';
+                email.attachments.forEach(att => {
+                    attachmentsHtml += `<div style="margin-bottom: 8px;"><a href="${att.url}" target="_blank" style="color: #1976d2;">📎 ${escapeHtml(att.nombre || 'Archivo')}</a></div>`;
+                });
+                attachmentsHtml += '</div></div>';
+            }
+            
+            content.innerHTML = `
+                <div style="margin-bottom: 20px;">
+                    <button onclick="closeEmailView()" class="btn btn-secondary btn-sm">← Volver</button>
+                    <button onclick="replyEmail('${email.from_email}', '${escapeHtml(email.subject || '')}')" class="btn btn-primary btn-sm" style="margin-left: 8px;">
+                        ↻ Responder
+                    </button>
+                </div>
+                <h2 style="margin-bottom: 16px;">${escapeHtml(email.subject || '(Sin asunto)')}</h2>
+                <div style="color: #666; margin-bottom: 20px;">
+                    <div><strong>De:</strong> ${escapeHtml(email.from || email.from_email || 'Desconocido')}</div>
+                    <div><strong>Para:</strong> ${escapeHtml(email.to || email.to_email || 'Desconocido')}</div>
+                    ${email.cc ? `<div><strong>CC:</strong> ${escapeHtml(email.cc)}</div>` : ''}
+                    <div><strong>Fecha:</strong> ${date}</div>
+                </div>
+                <div style="line-height: 1.6; margin-top: 20px;">
+                    ${body}
+                </div>
+                ${attachmentsHtml}
+            `;
+        }
+
+        function closeEmailView() {
+            selectedEmail = null;
+            document.getElementById('email-view').classList.remove('active');
+            loadEmails();
+        }
+
+        function replyEmail(toEmail, subject) {
+            document.getElementById('compose-to').value = toEmail;
+            document.getElementById('compose-subject').value = subject.startsWith('Re:') ? subject : `Re: ${subject}`;
+            showCompose();
+            document.getElementById('compose-body').focus();
+        }
+
+        function showCompose() {
+            document.getElementById('compose-form').classList.add('active');
+            document.getElementById('email-view').classList.remove('active');
+            document.getElementById('compose-to').focus();
+        }
+
+        function closeCompose() {
+            document.getElementById('compose-form').classList.remove('active');
+            document.getElementById('compose-to').value = '';
+            document.getElementById('compose-cc').value = '';
+            document.getElementById('compose-subject').value = '';
+            document.getElementById('compose-body').value = '';
+            document.getElementById('compose-attachments').value = '';
+            document.getElementById('attachments-list').innerHTML = '';
+        }
+
+        function handleAttachments() {
+            const files = Array.from(document.getElementById('compose-attachments').files);
+            const list = document.getElementById('attachments-list');
+            list.innerHTML = files.map((file, i) => 
+                `<div style="margin: 4px 0;">📎 ${escapeHtml(file.name)} <button onclick="removeAttachment(${i})" style="background: none; border: none; color: #dc3545; cursor: pointer;">×</button></div>`
+            ).join('');
+        }
+
+        function removeAttachment(index) {
+            const input = document.getElementById('compose-attachments');
+            const dt = new DataTransfer();
+            const files = Array.from(input.files);
+            files.splice(index, 1);
+            files.forEach(f => dt.items.add(f));
+            input.files = dt.files;
+            handleAttachments();
+        }
+
+        function sendEmail() {
+            const to = document.getElementById('compose-to').value.trim();
+            const cc = document.getElementById('compose-cc').value.trim();
+            const subject = document.getElementById('compose-subject').value.trim();
+            const body = document.getElementById('compose-body').value.trim();
+            const attachments = document.getElementById('compose-attachments').files;
+            
+            if (!to || !subject) {
+                alert('Por favor completa "Para" y "Asunto"');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('to', to);
+            if (cc) formData.append('cc', cc);
+            formData.append('subject', subject);
+            formData.append('body', body);
+            
+            Array.from(attachments).forEach((file, i) => {
+                formData.append(`attachment${i}`, file);
+            });
+            
+            fetch('/api/email/send', {
+                method: 'POST',
+                body: formData
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    alert('✅ Correo enviado exitosamente');
+                    closeCompose();
+                    loadEmails();
+                } else {
+                    alert('❌ Error: ' + (data.error || 'Error desconocido'));
+                }
+            })
+            .catch(err => {
+                console.error('Error:', err);
+                alert('❌ Error al enviar correo');
+            });
+        }
+
+        function syncEmails(silent = false) {
+            const status = document.getElementById('sync-status');
+            status.textContent = 'Sincronizando...';
+            status.classList.add('syncing');
+            
+            // Trigger sync (we'll need to create this endpoint)
+            fetch('/api/email/sync', { method: 'POST' })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        status.textContent = `Última sincronización: ${new Date().toLocaleTimeString('es-MX')}`;
+                        if (!silent && data.synced_count > 0) {
+                            alert(`✅ ${data.synced_count} correo(s) sincronizado(s)`);
+                        }
+                        loadEmails();
+                    } else {
+                        status.textContent = 'Error en sincronización';
+                    }
+                    status.classList.remove('syncing');
+                })
+                .catch(err => {
+                    console.error('Sync error:', err);
+                    status.textContent = 'Error en sincronización';
+                    status.classList.remove('syncing');
+                });
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>
+

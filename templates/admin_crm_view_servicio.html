@@ -1,0 +1,1747 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Servicio: {{ deal.titulo }} - CRM INAIR</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .main-layout {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 20px;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .chat-panel {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 40px);
+            position: sticky;
+            top: 20px;
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            color: white;
+            padding: 20px;
+            border-radius: 16px 16px 0 0;
+        }
+
+        .chat-header h2 {
+            font-size: 1.1em;
+            margin: 0;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            animation: fadeIn 0.3s;
+        }
+
+        .message-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 5px;
+        }
+
+        .message-author {
+            font-weight: 600;
+            color: #d20000;
+            font-size: 0.9em;
+        }
+
+        .message-time {
+            font-size: 0.75em;
+            color: #999;
+        }
+
+        .message-content {
+            background: white;
+            padding: 12px 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            line-height: 1.5;
+        }
+
+        .message-content .mention {
+            color: #007bff;
+            font-weight: 600;
+            background: #e3f2fd;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .chat-input-container {
+            padding: 15px;
+            background: white;
+            border-top: 1px solid #eee;
+            border-radius: 0 0 16px 16px;
+        }
+
+        .chat-input-wrapper {
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 0.95em;
+            resize: none;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+
+        .chat-input:focus {
+            outline: none;
+            border-color: #d20000;
+        }
+
+        .chat-send-btn {
+            background: linear-gradient(135deg, #d20000, #ff4444);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: transform 0.2s;
+        }
+
+        .chat-send-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .mention-helper {
+            font-size: 0.75em;
+            color: #999;
+            margin-top: 5px;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #d20000, #ff4444);
+            color: white;
+            padding: 25px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 1.5em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .info-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 4px solid #d20000;
+        }
+
+        .info-card h3 {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            font-weight: 500;
+        }
+
+        .info-card .value {
+            font-size: 1.2em;
+            color: #1a1a2e;
+            font-weight: 600;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            padding-bottom: 30px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .section:last-child {
+            border-bottom: none;
+        }
+
+        .section-title {
+            font-size: 1.2em;
+            color: #1a1a2e;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.95em;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #d20000, #ff4444);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(210, 0, 0, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .btn-small {
+            padding: 8px 15px;
+            font-size: 0.85em;
+        }
+
+        /* Equipment Cards */
+        .equipment-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+        }
+
+        .equipment-card {
+            background: #f8f9fa;
+            padding: 18px;
+            border-radius: 10px;
+            border-left: 4px solid #d20000;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .equipment-card:hover {
+            background: #e9ecef;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .equipment-card h4 {
+            color: #d20000;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .equipment-card .detail {
+            color: #666;
+            font-size: 0.9em;
+            margin: 5px 0;
+        }
+
+        .equipment-card .service-desc {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #dee2e6;
+            color: #333;
+            font-weight: 500;
+        }
+
+        /* Technicians */
+        .technician-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .technician-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .technician-info {
+            flex: 1;
+        }
+
+        .technician-info strong {
+            display: block;
+            color: #1a1a2e;
+            margin-bottom: 5px;
+        }
+
+        .technician-info small {
+            color: #666;
+        }
+
+        .technician-points {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .technician-points input {
+            width: 80px;
+            padding: 8px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .technician-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .add-technician {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .add-technician select {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+        }
+
+        .points-summary {
+            background: linear-gradient(135deg, #d20000, #ff4444);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        .points-summary .total {
+            font-size: 2em;
+            font-weight: 700;
+        }
+
+        .points-summary .label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        /* Schedule */
+        .schedule-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .schedule-field {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .schedule-field label {
+            font-weight: 500;
+            color: #444;
+            margin-bottom: 6px;
+            font-size: 0.9em;
+        }
+
+        .schedule-field input {
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+        }
+
+        .schedule-field input:focus {
+            border-color: #d20000;
+            outline: none;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+
+        .modal-content {
+            background: white;
+            margin: 5% auto;
+            padding: 25px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .modal-header h2 {
+            color: #1a1a2e;
+        }
+
+        .close {
+            font-size: 2em;
+            color: #999;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .close:hover {
+            color: #d20000;
+        }
+
+        .detail-section {
+            margin-bottom: 15px;
+        }
+
+        .detail-section label {
+            display: block;
+            font-weight: 600;
+            color: #444;
+            margin-bottom: 5px;
+        }
+
+        .detail-section .value {
+            color: #666;
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 6px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 500;
+        }
+
+        .badge-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .badge-warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .badge-info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .empty-state-icon {
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+
+        /* ==================== MOBILE RESPONSIVE ==================== */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .main-layout {
+                display: flex;
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .chat-panel,
+            .email-panel {
+                position: relative;
+                top: auto;
+                height: auto;
+                max-height: 400px;
+            }
+
+            .content {
+                order: -1;
+                /* Deal info first on mobile */
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+
+            .header h1 {
+                font-size: 1.2em;
+                justify-content: center;
+            }
+
+            .header-actions {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            /* Adjust grid columns for mobile */
+            .equipment-list,
+            .schedule-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .btn {
+                padding: 8px 12px;
+            }
+
+            .chat-messages {
+                max-height: 250px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .header-actions {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .header-actions .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="main-layout">
+        <!-- LEFT PANEL: Internal Chat -->
+        <div class="chat-panel">
+            <div class="chat-header">
+                <h2>💬 Mensajes Internos</h2>
+            </div>
+            <div class="chat-messages" id="chatMessages">
+                <div style="text-align: center; padding: 20px; color: #999;">
+                    Cargando mensajes...
+                </div>
+            </div>
+            <div class="chat-input-container">
+                <div class="mention-helper">💡 Usa @usuario para mencionar a alguien</div>
+                <div style="margin-bottom: 8px;">
+                    <input type="file" id="messageAttachments" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt"
+                        style="display: none;" onchange="handleMessageAttachmentsChange()">
+                    <button type="button" onclick="document.getElementById('messageAttachments').click()"
+                        style="background: #f0f0f0; border: 1px solid #ddd; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 1.1em; margin-right: 8px;">📄
+                        Adjuntar</button>
+                    <div id="messageAttachmentsList"
+                        style="display: inline-flex; flex-wrap: wrap; gap: 4px; align-items: center;"></div>
+                </div>
+                <div class="chat-input-wrapper">
+                    <textarea class="chat-input" id="chatInput" rows="2"
+                        placeholder="Escribe un mensaje... (usa @usuario para mencionar)"
+                        onkeydown="handleChatKeydown(event)"></textarea>
+                    <button class="chat-send-btn" onclick="sendMessage()">Enviar</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT PANEL: Service Details -->
+        <div class="container">
+            <div class="header">
+                <h1>{% if deal.folio %}<span style="color: #d20000; font-size: 0.8em; margin-right: 10px;">{{ deal.folio
+                        }}</span>{% endif %}🔧 {{ deal.titulo }}</h1>
+                <div class="header-actions">
+                    <a href="{{ url_for('admin_crm') }}" class="btn btn-secondary btn-small">← Volver al CRM</a>
+                </div>
+            </div>
+
+            <div class="content">
+                <!-- Información General -->
+                <div class="info-grid">
+                    <div class="info-card">
+                        <h3>Folio</h3>
+                        <div class="value" style="color: #d20000; font-weight: 600;">{{ deal.folio or 'Sin folio' }}
+                        </div>
+                    </div>
+                    <div class="info-card">
+                        <h3>Etapa</h3>
+                        <div class="value">{{ deal.etapa }}</div>
+                    </div>
+                    <div class="info-card">
+                        <h3>Cliente</h3>
+                        <div class="value">{{ client.nombre if client else 'N/A' }}</div>
+                    </div>
+                    <div class="info-card">
+                        <h3>Contacto</h3>
+                        <div class="value">{{ deal.contacto_nombre or 'N/A' }}</div>
+                    </div>
+                    <div class="info-card">
+                        <h3>Email</h3>
+                        <div class="value">{{ deal.email or 'N/A' }}</div>
+                    </div>
+                </div>
+
+                <!-- Equipos del Servicio -->
+                <div class="section">
+                    <h2 class="section-title">🔧 Equipos del Servicio</h2>
+                    <div class="equipment-list" id="equipmentList">
+                        <!-- Equipment cards will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Timer de Servicio -->
+                <div class="section">
+                    <h2 class="section-title">⏱️ Control de Tiempo</h2>
+                    <div id="timerSection" style="background: #f8f9fa; padding: 20px; border-radius: 12px;">
+                        <div id="timerDisplay" style="text-align: center; margin-bottom: 20px;">
+                            <div id="timerTime"
+                                style="font-size: 2.5em; font-weight: 700; color: #d20000; margin-bottom: 10px;">
+                                00:00:00</div>
+                            <div id="timerStatus" style="color: #666; font-size: 0.9em;"></div>
+                        </div>
+                        <div style="display: flex; justify-content: center; gap: 15px;">
+                            <button id="timerStartBtn" class="btn btn-success" onclick="startTimer()"
+                                style="display: none;">
+                                ▶️ Iniciar Timer
+                            </button>
+                            <button id="timerStopBtn" class="btn btn-danger" onclick="stopTimer()"
+                                style="display: none;">
+                                ⏹️ Detener Timer
+                            </button>
+                        </div>
+                        <div id="timerHistory" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #ddd;">
+                            <h3 style="font-size: 1em; color: #666; margin-bottom: 10px;">Historial</h3>
+                            <div id="timerHistoryContent" style="color: #666; font-size: 0.9em;">
+                                Cargando...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Técnicos Asignados -->
+                <div class="section">
+                    <h2 class="section-title">👥 Técnicos Asignados</h2>
+                    <div class="technician-list" id="technicianList">
+                        <!-- Technicians will be loaded here -->
+                    </div>
+
+                    {% if session.get('puesto') == 'Gerente de Servicios Técnicos' %}
+                    <div class="add-technician">
+                        <select id="technicianSelect">
+                            <option value="">-- Seleccionar Técnico --</option>
+                            {% for user in users %}
+                            <option value="{{ user.id }}">{{ user.nombre }} ({{ user.puesto or 'Sin puesto' }})</option>
+                            {% endfor %}
+                        </select>
+                        <button class="btn btn-success btn-small" onclick="assignTechnician()">+ Agregar</button>
+                    </div>
+                    {% endif %}
+
+                    <div class="points-summary" id="pointsSummary" style="display: none;">
+                        <div class="total" id="totalPoints">0</div>
+                        <div class="label">Puntos Totales</div>
+                    </div>
+                </div>
+
+                <!-- Programación -->
+                <div class="section">
+                    <h2 class="section-title">📅 Programación del Servicio</h2>
+                    <div class="schedule-grid">
+                        <div class="schedule-field">
+                            <label>Fecha del Servicio</label>
+                            <input type="date" id="fechaServicio" value="{{ deal.fecha_servicio or '' }}">
+                        </div>
+                        <div class="schedule-field">
+                            <label>Tiempo Estimado (horas)</label>
+                            <input type="number" id="tiempoEstimado" step="0.5" min="0"
+                                value="{{ deal.tiempo_estimado_horas or '' }}" placeholder="Ej: 4.5">
+                        </div>
+                        <div style="display: flex; align-items: flex-end;">
+                            <button class="btn btn-primary btn-small" onclick="updateSchedule()">💾 Guardar
+                                Programación</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Generación de Reporte -->
+                <div class="section">
+                    <h2 class="section-title">📋 Generar Reporte</h2>
+                    <p style="color: #666; margin-bottom: 15px;">
+                        {% if is_assigned_technician %}
+                        Como técnico asignado a este servicio, puedes generar el reporte directamente desde aquí.
+                        {% else %}
+                        Genera un nuevo reporte para este servicio.
+                        {% endif %}
+                    </p>
+                    <a href="{{ url_for('formulario', deal_id=deal.id) }}" class="btn btn-success">
+                        📄 Generar Reporte de Servicio
+                    </a>
+                </div>
+
+                <!-- Reportes Generados -->
+                <div class="section">
+                    <h2 class="section-title">📄 Reportes Generados</h2>
+                    <div id="reportsList">
+                        {% if linked_reports and linked_reports|length > 0 %}
+                        <div style="display: flex; flex-direction: column; gap: 12px;">
+                            {% for report in linked_reports %}
+                            <div
+                                style="background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid #d20000; display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <strong style="color: #1a1a2e; display: block; margin-bottom: 5px;">Folio: {{
+                                        report.folio }}</strong>
+                                    <small style="color: #666;">
+                                        {% if report.fecha %}
+                                        Fecha: {{ report.fecha }} |
+                                        {% endif %}
+                                        {% if report.cliente %}
+                                        Cliente: {{ report.cliente }} |
+                                        {% endif %}
+                                        {% if report.tipo_servicio %}
+                                        Tipo: {{ report.tipo_servicio }}
+                                        {% endif %}
+                                        {% if report.status %}
+                                        | Estado: {{ report.status }}
+                                        {% endif %}
+                                    </small>
+                                </div>
+                                <div style="display: flex; gap: 8px;">
+                                    <a href="{{ url_for('vista_previa', folio=report.folio) }}"
+                                        class="btn btn-primary btn-small" target="_blank"
+                                        style="text-decoration: none; padding: 8px 15px; border-radius: 6px; font-size: 0.9em;">
+                                        👁️ Ver PDF
+                                    </a>
+                                    {% if report.status == 'draft' %}
+                                    <a href="{{ url_for('editar_reporte', folio=report.folio) }}"
+                                        class="btn btn-secondary btn-small"
+                                        style="text-decoration: none; padding: 8px 15px; border-radius: 6px; font-size: 0.9em;">
+                                        ✏️ Editar
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📄</div>
+                            <p>No hay reportes generados para este servicio aún.</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Notas -->
+                {% if deal.notas %}
+                <div class="section">
+                    <h2 class="section-title">📝 Notas</h2>
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
+                        {{ deal.notas }}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Equipment Details Modal -->
+    <div id="equipmentModal" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h2 id="modalEquipmentTitle">Detalles del Equipo</h2>
+                <span class="close" onclick="closeEquipmentModal()">&times;</span>
+            </div>
+
+            <!-- Tabs -->
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('info')">📋 Información</button>
+                <button class="tab-btn" onclick="switchTab('photos')">📸 Fotos <span
+                        id="photoCount">(0/10)</span></button>
+                <button class="tab-btn" onclick="switchTab('comments')">💬 Comentarios <span
+                        id="commentCount">(0)</span></button>
+            </div>
+
+            <div id="modalEquipmentContent" style="padding: 20px;">
+                <!-- Tab content loaded dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid #f0f0f0;
+            background: #f8f9fa;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-weight: 500;
+            color: #666;
+            transition: all 0.3s;
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab-btn:hover {
+            background: #e9ecef;
+        }
+
+        .tab-btn.active {
+            color: #d20000;
+            border-bottom-color: #d20000;
+            background: white;
+        }
+
+        .photo-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .photo-item {
+            position: relative;
+            aspect-ratio: 1;
+            border-radius: 8px;
+            overflow: hidden;
+            cursor: pointer;
+            border: 2px solid #e0e0e0;
+        }
+
+        .photo-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .photo-item .delete-photo {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: rgba(210, 0, 0, 0.9);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            display: none;
+        }
+
+        .photo-item:hover .delete-photo {
+            display: block;
+        }
+
+        .comment-list {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-bottom: 15px;
+        }
+
+        .comment-item {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .comment-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .comment-user {
+            font-weight: 600;
+            color: #1a1a2e;
+        }
+
+        .comment-date {
+            font-size: 0.85em;
+            color: #999;
+        }
+
+        .comment-text {
+            color: #444;
+            margin-bottom: 8px;
+        }
+
+        .comment-image {
+            max-width: 200px;
+            border-radius: 6px;
+            margin-top: 8px;
+        }
+
+        .comment-input-area {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .comment-input-area textarea {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            resize: none;
+            font-family: inherit;
+        }
+    </style>
+
+    <script>
+        const dealId = {{ deal.id }};
+        const userId = {{ session.get('user_id') }};
+        let equipments = [];
+        let technicians = [];
+
+        // Load equipment on page load
+        window.addEventListener('DOMContentLoaded', function () {
+            loadEquipments();
+            loadTechnicians();
+        });
+
+        function loadEquipments() {
+            fetch(`/api/crm/deal/${dealId}/equipos`)
+                .then(r => r.json())
+                .then(data => {
+                    equipments = data;
+                    renderEquipments();
+                });
+        }
+
+        function renderEquipments() {
+            const container = document.getElementById('equipmentList');
+
+            if (equipments.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🔧</div>
+                        <p>No hay equipos registrados para este servicio.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = equipments.map(equip => `
+                <div class="equipment-card" onclick="showEquipmentDetails(${equip.id})">
+                    <h4>${equip.tipo_equipo}</h4>
+                    ${equip.modelo ? `<div class="detail"><strong>Modelo:</strong> ${equip.modelo}</div>` : ''}
+                    ${equip.serie ? `<div class="detail"><strong>Serie:</strong> ${equip.serie}</div>` : ''}
+                    ${equip.descripcion_servicio ? `<div class="service-desc">🛠️ ${equip.descripcion_servicio}</div>` : ''}
+                </div>
+            `).join('');
+        }
+
+        let currentEquipId = null;
+        let currentTab = 'info';
+        const isAdmin = {{ 'true' if session.get('role') == 'admin' else 'false' }};
+
+        function showEquipmentDetails(equipId) {
+            currentEquipId = equipId;
+            const equip = equipments.find(e => e.id === equipId);
+            if (!equip) return;
+
+            const modal = document.getElementById('equipmentModal');
+            document.getElementById('modalEquipmentTitle').textContent = equip.tipo_equipo;
+            currentTab = 'info';
+            switchTab('info');
+            modal.style.display = 'block';
+        }
+
+        function switchTab(tab) {
+            currentTab = tab;
+            const equip = equipments.find(e => e.id === currentEquipId);
+
+            // Update tab buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            event?.target.classList.add('active');
+
+            const content = document.getElementById('modalEquipmentContent');
+
+            if (tab === 'info') {
+                content.innerHTML = `
+                    <div class="detail-section">
+                        <label>Tipo de Equipo</label>
+                        <div class="value">${equip.tipo_equipo}</div>
+                    </div>
+                    ${equip.modelo ? `
+                        <div class="detail-section">
+                            <label>Modelo</label>
+                            <div class="value">${equip.modelo}</div>
+                        </div>
+                    ` : ''}
+                    ${equip.serie ? `
+                        <div class="detail-section">
+                            <label>Serie</label>
+                            <div class="value">${equip.serie}</div>
+                        </div>
+                    ` : ''}
+                    ${equip.descripcion_servicio ? `
+                        <div class="detail-section">
+                            <label>Servicio a Realizar</label>
+                            <div class="value">${equip.descripcion_servicio}</div>
+                        </div>
+                    ` : ''}
+                    ${equip.detalles_adicionales ? `
+                        <div class="detail-section">
+                            <label>Detalles Adicionales</label>
+                            <div class="value">${equip.detalles_adicionales}</div>
+                        </div>
+                    ` : ''}
+                `;
+            } else if (tab === 'photos') {
+                loadPhotos();
+            } else if (tab === 'comments') {
+                loadComments();
+            }
+        }
+
+        function loadPhotos() {
+            const content = document.getElementById('modalEquipmentContent');
+            content.innerHTML = '<p style="text-align:center;color:#999;">Cargando fotos...</p>';
+
+            fetch(`/api/crm/equipo/${currentEquipId}/fotos`)
+                .then(r => r.json())
+                .then(data => {
+                    const fotos = data.fotos || [];
+                    document.getElementById('photoCount').textContent = `(${fotos.length}/10)`;
+
+                    content.innerHTML = `
+                        ${isAdmin && fotos.length < 10 ? `
+                            <div style="margin-bottom: 15px;">
+                                <input type="file" id="photoInput" accept="image/*" style="display:none;" onchange="uploadPhoto()">
+                                <button class="btn btn-primary btn-small" onclick="document.getElementById('photoInput').click()">
+                                    📤 Subir Foto (${fotos.length}/10)
+                                </button>
+                            </div>
+                        ` : ''}
+                        <div class="photo-gallery" id="photoGallery">
+                            ${fotos.length === 0 ? '<p style="text-align:center;color:#999;grid-column:1/-1;">No hay fotos</p>' : ''}
+                            ${fotos.map(foto => `
+                                <div class="photo-item" onclick="viewPhoto('${foto.foto_data}')">
+                                    <img src="${foto.foto_data}" alt="${foto.descripcion || ''}">
+                                    ${isAdmin ? `<button class="delete-photo" onclick="event.stopPropagation();deletePhoto(${foto.id})">🗑️</button>` : ''}
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                });
+        }
+
+        function uploadPhoto() {
+            const input = document.getElementById('photoInput');
+            const file = input.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                fetch(`/api/crm/equipo/${currentEquipId}/foto`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ foto_data: e.target.result })
+                })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.success) {
+                            loadPhotos();
+                        } else {
+                            alert(data.error || 'Error al subir foto');
+                        }
+                    });
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function deletePhoto(fotoId) {
+            if (!confirm('¿Eliminar esta foto?')) return;
+            fetch(`/api/crm/equipo/foto/${fotoId}`, { method: 'DELETE' })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) loadPhotos();
+                });
+        }
+
+        function viewPhoto(src) {
+            window.open(src, '_blank');
+        }
+
+        function loadComments() {
+            const content = document.getElementById('modalEquipmentContent');
+            content.innerHTML = '<p style="text-align:center;color:#999;">Cargando comentarios...</p>';
+
+            fetch(`/api/crm/equipo/${currentEquipId}/comentarios`)
+                .then(r => r.json())
+                .then(data => {
+                    const comentarios = data.comentarios || [];
+                    document.getElementById('commentCount').textContent = `(${comentarios.length})`;
+
+                    content.innerHTML = `
+                        <div class="comment-list">
+                            ${comentarios.length === 0 ? '<p style="text-align:center;color:#999;">No hay comentarios</p>' : ''}
+                            ${comentarios.map(c => `
+                                <div class="comment-item">
+                                    <div class="comment-header">
+                                        <span class="comment-user">${c.user_nombre}</span>
+                                        <div>
+                                            <span class="comment-date">${new Date(c.created_at).toLocaleString()}</span>
+                                            ${isAdmin ? `<button onclick="deleteComment(${c.id})" style="margin-left:10px;background:none;border:none;color:#d20000;cursor:pointer;">🗑️</button>` : ''}
+                                        </div>
+                                    </div>
+                                    <div class="comment-text">${c.mensaje}</div>
+                                    ${c.imagen_data ? `<img src="${c.imagen_data}" class="comment-image">` : ''}
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div class="comment-input-area">
+                            <textarea id="commentText" rows="2" placeholder="Escribe un comentario..."></textarea>
+                            <div>
+                                <input type="file" id="commentImage" accept="image/*" style="display:none;" onchange="previewCommentImage()">
+                                <button class="btn btn-secondary btn-small" onclick="document.getElementById('commentImage').click()">📎</button>
+                                <button class="btn btn-primary btn-small" onclick="addComment()">Enviar</button>
+                            </div>
+                        </div>
+                        <div id="imagePreview" style="margin-top:10px;"></div>
+                    `;
+                });
+        }
+
+        let commentImageData = null;
+        function previewCommentImage() {
+            const input = document.getElementById('commentImage');
+            const file = input.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                commentImageData = e.target.result;
+                document.getElementById('imagePreview').innerHTML = `
+                    <img src="${e.target.result}" style="max-width:150px;border-radius:6px;">
+                    <button onclick="commentImageData=null;document.getElementById('imagePreview').innerHTML='';document.getElementById('commentImage').value='';" style="margin-left:10px;">❌</button>
+                `;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function addComment() {
+            const texto = document.getElementById('commentText').value.trim();
+            if (!texto && !commentImageData) return;
+
+            fetch(`/api/crm/equipo/${currentEquipId}/comentario`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    mensaje: texto,
+                    imagen_data: commentImageData,
+                    deal_id: dealId
+                })
+            })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        commentImageData = null;
+                        loadComments();
+                    }
+                });
+        }
+
+        function deleteComment(comentarioId) {
+            if (!confirm('¿Eliminar este comentario?')) return;
+            fetch(`/api/crm/equipo/comentario/${comentarioId}`, { method: 'DELETE' })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) loadComments();
+                });
+        }
+
+        function closeEquipmentModal() {
+            document.getElementById('equipmentModal').style.display = 'none';
+        }
+
+        function loadTechnicians() {
+            fetch(`/api/crm/deal/${dealId}/tecnicos`)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        technicians = data.tecnicos;
+                        renderTechnicians();
+                    }
+                });
+        }
+
+        function renderTechnicians() {
+            const container = document.getElementById('technicianList');
+
+            if (technicians.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">👤</div>
+                        <p>No hay técnicos asignados a este servicio.</p>
+                    </div>
+                `;
+                document.getElementById('pointsSummary').style.display = 'none';
+                return;
+            }
+
+            const canEdit = {{ 'true' if session.get('puesto') == 'Gerente de Servicios Técnicos' else 'false'
+        }};
+
+        container.innerHTML = technicians.map(tech => `
+                <div class="technician-item">
+                    <div class="technician-info">
+                        <strong>${tech.nombre}</strong>
+                        <small>${tech.email || 'Sin email'}</small>
+                    </div>
+                    <div class="technician-points">
+                        <span style="color: #666;">Puntos:</span>
+                        <input type="number" 
+                               value="${tech.puntos || 0}" 
+                               step="0.5" 
+                               min="0"
+                               ${!canEdit ? 'disabled' : ''}
+                               onchange="updatePoints(${tech.tecnico_id}, this.value)"
+                               style="${!canEdit ? 'background: #f0f0f0;' : ''}">
+                    </div>
+                    ${canEdit ? `
+                        <div class="technician-actions">
+                            <button class="btn btn-secondary btn-small" onclick="removeTechnician(${tech.tecnico_id})">
+                                🗑️
+                            </button>
+                        </div>
+                    ` : ''}
+                </div>
+            `).join('');
+
+        // Calculate total points
+        const totalPoints = technicians.reduce((sum, tech) => sum + (parseFloat(tech.puntos) || 0), 0);
+        document.getElementById('totalPoints').textContent = totalPoints.toFixed(1);
+        document.getElementById('pointsSummary').style.display = 'block';
+        }
+
+        function assignTechnician() {
+            const select = document.getElementById('technicianSelect');
+            const tecnicoId = select.value;
+
+            if (!tecnicoId) {
+                alert('Selecciona un técnico');
+                return;
+            }
+
+            fetch(`/api/crm/deal/${dealId}/tecnico`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ tecnico_id: parseInt(tecnicoId), puntos: 0 })
+            })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        select.value = '';
+                        loadTechnicians();
+                    } else {
+                        alert(data.error || 'Error al asignar técnico');
+                    }
+                });
+        }
+
+        function removeTechnician(tecnicoId) {
+            if (!confirm('¿Desasignar este técnico?')) return;
+
+            fetch(`/api/crm/deal/${dealId}/tecnico/${tecnicoId}`, {
+                method: 'DELETE'
+            })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        loadTechnicians();
+                    }
+                });
+        }
+
+        function updatePoints(tecnicoId, puntos) {
+            fetch(`/api/crm/deal/${dealId}/tecnico/${tecnicoId}/puntos`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ puntos: parseFloat(puntos) })
+            })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        loadTechnicians(); // Refresh to update total
+                    }
+                });
+        }
+
+        function updateSchedule() {
+            const fecha = document.getElementById('fechaServicio').value;
+            const tiempo = document.getElementById('tiempoEstimado').value;
+
+            fetch(`/api/crm/deal/${dealId}/servicio`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    fecha_servicio: fecha,
+                    tiempo_estimado_horas: tiempo ? parseFloat(tiempo) : null
+                })
+            })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('✅ Programación actualizada');
+                    } else {
+                        alert('Error al actualizar');
+                    }
+                });
+        }
+
+        // Close modal on outside click
+        window.onclick = function (event) {
+            const modal = document.getElementById('equipmentModal');
+            if (event.target === modal) {
+                closeEquipmentModal();
+            }
+        }
+        // Timer functions
+        let timerInterval = null;
+        let timerStartTime = null;
+
+        function loadTimer() {
+            fetch(`/api/crm/deal/${dealId}/timer`)
+                .then(r => r.json())
+                .then(data => {
+                    const timer = data.timer;
+                    const isActive = data.is_active;
+                    const canControl = data.can_control;
+
+                    // Update buttons
+                    if (isActive && canControl) {
+                        document.getElementById('timerStartBtn').style.display = 'none';
+                        document.getElementById('timerStopBtn').style.display = 'inline-block';
+                    } else if (!isActive && canControl) {
+                        document.getElementById('timerStartBtn').style.display = 'inline-block';
+                        document.getElementById('timerStopBtn').style.display = 'none';
+                    } else {
+                        document.getElementById('timerStartBtn').style.display = 'none';
+                        document.getElementById('timerStopBtn').style.display = 'none';
+                    }
+
+                    // Update display
+                    if (isActive && timer) {
+                        timerStartTime = new Date(timer.fecha_inicio);
+                        updateTimerDisplay();
+                        startTimerInterval();
+                        document.getElementById('timerStatus').textContent =
+                            `Timer iniciado por: ${timer.tecnico_inicio_nombre || 'N/A'}`;
+                    } else if (timer && timer.fecha_fin) {
+                        const seconds = timer.tiempo_segundos || 0;
+                        const hours = Math.floor(seconds / 3600);
+                        const minutes = Math.floor((seconds % 3600) / 60);
+                        const secs = seconds % 60;
+                        document.getElementById('timerTime').textContent =
+                            `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+                        document.getElementById('timerStatus').textContent =
+                            `Completado - Iniciado por: ${timer.tecnico_inicio_nombre || 'N/A'}, Detenido por: ${timer.tecnico_fin_nombre || 'N/A'}`;
+                    } else {
+                        document.getElementById('timerTime').textContent = '00:00:00';
+                        document.getElementById('timerStatus').textContent = 'Timer no iniciado';
+                    }
+
+                    // Update history
+                    if (timer) {
+                        const seconds = timer.tiempo_segundos || 0;
+                        const hours = Math.floor(seconds / 3600);
+                        const minutes = Math.floor((seconds % 3600) / 60);
+                        const secs = seconds % 60;
+                        const timeStr = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+                        document.getElementById('timerHistoryContent').innerHTML = `
+                            <div style="padding: 10px; background: white; border-radius: 6px;">
+                                <strong>Inicio:</strong> ${timer.fecha_inicio || 'N/A'}<br>
+                                ${timer.fecha_fin ? `<strong>Fin:</strong> ${timer.fecha_fin}<br>` : ''}
+                                ${timer.tiempo_segundos ? `<strong>Tiempo Total:</strong> ${timeStr}<br>` : ''}
+                                <strong>Iniciado por:</strong> ${timer.tecnico_inicio_nombre || 'N/A'}<br>
+                                ${timer.tecnico_fin_nombre ? `<strong>Detenido por:</strong> ${timer.tecnico_fin_nombre}` : ''}
+                            </div>
+                        `;
+                    } else {
+                        document.getElementById('timerHistoryContent').textContent = 'No hay historial de timer';
+                    }
+                })
+                .catch(err => {
+                    console.error('Error loading timer:', err);
+                });
+        }
+
+        function startTimer() {
+            fetch(`/api/crm/deal/${dealId}/timer/start`, {
+                method: 'POST'
+            })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        loadTimer();
+                    } else {
+                        alert(data.error || 'Error al iniciar el timer');
+                    }
+                });
+        }
+
+        function stopTimer() {
+            if (!confirm('¿Detener el timer?')) return;
+
+            fetch(`/api/crm/deal/${dealId}/timer/stop`, {
+                method: 'POST'
+            })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        if (timerInterval) {
+                            clearInterval(timerInterval);
+                            timerInterval = null;
+                        }
+                        loadTimer();
+                    } else {
+                        alert(data.error || 'Error al detener el timer');
+                    }
+                });
+        }
+
+        function updateTimerDisplay() {
+            if (!timerStartTime) return;
+
+            const now = new Date();
+            const diff = Math.floor((now - timerStartTime) / 1000);
+            const hours = Math.floor(diff / 3600);
+            const minutes = Math.floor((diff % 3600) / 60);
+            const seconds = diff % 60;
+
+            document.getElementById('timerTime').textContent =
+                `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+
+        function startTimerInterval() {
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(updateTimerDisplay, 1000);
+        }
+
+        // Load timer on page load
+        loadTimer();
+        // Refresh timer every 30 seconds
+        setInterval(loadTimer, 30000);
+
+        // ==================== CHAT SYSTEM ====================
+
+        function loadMessages() {
+            if (!dealId) return;
+            fetch(`/api/crm/deal/${dealId}/messages`)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        renderMessages(data.messages);
+                    }
+                })
+                .catch(err => console.error('Error loading messages:', err));
+        }
+
+        function renderMessages(messages) {
+            const container = document.getElementById('chatMessages');
+            if (messages.length === 0) {
+                container.innerHTML = '<div style="text-align: center; padding: 20px; color: #999;">No hay mensajes aún. ¡Sé el primero en escribir!</div>';
+                return;
+            }
+
+            container.innerHTML = messages.map(m => {
+                // Convert @mentions to highlighted spans
+                let content = escapeHtml(m.mensaje);
+                content = content.replace(/@(\w+)/g, '<span class="mention">@$1</span>');
+
+                // Render attachments if any
+                let attachmentsHtml = '';
+                if (m.attachments && m.attachments.length > 0) {
+                    attachmentsHtml = '<div style="margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px;">';
+                    m.attachments.forEach(att => {
+                        const isImage = att.mime_type && att.mime_type.startsWith('image/');
+                        if (isImage) {
+                            attachmentsHtml += `
+                                <div style="position: relative; display: inline-block;">
+                                    <img src="/api/attachments/${att.id}/preview" 
+                                         alt="${escapeHtml(att.original_name)}"
+                                         style="max-width: 150px; max-height: 150px; border-radius: 4px; cursor: pointer; border: 1px solid #ddd;"
+                                         onclick="window.open('/api/attachments/${att.id}/preview', '_blank')"
+                                         title="${escapeHtml(att.original_name)}">
+                                    <a href="/api/attachments/${att.id}" download style="display: block; font-size: 0.75em; color: #1976d2; margin-top: 2px;">${escapeHtml(att.original_name)}</a>
+                                </div>
+                            `;
+                        } else {
+                            const icon = getFileIcon(att.original_name);
+                            attachmentsHtml += `
+                                <div style="display: inline-flex; align-items: center; gap: 4px; padding: 6px 10px; background: #f5f5f5; border-radius: 12px; border: 1px solid #ddd;">
+                                    <span>${icon}</span>
+                                    <a href="/api/attachments/${att.id}" download style="color: #1976d2; text-decoration: none; font-size: 0.9em;">${escapeHtml(att.original_name)}</a>
+                                    <span style="color: #666; font-size: 0.8em;">(${formatFileSize(att.size)})</span>
+                                </div>
+                            `;
+                        }
+                    });
+                    attachmentsHtml += '</div>';
+                }
+
+                return `
+                    <div class="message">
+                        <div class="message-header">
+                            <span class="message-author">${escapeHtml(m.nombre || m.username)}</span>
+                            <span class="message-time">${timeAgo(m.created_at)}</span>
+                        </div>
+                        <div class="message-content">${content}</div>
+                        ${attachmentsHtml}
+                    </div>
+                `;
+            }).join('');
+
+            // Scroll to bottom
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function handleMessageAttachmentsChange() {
+            const input = document.getElementById('messageAttachments');
+            const files = Array.from(input.files);
+            const listDiv = document.getElementById('messageAttachmentsList');
+            listDiv.innerHTML = '';
+
+            files.forEach((file, index) => {
+                const fileItem = document.createElement('div');
+                fileItem.style.cssText = 'display: flex; align-items: center; gap: 4px; padding: 4px 8px; background: #e3f2fd; border-radius: 12px; font-size: 0.85em;';
+                fileItem.innerHTML = `
+                    <span>${getFileIcon(file.name)}</span>
+                    <span>${escapeHtml(file.name)}</span>
+                    <span style="color: #666;">(${formatFileSize(file.size)})</span>
+                    <button type="button" onclick="removeMessageAttachment(${index})" style="background: none; border: none; color: #dc3545; cursor: pointer; padding: 0 4px;">×</button>
+                `;
+                listDiv.appendChild(fileItem);
+            });
+        }
+
+        function removeMessageAttachment(index) {
+            const input = document.getElementById('messageAttachments');
+            const dt = new DataTransfer();
+            const files = Array.from(input.files);
+            files.splice(index, 1);
+            files.forEach(file => dt.items.add(file));
+            input.files = dt.files;
+            handleMessageAttachmentsChange();
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const mensaje = input.value.trim();
+            const attachmentsInput = document.getElementById('messageAttachments');
+            const files = attachmentsInput ? Array.from(attachmentsInput.files) : [];
+
+            if (!mensaje && files.length === 0) {
+                alert('Por favor escribe un mensaje o adjunta un archivo');
+                return;
+            }
+
+            if (files.length > 0) {
+                // Use FormData for files
+                const formData = new FormData();
+                formData.append('mensaje', mensaje || '(mensaje con adjuntos)');
+                files.forEach((file, index) => {
+                    formData.append(`attachment${index}`, file);
+                });
+
+                fetch(`/api/crm/deal/${dealId}/messages`, {
+                    method: 'POST',
+                    body: formData
+                })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.success) {
+                            input.value = '';
+                            if (attachmentsInput) {
+                                attachmentsInput.value = '';
+                                document.getElementById('messageAttachmentsList').innerHTML = '';
+                            }
+                            loadMessages();
+                        } else {
+                            alert('Error al enviar mensaje: ' + (data.error || 'Desconocido'));
+                        }
+                    })
+                    .catch(err => {
+                        alert('Error al enviar mensaje');
+                        console.error(err);
+                    });
+            } else {
+                // No files, use JSON
+                fetch(`/api/crm/deal/${dealId}/messages`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ mensaje: mensaje })
+                })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.success) {
+                            input.value = '';
+                            loadMessages();
+                        } else {
+                            alert('Error al enviar mensaje: ' + (data.error || 'Desconocido'));
+                        }
+                    })
+                    .catch(err => {
+                        alert('Error al enviar mensaje');
+                        console.error(err);
+                    });
+            }
+        }
+
+        function handleChatKeydown(e) {
+            // Send on Ctrl+Enter or Cmd+Enter
+            if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+                e.preventDefault();
+                sendMessage();
+            }
+        }
+
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+
+        function timeAgo(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const seconds = Math.floor((now - date) / 1000);
+
+            if (seconds < 60) return 'Ahora';
+            if (seconds < 3600) return `Hace ${Math.floor(seconds / 60)} min`;
+            if (seconds < 86400) return `Hace ${Math.floor(seconds / 3600)} h`;
+            return `Hace ${Math.floor(seconds / 86400)} días`;
+        }
+
+        function getFileIcon(filename) {
+            const ext = filename.split('.').pop().toLowerCase();
+            if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext)) return '🖼️';
+            if (ext === 'pdf') return '📄';
+            if (['doc', 'docx'].includes(ext)) return '📄';
+            if (['xls', 'xlsx'].includes(ext)) return '📄';
+            return '📄';
+        }
+
+        function formatFileSize(bytes) {
+            if (!bytes || bytes === 0) return '0 B';
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+        }
+
+        // Load messages on page load
+        if (dealId) {
+            loadMessages();
+            // Refresh messages every 10 seconds
+            setInterval(loadMessages, 10000);
+        }
+    </script>
+</body>
+
+</html>

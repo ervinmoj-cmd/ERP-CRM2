@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reportes Pendientes de Enviar - INAIR</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+    <style>
+        /* Mobile Responsive Fixes */
+        @media (max-width: 768px) {
+            .admin-header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+
+            .user-info {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+                width: 100%;
+            }
+
+            .user-info .btn {
+                width: 100%;
+                margin: 0 !important;
+            }
+
+            .table-container {
+                padding: 10px;
+            }
+
+            .table-response-wrapper {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                margin-bottom: 20px;
+                border-radius: 8px;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            }
+
+            table {
+                min-width: 800px;
+                /* Force minimum width to trigger scroll */
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="admin-container">
+        <div class="admin-header">
+            <h1>📋 Reportes Pendientes de Enviar</h1>
+            <div class="user-info">
+                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="history.back()">Atrás</button>
+                <a href="{{ url_for('dashboard_redirect') }}" class="btn btn-secondary btn-sm">Volver al Panel</a>
+                <a href="{{ url_for('logout') }}" class="btn btn-danger btn-sm">Cerrar Sesión</a>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <div class="table-header">
+                <h2>Borradores Pendientes ({{ drafts|length }})</h2>
+                {% if is_admin %}
+                <p class="text-muted">Viendo todos los borradores de todos los técnicos</p>
+                {% else %}
+                <p class="text-muted">Viendo solo tus borradores pendientes</p>
+                {% endif %}
+            </div>
+
+            {% if drafts %}
+            <div class="table-response-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Folio</th>
+                            <th>Fecha</th>
+                            <th>Cliente</th>
+                            <th>Tipo de Servicio</th>
+                            {% if is_admin %}
+                            <th>Técnico</th>
+                            {% endif %}
+                            <th>Última Actualización</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for draft in drafts %}
+                        <tr>
+                            <td><strong>{{ draft.folio }}</strong></td>
+                            <td>{{ draft.fecha or 'N/A' }}</td>
+                            <td>{{ draft.cliente or 'N/A' }}</td>
+                            <td>
+                                {% if draft.tipo_servicio == 'Preventivo' %}
+                                <span class="badge badge-active">{{ draft.tipo_servicio }}</span>
+                                {% elif draft.tipo_servicio == 'Correctivo' %}
+                                <span class="badge" style="background: #f39c12; color: white;">{{ draft.tipo_servicio
+                                    }}</span>
+                                {% elif draft.tipo_servicio == 'Diagnóstico' %}
+                                <span class="badge badge-technician">{{ draft.tipo_servicio }}</span>
+                                {% elif draft.tipo_servicio == 'Bitácora' %}
+                                <span class="badge" style="background: #6f42c1; color: white;">{{ draft.tipo_servicio
+                                    }}</span>
+                                {% else %}
+                                <span class="badge">{{ draft.tipo_servicio or 'N/A' }}</span>
+                                {% endif %}
+                            </td>
+                            {% if is_admin %}
+                            <td>{{ draft.tecnico or 'N/A' }}</td>
+                            {% endif %}
+                            <td>
+                                {% if draft.updated_at %}
+                                {{ draft.updated_at[:16] if draft.updated_at|length > 16 else draft.updated_at }}
+                                {% else %}
+                                N/A
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{{ url_for('editar_reporte', folio=draft.folio) }}"
+                                    class="btn btn-sm btn-primary">Ver/Editar</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <p>No hay reportes pendientes de enviar.</p>
+                <a href="{{ url_for('formulario') }}" class="btn btn-primary">Crear Nuevo Reporte</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+
+</html>

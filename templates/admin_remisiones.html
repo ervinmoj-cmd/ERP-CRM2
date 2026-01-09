@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Remisiones - INAIR</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+    <style>
+        .remisiones-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+        .badge.draft {
+            background: #fff3cd;
+            color: #856404;
+        }
+        .badge.confirmed {
+            background: #d4edda;
+            color: #155724;
+        }
+        .badge.cancelled {
+            background: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <div class="admin-header">
+            <h1>📦 Remisiones</h1>
+            <div class="header-actions">
+                <a href="{{ url_for('admin_remision_nueva') }}" class="btn btn-primary">+ Nueva Remisión</a>
+                <a href="{{ url_for('admin_facturas') }}" class="btn btn-secondary">← Finanzas</a>
+                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="history.back()">Atrás</button>
+                <a href="{{ url_for('dashboard_redirect') }}" class="btn btn-secondary btn-sm">Volver al Panel</a>
+                <a href="{{ url_for('logout') }}" class="btn btn-danger btn-sm">Cerrar Sesión</a>
+            </div>
+        </div>
+
+        <div class="admin-content">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Folio</th>
+                        <th>Cliente</th>
+                        <th>Fecha</th>
+                        <th>Estado</th>
+                        <th>Factura</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if remisiones %}
+                        {% for rem in remisiones %}
+                        <tr>
+                            <td><strong>{{ rem.folio }}</strong></td>
+                            <td>{{ rem.cliente_nombre }}</td>
+                            <td>{{ rem.fecha }}</td>
+                            <td>
+                                <span class="badge {{ rem.estado }}">{{ rem.estado|upper }}</span>
+                            </td>
+                            <td>
+                                {% if rem.factura_id %}
+                                <a href="{{ url_for('admin_factura_detalle', id=rem.factura_id) }}">Ver Factura</a>
+                                {% else %}
+                                -
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{{ url_for('admin_remision_detalle', id=rem.id) }}" class="btn btn-sm btn-primary">Ver</a>
+                                {% if rem.estado == 'draft' %}
+                                <a href="{{ url_for('admin_remision_editar', id=rem.id) }}" class="btn btn-sm btn-secondary">Editar</a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="6" style="text-align: center; padding: 40px; color: #999;">
+                                No hay remisiones registradas
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>
+

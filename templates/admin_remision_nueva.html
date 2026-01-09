@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nueva Remisión - INAIR</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+</head>
+<body>
+    <div class="admin-container">
+        <div class="admin-header">
+            <h1>📦 Nueva Remisión</h1>
+            <div class="header-actions">
+                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="history.back()">Atrás</button>
+                <a href="{{ url_for('admin_remisiones') }}" class="btn btn-secondary btn-sm">← Volver</a>
+            </div>
+        </div>
+
+        <div class="admin-content">
+            <form method="POST" class="form-container">
+                <div class="form-section">
+                    <h3>Datos Generales</h3>
+                    <div class="form-group">
+                        <label>Cliente *</label>
+                        <select name="cliente_id" id="clienteSelect" onchange="updateClienteNombre()">
+                            <option value="">-- Seleccionar Cliente --</option>
+                            {% for client in clientes %}
+                            <option value="{{ client.id }}" data-nombre="{{ client.nombre }}">{{ client.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                        <input type="hidden" name="cliente_nombre" id="clienteNombre">
+                    </div>
+                    <div class="form-group">
+                        <label>Fecha *</label>
+                        <input type="date" name="fecha" value="{{ today }}" required>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3>Vínculos (Opcional)</h3>
+                    <div class="form-group">
+                        <label>Factura</label>
+                        <select name="factura_id">
+                            <option value="">-- Sin factura --</option>
+                            {% for factura in facturas %}
+                            <option value="{{ factura.id }}">{{ factura.numero_factura }} - {{ factura.cliente_nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Cotización</label>
+                        <select name="cotizacion_id" id="cotizacionSelect">
+                            <option value="">-- Sin cotización --</option>
+                            {% for cot in cotizaciones %}
+                            <option value="{{ cot.id }}">{{ cot.folio }} - {{ cot.cliente_nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>OC Cliente</label>
+                        <input type="text" name="oc_cliente_id" placeholder="Número de orden de compra del cliente">
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3>Notas</h3>
+                    <div class="form-group">
+                        <textarea name="notas" rows="3" placeholder="Notas adicionales..."></textarea>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3>Items</h3>
+                    <p style="color: #666; font-size: 0.9em;">Se cargan automáticamente desde la cotización seleccionada. Puedes eliminar items manualmente.</p>
+                    <div style="overflow-x:auto;">
+                        <table id="itemsTable" style="width:100%; border-collapse: collapse; background: white;">
+                            <thead>
+                                <tr style="background: #f8f9fa;">
+                                    <th style="padding: 10px; border-bottom: 2px solid #ddd;">Descripción</th>
+                                    <th style="padding: 10px; border-bottom: 2px solid #ddd; text-align:center;">Cantidad</th>
+                                    <th style="padding: 10px; border-bottom: 2px solid #ddd; text-align:center;">Unidad</th>
+                                    <th style="padding: 10px; border-bottom: 2px solid #ddd;">Número de Parte</th>
+                                    <th style="padding: 10px; border-bottom: 2px solid #ddd; text-align:center;">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="itemsBody">
+                                <tr id="emptyItemsRow">
+                                    <td colspan="5" style="text-align:center; padding: 20px; color: #999;">No hay items cargados</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Crear Remisión</button>
+                    <a href="{{ url_for('admin_remisiones') }}" class="btn btn-secondary">Cancelar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function updateClienteNombre() {
+            const select = document.getElementById('clienteSelect');
+            const nombreInput = document.getElementById('clienteNombre');
+            const selected = select.options[select.selectedIndex];
+            if (selected.value) {
+                nombreInput.value = selected.getAttribute('data-nombre');
+            } else {
+                nombreInput.value = '';
+            }
+        }
+
+        // Load cotizacion items into the items table
+        document.getElementById('cotizacionSelect').addEventListener('change', function() {
+            const cotId = this.value;
+            const body = document.getElementById('itemsBody');
+            body.innerHTML = '';
+            if (!cotId) {
+                body.innerHTML = '<tr id="emptyItemsRow"><td colspan="5" style="text-align:center; padding: 20px; color: #999;">No hay items cargados</td></tr>';
+                return;
+            }
+
+            fetch(`/api/cotizaciones/${cotId}/items`)
+                .then(r => r.json())
+                .then(data => {
+                    if (!data.success || !data.items || data.items.length === 0) {
+                        body.innerHTML = '<tr id="emptyItemsRow"><td colspan="5" style="text-align:center; padding: 20px; color: #999;">No hay items cargados</td></tr>';
+                        return;
+                    }
+                    data.items.forEach(item => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td style="padding: 10px; border-bottom: 1px solid #eee;">
+                                <input type="hidden" name="item_descripcion[]" value="${(item.descripcion || '').replace(/"/g,'&quot;')}">
+                                <input type="hidden" name="item_cantidad[]" value="${item.cantidad || 0}">
+                                <input type="hidden" name="item_unidad[]" value="${item.unidad || 'PZA'}">
+                                <input type="hidden" name="item_numero_parte[]" value="${item.numero_parte || ''}">
+                                ${item.descripcion || ''}<br>
+                                <small style="color:#7f8c8d;">${item.numero_parte || ''}</small>
+                            </td>
+                            <td style="padding: 10px; text-align:center; border-bottom: 1px solid #eee;">${item.cantidad || 0}</td>
+                            <td style="padding: 10px; text-align:center; border-bottom: 1px solid #eee;">${item.unidad || 'PZA'}</td>
+                            <td style="padding: 10px; border-bottom: 1px solid #eee;">${item.numero_parte || ''}</td>
+                            <td style="padding: 10px; text-align:center; border-bottom: 1px solid #eee;">
+                                <button type="button" class="btn btn-secondary btn-sm" onclick="this.closest('tr').remove(); if (!document.querySelector('#itemsBody tr')) { document.getElementById('itemsBody').innerHTML = '<tr id=\\'emptyItemsRow\\'><td colspan=\\'5\\' style=\\'text-align:center; padding: 20px; color: #999;\\'>No hay items cargados</td></tr>'; }">Eliminar</button>
+                            </td>
+                        `;
+                        body.appendChild(tr);
+                    });
+                })
+                .catch(() => {
+                    body.innerHTML = '<tr id="emptyItemsRow"><td colspan="5" style="text-align:center; padding: 20px; color: #999;">Error al cargar items</td></tr>';
+                });
+        });
+    </script>
+</body>
+</html>
+

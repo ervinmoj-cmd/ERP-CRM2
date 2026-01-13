@@ -16,8 +16,16 @@ from email.mime.application import MIMEApplication
 
 # Trigger Reload
 
-# Database path
-DATABASE = "inair_reportes.db"
+# Import config for path management (Railway + Local)
+try:
+    from config import (
+        DATA_DIR, DATABASE_DIR, UPLOAD_DIR, FIRMAS_DIR, GENERADOS_DIR,
+        DATABASE_MAIN, DATABASE_AUX, IS_RAILWAY, APP_ROOT as CONFIG_APP_ROOT
+    )
+    DATABASE = DATABASE_MAIN
+except ImportError:
+    # Fallback si config.py no existe (no debería pasar)
+    DATABASE = "inair_reportes.db"
 
 
 # Import database functions
@@ -184,14 +192,20 @@ def in_list_ignore_case(item, list_items):
     item_lower = item.lower().strip()
     return any(compare_ignore_case(item, list_item) for list_item in list_items)
 
-APP_ROOT = os.path.dirname(os.path.abspath(__file__))
-DATA_DIR = os.path.join(APP_ROOT, "data")
-UPLOAD_DIR = os.path.join(APP_ROOT, "static", "uploads")
-FIRMAS_DIR = os.path.join(APP_ROOT, "static", "firmas")
-GENERADOS_DIR = os.path.join(APP_ROOT, "static")
+# Rutas ya definidas en config.py si existe, sino usar locales
+if 'DATA_DIR' not in globals():
+    APP_ROOT = os.path.dirname(os.path.abspath(__file__))
+    DATA_DIR = os.path.join(APP_ROOT, "data")
+    UPLOAD_DIR = os.path.join(APP_ROOT, "static", "uploads")
+    FIRMAS_DIR = os.path.join(APP_ROOT, "static", "firmas")
+    GENERADOS_DIR = os.path.join(APP_ROOT, "static")
+else:
+    # Ya vienen de config.py
+    APP_ROOT = CONFIG_APP_ROOT
 
 app = Flask(__name__)
-app.secret_key = "inair_secret_key_change_me"
+# Usar SECRET_KEY de variable de entorno (Railway) o fallback a valor actual
+app.secret_key = os.environ.get('SECRET_KEY', 'inair_secret_key_change_me')
 
 # Initialize database
 init_db()

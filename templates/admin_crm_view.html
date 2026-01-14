@@ -2032,8 +2032,8 @@ Quedamos a sus órdenes para cualquier duda o aclaración.</textarea>
 
             // Descargar PDF si hay cotización vinculada
             {% if linked_cotizaciones %}
-            const cotizacionId = {{ linked_cotizaciones[0].id }
-        };
+            const cotizacionId = {{ linked_cotizaciones[0].id }};
+
         const downloadLink = document.createElement('a');
         downloadLink.href = `/admin/cotizaciones/pdf/${cotizacionId}`;
         downloadLink.download = `Cotizacion_{{ linked_cotizaciones[0].folio }}.pdf`;
@@ -2135,8 +2135,8 @@ Quedamos a sus órdenes para cualquier duda o aclaración.</textarea>
 
         // Configurar drag and drop para OC Cliente
         (function () {
-            const dealId = {{ deal.id }
-        };
+            const dealId = {{ deal.id }};
+
         const dropZone = document.getElementById(`ocClienteDropZone${dealId}`);
         const overlay = document.getElementById(`ocClienteDropOverlay${dealId}`);
 
@@ -2180,8 +2180,7 @@ Quedamos a sus órdenes para cualquier duda o aclaración.</textarea>
 
         // Configurar drag and drop para OC Cliente
         (function () {
-            const dealId = {{ deal.id }
-        };
+            const dealId = {{ deal.id }};
         const dropZone = document.getElementById(`ocClienteDropZone${dealId}`);
         const overlay = document.getElementById(`ocClienteDropOverlay${dealId}`);
 

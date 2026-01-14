@@ -1,5 +1,5 @@
 # app.py
-import os, io, json, base64, math, sqlite3, re
+import os, io, json, base64, math, sqlite3, re, socket
 from datetime import datetime, timedelta
 from flask import Flask, render_template, request, redirect, url_for, session, send_file, jsonify, flash
 from functools import wraps
@@ -2003,12 +2003,18 @@ InAIR - Servicio Técnico
         # Send email - CRÍTICO: Usar send_message() en lugar de sendmail() con as_string()
         # send_message() maneja mejor el encoding y los adjuntos
         # No necesita to_addrs porque los destinatarios ya están en los headers To y Cc
-        server = smtplib.SMTP(smtp_server, smtp_port)
+        # CRÍTICO: Agregar timeout de 30 segundos para evitar que el worker se cuelgue
+        print(f"📧 Conectando a SMTP {smtp_server}:{smtp_port}...")
+        server = smtplib.SMTP(smtp_server, smtp_port, timeout=30)
+        print(f"📧 Iniciando STARTTLS...")
         server.starttls()
+        print(f"📧 Autenticando con {smtp_user}...")
         server.login(smtp_user, smtp_password)
+        print(f"📧 Enviando mensaje...")
         # CRÍTICO: Usar send_message() que maneja mejor los adjuntos y encoding
         # send_message() automáticamente usa los destinatarios de los headers To, Cc, Bcc
         server.send_message(msg)
+        print(f"📧 Cerrando conexión...")
         server.quit()
         
         print(f"✅ Email enviado exitosamente a {client_email} con adjunto PDF")
@@ -2022,8 +2028,28 @@ InAIR - Servicio Técnico
         # Redirect to success page
         return render_template("envio_exitoso.html", folio=folio, email=client_email, filename=filename)
         
+    except smtplib.SMTPAuthenticationError as e:
+        error_msg = f"❌ Error de autenticación SMTP: {e}"
+        print(error_msg)
+        print(f"   Usuario SMTP: {smtp_user}")
+        print(f"   Servidor: {smtp_server}:{smtp_port}")
+        print(f"   NOTA: Gmail requiere una 'App Password' si tienes 2FA habilitado.")
+        print(f"   Ve a: https://myaccount.google.com/apppasswords")
+        return f"Error de autenticación de email. Verifica las credenciales SMTP en las variables de entorno.", 500
+    except (socket.timeout, TimeoutError) as e:
+        error_msg = f"❌ Timeout al conectar con servidor SMTP: {e}"
+        print(error_msg)
+        print(f"   Servidor: {smtp_server}:{smtp_port}")
+        return f"Error: El servidor de email no responde (timeout). Intenta de nuevo.", 500
+    except smtplib.SMTPException as e:
+        error_msg = f"❌ Error SMTP: {e}"
+        print(error_msg)
+        return f"Error al enviar email: {str(e)}", 500
     except Exception as e:
-        print(f"Error al enviar email: {e}")
+        error_msg = f"❌ Error inesperado al enviar email: {e}"
+        print(error_msg)
+        import traceback
+        traceback.print_exc()
         return f"Error al enviar el correo: {str(e)}", 500
 
 

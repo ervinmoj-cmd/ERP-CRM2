@@ -76,13 +76,14 @@ def validate_and_parse_emails(email_string, field_name="email"):
 # Safety defaults to avoid NameError in legacy code paths
 factura_id = None
 
-# Email configuration - GoDaddy (Configuración SSL)
-SMTP_SERVER = "smtpout.secureserver.net"
-SMTP_PORT = 465
-SMTP_USE_SSL = True  # Usar SSL directo (no STARTTLS)
-SMTP_USER = "emoreno@inair.com.mx"
-SMTP_PASSWORD = "52E841m16"
-FROM_EMAIL = "emoreno@inair.com.mx"
+# Email configuration - Read from environment variables (Render/production)
+# Fallback to GoDaddy for local development if env vars not set
+SMTP_SERVER = os.getenv('SMTP_SERVER', 'smtpout.secureserver.net')
+SMTP_PORT = int(os.getenv('SMTP_PORT', '465'))
+SMTP_USE_SSL = os.getenv('SMTP_USE_SSL', 'True').lower() in ('true', '1', 'yes')
+SMTP_USER = os.getenv('SMTP_USER', 'emoreno@inair.com.mx')
+SMTP_PASSWORD = os.getenv('SMTP_PASSWORD', '52E841m16')
+FROM_EMAIL = os.getenv('FROM_EMAIL', SMTP_USER)
 FROM_NAME = "INGENIERÍA EN AIRE"
 
 # Note: PDF generation function has been moved to app.py as generate_cotizacion_pdf_bytes()

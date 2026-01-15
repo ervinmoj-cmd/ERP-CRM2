@@ -1,5 +1,5 @@
 # app.py
-import os, io, json, base64, math, sqlite3, re, socket
+import os, io, json, base64, math, sqlite3, re, socket, requests
 from datetime import datetime, timedelta
 from flask import Flask, render_template, request, redirect, url_for, session, send_file, jsonify, flash
 from functools import wraps
@@ -2000,24 +2000,49 @@ InAIR - Servicio Técnico
             except Exception as e:
                 print(f"   ⚠️ Adjunto #{idx}: {filename_check} (error al verificar: {e})")
         
-        # Send email - CRÍTICO: Usar send_message() en lugar de sendmail() con as_string()
-        # send_message() maneja mejor el encoding y los adjuntos
-        # No necesita to_addrs porque los destinatarios ya están en los headers To y Cc
-        # CRÍTICO: Agregar timeout de 30 segundos para evitar que el worker se cuelgue
-        print(f"📧 Conectando a SMTP {smtp_server}:{smtp_port}...")
-        server = smtplib.SMTP(smtp_server, smtp_port, timeout=30)
-        print(f"📧 Iniciando STARTTLS...")
-        server.starttls()
-        print(f"📧 Autenticando con {smtp_user}...")
-        server.login(smtp_user, smtp_password)
-        print(f"📧 Enviando mensaje...")
-        # CRÍTICO: Usar send_message() que maneja mejor los adjuntos y encoding
-        # send_message() automáticamente usa los destinatarios de los headers To, Cc, Bcc
-        server.send_message(msg)
-        print(f"📧 Cerrando conexión...")
-        server.quit()
+        # Send email via SendGrid API (HTTP) instead of SMTP
+        # SMTP ports are blocked by Render, so we use the HTTP API
+        print(f"📧 Preparando envío vía SendGrid API...")
         
-        print(f"✅ Email enviado exitosamente a {client_email} con adjunto PDF")
+        # SendGrid API v3 endpoint
+        sendgrid_url = "https://api.sendgrid.com/v3/mail/send"
+        
+        # Prepare API request payload
+        sendgrid_payload = {
+            "personalizations": [{
+                "to": [{"email": client_email}],
+                "cc": [{"email": "customerservice@inair.com.mx"}],
+                "subject": msg['Subject']
+            }],
+            "from": {"email": smtp_user},
+            "content": [{
+                "type": "text/plain",
+                "value": body
+            }],
+            "attachments": [{
+                "content": base64.b64encode(pdf_bytes).decode('utf-8'),
+                "type": "application/pdf",
+                "filename": filename,
+                "disposition": "attachment"
+            }]
+        }
+        
+        # API Headers
+        headers = {
+            "Authorization": f"Bearer {smtp_password}",
+            "Content-Type": "application/json"
+        }
+        
+        print(f"📧 Enviando email vía API a {client_email}...")
+        response = requests.post(sendgrid_url, headers=headers, json=sendgrid_payload, timeout=30)
+        
+        if response.status_code == 202:
+            print(f"✅ Email enviado exitosamente vía SendGrid API a {client_email}")
+        else:
+            error_response = response.json() if response.text else {}
+            print(f"❌ Error de SendGrid API: Status {response.status_code}")
+            print(f"   Response: {error_response}")
+            return f"Error al enviar email: SendGrid API retornó {response.status_code}. Verifica la API key.", 500
         
         # Mark draft as sent
         mark_draft_as_sent(folio)

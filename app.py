@@ -1947,7 +1947,6 @@ InAIR - Servicio Técnico
         if isinstance(pdf_bytes, str):
             # Si es string, podría ser base64, intentar decodificar
             try:
-                import base64
                 pdf_bytes = base64.b64decode(pdf_bytes)
             except:
                 # Si no es base64, convertir a bytes

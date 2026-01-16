@@ -1,164 +1,395 @@
 /*
  * INAIR ERP - Responsive CSS
- * Estilos globales para móvil y tablet
- * Solo afecta apariencia visual, no funcionalidad
+ * Estilos globales para móvil, tablet y desktop
+ * Todas las páginas heredan estos estilos automáticamente
  */
 
 /* ========================================
-   MÓVIL (max-width: 576px)
+   VARIABLES Y BASE
    ======================================== */
-@media (max-width: 576px) {
+:root {
+  --mobile-padding: 10px;
+  --tablet-padding: 15px;
+  --touch-min-height: 44px;
+}
 
-  /* Container con padding reducido */
-  .container,
-  .container-fluid {
-    padding-left: 10px;
-    padding-right: 10px;
-  }
-
-  /* Cards con sombra más sutil */
-  .card {
-    border-radius: 12px;
-    margin-bottom: 1rem;
-  }
-
-  /* Botones en grupos se apilan verticalmente */
-  .btn-group-vertical-mobile {
-    flex-direction: column;
-    width: 100%;
-  }
-
-  .btn-group-vertical-mobile .btn {
-    width: 100%;
-    margin-bottom: 0.5rem;
-  }
-
-  /* Tablas con scroll horizontal */
-  .table-responsive {
-    border: 1px solid #dee2e6;
-    border-radius: 8px;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  /* IMPORTANTE: Hacer que TODAS las tablas dentro de table-container tengan scroll */
+/* ========================================
+   DESKTOP (992px+)
+   ======================================== */
+@media (min-width: 993px) {
+  /* Tablas siempre con scroll horizontal disponible */
+  .table-responsive,
   .table-container {
     overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  /* También aplicar a tablas directas en admin (NO en formularios .card) */
-  .table-container>table,
-  .admin-container>table {
-    min-width: 600px;
-  }
-
-
-  /* Texto de tabla más pequeño - SOLO en páginas admin */
-  .table-container .table {
-    font-size: 0.85rem;
-  }
-
-  .table-container .table th,
-  .table-container .table td {
-    padding: 0.5rem 0.4rem;
-    white-space: nowrap;
-  }
-
-  /* Formularios: inputs de ancho completo */
-  .form-control,
-  .form-select {
-    font-size: 16px;
-    /* Evita zoom en iOS */
-  }
-
-  /* Badges más pequeños */
-  .badge {
-    font-size: 0.7rem;
-    padding: 0.3em 0.5em;
-  }
-
-  /* Modales más pequeños */
-  .modal-dialog {
-    margin: 0.5rem;
-  }
-
-  /* Headers de página */
-  h1,
-  .h1 {
-    font-size: 1.5rem;
-  }
-
-  h2,
-  .h2 {
-    font-size: 1.3rem;
-  }
-
-  h3,
-  .h3 {
-    font-size: 1.15rem;
-  }
-
-  h4,
-  .h4 {
-    font-size: 1rem;
-  }
-
-  /* Flexbox: permitir wrap en móvil */
-  .d-flex.gap-2,
-  .d-flex.gap-3 {
-    flex-wrap: wrap;
-  }
-
-  /* Botones de acción más pequeños */
-  .btn-sm {
-    padding: 0.25rem 0.5rem;
-    font-size: 0.8rem;
-  }
-
-  /* Ocultar texto en botones pequeños, solo iconos */
-  .btn-icon-only-mobile .btn-text {
-    display: none;
-  }
-
-  /* Kanban cards más compactas */
-  .kanban-card {
-    padding: 0.75rem;
-    margin-bottom: 0.5rem;
-  }
-
-  /* Sidebar oculta por defecto en móvil */
-  .sidebar-mobile-hidden {
-    display: none;
   }
 }
 
 /* ========================================
-   TABLET (577px - 992px)
+   TABLET (768px - 992px)
    ======================================== */
 @media (min-width: 577px) and (max-width: 992px) {
-
   /* Container con padding moderado */
-  .container {
-    padding-left: 15px;
-    padding-right: 15px;
+  .container,
+  .admin-container {
+    padding-left: var(--tablet-padding);
+    padding-right: var(--tablet-padding);
+  }
+
+  /* Headers se adaptan */
+  .admin-header {
+    flex-wrap: wrap;
+    gap: 15px;
+  }
+
+  .admin-header h1 {
+    font-size: 1.4em;
+  }
+
+  /* Botones de acción wrap */
+  .header-actions,
+  .user-info {
+    flex-wrap: wrap;
+    gap: 10px;
   }
 
   /* Tablas con mejor espaciado */
   .table th,
-  .table td {
-    padding: 0.6rem 0.5rem;
+  .table td,
+  table th,
+  table td {
+    padding: 10px 8px;
   }
 
-  /* Formularios */
-  .form-control,
-  .form-select {
-    height: 40px;
+  /* Formularios grid 2 columnas */
+  .form-row {
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
   }
 
   /* Grids de 2 columnas en lugar de 3-4 */
   .col-tablet-6 {
     flex: 0 0 50%;
     max-width: 50%;
+  }
+
+  /* Kanban columns más estrechas */
+  .kanban-column {
+    min-width: 250px;
+    max-width: 250px;
+  }
+}
+
+/* ========================================
+   MÓVIL (577px - 768px) - Tablets pequeñas
+   ======================================== */
+@media (max-width: 768px) {
+  /* ===== HEADERS ===== */
+  .admin-header {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 15px;
+    padding: 15px;
+  }
+
+  .admin-header h1 {
+    font-size: 1.2em;
+    text-align: center;
+    width: 100%;
+  }
+
+  /* Botones de navegación stack vertical */
+  .header-actions,
+  .user-info {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .header-actions .btn,
+  .user-info .btn,
+  .header-actions > a,
+  .user-info > a {
+    width: 100%;
+    text-align: center;
+    margin: 0 !important;
+  }
+
+  /* ===== CONTAINERS ===== */
+  .container,
+  .container-fluid,
+  .admin-container {
+    padding-left: var(--mobile-padding);
+    padding-right: var(--mobile-padding);
+  }
+
+  /* ===== TABLAS - SCROLL HORIZONTAL ===== */
+  .table-responsive,
+  .table-container,
+  .table-response-wrapper,
+  .table-wrapper {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    margin-bottom: 15px;
+    border-radius: 8px;
+  }
+
+  /* Forzar ancho mínimo en tablas para permitir scroll */
+  .table-responsive table,
+  .table-container table,
+  .table-response-wrapper table,
+  .table-wrapper table,
+  table:not(.no-scroll) {
+    min-width: 700px;
+  }
+
+  /* Indicador visual de scroll */
+  .table-responsive::after,
+  .table-container::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 20px;
+    background: linear-gradient(to right, transparent, rgba(0,0,0,0.05));
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .table-responsive:hover::after,
+  .table-container:hover::after {
+    opacity: 1;
+  }
+
+  /* Celdas más compactas */
+  table th,
+  table td {
+    padding: 8px 6px;
+    font-size: 0.9em;
+    white-space: nowrap;
+  }
+
+  /* ===== FORMULARIOS ===== */
+  .form-row {
+    grid-template-columns: 1fr !important;
+    gap: 15px;
+  }
+
+  .form-group input,
+  .form-group select,
+  .form-group textarea,
+  .form-control,
+  .form-select {
+    font-size: 16px !important; /* Evita zoom en iOS */
+    min-height: var(--touch-min-height);
+  }
+
+  /* ===== BOTONES TOUCH-FRIENDLY ===== */
+  .btn {
+    min-height: var(--touch-min-height);
+    padding: 12px 16px;
+    font-size: 14px;
+  }
+
+  .btn-sm {
+    min-height: 38px;
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+
+  /* ===== CARDS ===== */
+  .card,
+  .section-card {
+    border-radius: 10px;
+    margin-bottom: 15px;
+  }
+
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 10px;
+  }
+
+  /* ===== MODALS ===== */
+  .modal-content {
+    width: 95% !important;
+    max-height: 90vh;
+    margin: 10px;
+  }
+
+  .modal-dialog {
+    margin: 10px;
+    max-width: calc(100% - 20px);
+  }
+
+  /* ===== FILTROS ===== */
+  .filters,
+  .filter-row {
+    flex-direction: column !important;
+    gap: 10px;
+  }
+
+  .filters .form-group,
+  .filter-row .form-group {
+    width: 100% !important;
+    margin-right: 0 !important;
+  }
+
+  .filters button,
+  .filters .btn,
+  .filter-row button {
+    width: 100%;
+  }
+
+  /* ===== GRID LAYOUTS ===== */
+  .dashboard-grid {
+    grid-template-columns: 1fr !important;
+    gap: 15px;
+  }
+
+  .info-grid {
+    grid-template-columns: 1fr !important;
+    gap: 15px;
+  }
+
+  /* ===== KANBAN ESPECÍFICO ===== */
+  .kanban-container {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 15px;
+    scroll-snap-type: x mandatory;
+  }
+
+  .kanban-column {
+    min-width: 280px;
+    max-width: 280px;
+    scroll-snap-align: start;
+    flex-shrink: 0;
+  }
+
+  .kanban-body {
+    max-height: 60vh;
+  }
+
+  /* ===== TIPOGRAFÍA ===== */
+  h1, .h1 { font-size: 1.5rem; }
+  h2, .h2 { font-size: 1.3rem; }
+  h3, .h3 { font-size: 1.15rem; }
+  h4, .h4 { font-size: 1rem; }
+
+  /* ===== BADGES ===== */
+  .badge {
+    font-size: 0.75rem;
+    padding: 4px 8px;
+  }
+
+  /* ===== ACTIONS BAR ===== */
+  .actions-bar {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .actions-bar .btn,
+  .actions-bar a {
+    width: 100%;
+    text-align: center;
+  }
+
+  /* ===== NOTIFICACIONES DROPDOWN ===== */
+  .notifications-dropdown {
+    position: fixed !important;
+    top: 70px !important;
+    right: 10px !important;
+    left: 10px !important;
+    width: auto !important;
+    max-width: none !important;
+  }
+}
+
+/* ========================================
+   MÓVIL PEQUEÑO (max-width: 576px)
+   ======================================== */
+@media (max-width: 576px) {
+  /* Container con padding mínimo */
+  .container,
+  .container-fluid,
+  .admin-container {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+
+  /* Headers más compactos */
+  .admin-header {
+    padding: 12px;
+  }
+
+  .admin-header h1 {
+    font-size: 1.1em;
+  }
+
+  /* Tablas - forzar scroll con indicador visual */
+  .table-responsive,
+  .table-container,
+  .table-response-wrapper {
+    position: relative;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+  }
+
+  table th,
+  table td {
+    padding: 6px 4px;
+    font-size: 0.85em;
+  }
+
+  /* Botones más pequeños */
+  .btn {
+    padding: 10px 14px;
+    font-size: 13px;
+  }
+
+  .btn-sm {
+    padding: 6px 10px;
+    font-size: 12px;
+    min-height: 36px;
+  }
+
+  /* Cards compactas */
+  .card,
+  .section-card {
+    padding: 15px;
+  }
+
+  /* Modal pantalla completa */
+  .modal-content {
+    width: 100% !important;
+    max-height: 95vh;
+    margin: 5px;
+    border-radius: 10px 10px 0 0;
+  }
+
+  /* Kanban columns más estrechas */
+  .kanban-column {
+    min-width: 260px;
+    max-width: 260px;
+  }
+
+  .deal-card {
+    padding: 10px;
+    margin-bottom: 8px;
+  }
+
+  /* Ocultar texto en botones, solo iconos */
+  .btn-icon-only-mobile .btn-text,
+  .hide-text-mobile {
+    display: none;
+  }
+
+  /* Sidebar oculta por defecto */
+  .sidebar-mobile-hidden {
+    display: none;
   }
 }
 
@@ -167,8 +398,9 @@
    ======================================== */
 
 /* Ocultar en móvil */
-@media (max-width: 576px) {
-  .hide-mobile {
+@media (max-width: 768px) {
+  .hide-mobile,
+  .d-none-mobile {
     display: none !important;
   }
 }
@@ -181,9 +413,26 @@
 }
 
 /* Mostrar solo en móvil */
-@media (min-width: 577px) {
-  .show-mobile-only {
+@media (min-width: 769px) {
+  .show-mobile-only,
+  .d-mobile-only {
     display: none !important;
+  }
+}
+
+/* Stack vertical en móvil */
+@media (max-width: 768px) {
+  .stack-mobile {
+    flex-direction: column !important;
+  }
+
+  .stack-mobile > * {
+    width: 100% !important;
+    margin-bottom: 8px;
+  }
+
+  .stack-mobile > *:last-child {
+    margin-bottom: 0;
   }
 }
 
@@ -195,20 +444,106 @@
   white-space: nowrap;
 }
 
-@media (min-width: 577px) {
+@media (min-width: 769px) {
   .text-truncate-mobile {
     max-width: none;
+    white-space: normal;
   }
 }
 
-/* Stack elements vertically on mobile */
-@media (max-width: 576px) {
-  .stack-mobile {
+/* Centrar en móvil */
+@media (max-width: 768px) {
+  .text-center-mobile {
+    text-align: center !important;
+  }
+}
+
+/* Wrapper para scroll horizontal en tablas */
+.table-scroll-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: 0 -10px;
+  padding: 0 10px;
+}
+
+/* Flex gap utilities */
+@media (max-width: 768px) {
+  .gap-mobile-1 { gap: 8px !important; }
+  .gap-mobile-2 { gap: 12px !important; }
+  .gap-mobile-3 { gap: 16px !important; }
+}
+
+/* ========================================
+   LAYOUTS ESPECÍFICOS - 3 COLUMNAS A 1
+   ======================================== */
+
+/* Layout de 3 columnas (como admin_crm_view) */
+@media (max-width: 992px) {
+  .main-layout {
+    display: flex !important;
     flex-direction: column !important;
+    gap: 20px;
   }
 
-  .stack-mobile>* {
+  .main-layout > * {
     width: 100% !important;
-    margin-bottom: 0.5rem;
+    max-width: none !important;
+  }
+
+  /* Paneles laterales no fixed */
+  .chat-panel,
+  .email-panel {
+    position: relative !important;
+    top: auto !important;
+    height: auto !important;
+    max-height: 400px;
+  }
+}
+
+/* ========================================
+   INPUTS Y SELECTS - iOS ZOOM FIX
+   ======================================== */
+@media (max-width: 768px) {
+  input[type="text"],
+  input[type="email"],
+  input[type="tel"],
+  input[type="number"],
+  input[type="password"],
+  input[type="date"],
+  input[type="datetime-local"],
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* ========================================
+   ANIMACIONES SUAVES
+   ======================================== */
+@media (prefers-reduced-motion: no-preference) {
+  .table-responsive,
+  .table-container {
+    scroll-behavior: smooth;
+  }
+}
+
+/* ========================================
+   PRINT STYLES (Opcional)
+   ======================================== */
+@media print {
+  .admin-header,
+  .header-actions,
+  .btn,
+  .actions-bar {
+    display: none !important;
+  }
+
+  .admin-container {
+    padding: 0;
+  }
+
+  table {
+    min-width: auto !important;
+    font-size: 10pt;
   }
 }

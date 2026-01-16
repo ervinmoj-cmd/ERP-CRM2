@@ -414,6 +414,132 @@
             border-radius: 8px;
             padding: 20px;
         }
+
+        /* ==================== MOBILE RESPONSIVE ==================== */
+        @media (max-width: 768px) {
+            .admin-header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+
+            .user-info {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+                width: 100%;
+            }
+
+            .user-info .btn {
+                width: 100%;
+                margin: 0 !important;
+            }
+
+            .table-header {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 15px;
+            }
+
+            .table-header > div:first-child {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .table-header h2 {
+                text-align: center;
+            }
+
+            .search-box {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+                width: 100%;
+            }
+
+            .search-box input,
+            .search-box select {
+                width: 100% !important;
+                margin-left: 0 !important;
+            }
+
+            .table-header > div:last-child {
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .table-header .btn {
+                width: 100%;
+            }
+
+            /* Table scroll */
+            .table-responsive {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                border-radius: 8px;
+            }
+
+            #refaccionesTable {
+                min-width: 900px;
+            }
+
+            /* Modal responsive */
+            .modal-content {
+                padding: 15px;
+                max-width: 95% !important;
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr !important;
+            }
+
+            .form-row {
+                display: flex;
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            /* Tabs */
+            .tabs {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 5px;
+            }
+
+            .tab-btn {
+                flex: 1;
+                min-width: 45%;
+                text-align: center;
+            }
+
+            /* Detail modal tables */
+            #detailRefaccionModal .table {
+                min-width: 500px;
+            }
+
+            /* Bulk upload */
+            #pasteTab textarea {
+                font-size: 12px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .table-container {
+                padding: 10px;
+            }
+
+            #refaccionesTable th,
+            #refaccionesTable td {
+                padding: 8px 6px;
+                font-size: 0.85em;
+            }
+
+            .badge {
+                padding: 2px 6px;
+                font-size: 10px;
+            }
+        }
     </style>
 
     <script>

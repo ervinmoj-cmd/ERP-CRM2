@@ -144,6 +144,138 @@
         .sync-status.syncing {
             color: #1976d2;
         }
+
+        /* ==================== MOBILE RESPONSIVE ==================== */
+        @media (max-width: 992px) {
+            .email-container {
+                flex-direction: column;
+                height: auto;
+            }
+
+            .email-sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid #ddd;
+                padding: 15px;
+            }
+
+            .email-sidebar .folder-btn {
+                display: inline-block;
+                width: auto;
+                margin-right: 10px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .admin-header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+
+            .user-info {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+                width: 100%;
+            }
+
+            .user-info span {
+                font-size: 0.9em;
+                word-break: break-all;
+            }
+
+            .user-info .btn {
+                width: 100%;
+            }
+
+            .email-header {
+                flex-direction: column;
+                gap: 15px;
+                padding: 12px 16px;
+            }
+
+            .email-header h2 {
+                font-size: 1.2em;
+            }
+
+            .email-header > div {
+                flex-direction: column;
+                width: 100%;
+                gap: 8px;
+            }
+
+            .sync-status {
+                margin-left: 0;
+                text-align: center;
+            }
+
+            .email-header .btn {
+                width: 100%;
+            }
+
+            .email-list {
+                max-height: 300px;
+            }
+
+            .email-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 5px;
+                padding: 10px 16px;
+            }
+
+            .email-sender {
+                min-width: auto;
+                font-size: 0.95em;
+            }
+
+            .email-subject {
+                font-size: 0.9em;
+            }
+
+            .email-date {
+                min-width: auto;
+                text-align: left;
+                font-size: 0.8em;
+            }
+
+            .email-view {
+                padding: 16px;
+            }
+
+            .compose-form {
+                padding: 16px;
+            }
+
+            .compose-body {
+                min-height: 200px;
+            }
+
+            .compose-form > div:last-child {
+                flex-direction: column;
+            }
+
+            .compose-form > div:last-child .btn {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .email-sidebar {
+                padding: 10px;
+            }
+
+            .compose-btn {
+                padding: 10px;
+                font-size: 14px;
+            }
+
+            .folder-btn {
+                padding: 8px;
+                font-size: 0.9em;
+            }
+        }
     </style>
 </head>
 <body>

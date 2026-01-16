@@ -166,6 +166,90 @@
         .btn-toggle:hover {
             background: #e0e0e0;
         }
+
+        /* ==================== MOBILE RESPONSIVE ==================== */
+        @media (max-width: 768px) {
+            .admin-header {
+                flex-direction: column !important;
+                gap: 15px;
+                text-align: center;
+            }
+
+            .admin-header h1 {
+                font-size: 1.2em;
+            }
+
+            .admin-header > div {
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+                width: 100%;
+            }
+
+            .admin-header .btn {
+                width: 100%;
+            }
+
+            .admin-container {
+                padding: 10px;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr !important;
+            }
+
+            /* Table responsive */
+            .table-responsive,
+            .items-table-container {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .items-table {
+                min-width: 600px;
+            }
+
+            .totals-area {
+                justify-content: center;
+            }
+
+            .totals-table {
+                width: 100%;
+            }
+
+            .form-actions {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .form-actions .btn {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 576px) {
+            body {
+                padding: 5px;
+            }
+
+            .form-section {
+                padding: 12px;
+            }
+
+            .form-section h3 {
+                font-size: 13px;
+            }
+
+            .form-group label {
+                font-size: 11px;
+            }
+
+            .form-group input,
+            .form-group select {
+                font-size: 16px; /* Evita zoom en iOS */
+                padding: 10px;
+            }
+        }
     </style>
 </head>
 

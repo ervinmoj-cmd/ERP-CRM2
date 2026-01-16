@@ -23,6 +23,31 @@
             opacity: 0.9;
             margin: 0;
         }
+
+        /* Responsive para welcome-message */
+        @media (max-width: 768px) {
+            .welcome-message {
+                padding: 15px 20px;
+            }
+
+            .welcome-message h2 {
+                font-size: 1.3rem;
+            }
+
+            .welcome-message p {
+                font-size: 0.9rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .welcome-message {
+                padding: 15px;
+            }
+
+            .welcome-message h2 {
+                font-size: 1.2rem;
+            }
+        }
     </style>
 </head>
 
@@ -30,12 +55,16 @@
     <div class="admin-container">
         <div class="admin-header">
             <h1>🏠 Panel de Usuario</h1>
-            <div class="user-info" style="display: flex; align-items: center; gap: 15px;">
-                <span>{{ session.user_nombre }} ({{ session.puesto or 'Usuario' }})</span>
+            <div class="user-info">
+                <span style="display: block; line-height: 1.4;">{{ session.user_nombre }}<br><small
+                        style="opacity: 0.8;">{{ session.puesto or 'Usuario' }}</small></span>
                 {% include 'components/notifications_bell.html' %}
-                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="history.back()">Atrás</button>
-                <a href="{{ url_for('dashboard_redirect') }}" class="btn btn-secondary btn-sm">Volver al Panel</a>
-                <a href="{{ url_for('logout') }}" class="btn btn-danger btn-sm">Cerrar Sesión</a>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap; width: 100%;">
+                    <button type="button" class="btn btn-outline-secondary btn-sm"
+                        onclick="history.back()">Atrás</button>
+                    <a href="{{ url_for('dashboard_redirect') }}" class="btn btn-secondary btn-sm">Volver al Panel</a>
+                    <a href="{{ url_for('logout') }}" class="btn btn-danger btn-sm">Cerrar Sesión</a>
+                </div>
             </div>
         </div>
 

@@ -40,8 +40,83 @@
             }
 
             table {
-                min-width: 800px;
-                /* Force minimum width to trigger scroll */
+                min-width: 700px;
+            }
+
+            /* Modal responsive */
+            .modal-content {
+                max-width: 95% !important;
+                padding: 15px;
+            }
+
+            .modal-content h2 {
+                font-size: 1.2em;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr !important;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .admin-container {
+                padding: 8px;
+            }
+
+            .table-container {
+                padding: 8px;
+            }
+
+            .table-header {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .table-header .btn {
+                width: 100%;
+            }
+
+            table th,
+            table td {
+                padding: 8px 6px;
+                font-size: 0.85em;
+            }
+
+            /* Equipment modal */
+            #manageEquipmentModal .modal-content {
+                max-width: 100% !important;
+            }
+
+            /* Tabs responsive */
+            .tabs {
+                display: flex;
+                flex-wrap: wrap;
+                overflow: visible;
+            }
+
+            .tab-btn {
+                float: none;
+                flex: 1 1 30%;
+                font-size: 0.85em;
+                padding: 8px 10px;
+            }
+
+            .part-row {
+                grid-template-columns: 60px 1fr 30px !important;
+                gap: 5px;
+            }
+
+            .part-row input[type="text"]:nth-child(3) {
+                display: none; /* Hide part number on very small screens */
+            }
+
+            /* Contact rows */
+            .contact-row {
+                padding: 8px !important;
+            }
+
+            .contact-row .form-row {
+                gap: 5px;
             }
         }
     </style>

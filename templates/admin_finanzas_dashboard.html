@@ -81,6 +81,52 @@
             color: #7f8c8d;
             font-size: 14px;
         }
+
+        /* ==================== MOBILE RESPONSIVE ==================== */
+        @media (max-width: 768px) {
+            .admin-header {
+                flex-direction: column !important;
+                gap: 15px;
+                text-align: center;
+            }
+
+            .admin-header h1 {
+                font-size: 1.3em;
+            }
+
+            .admin-header > div {
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+                width: 100%;
+            }
+
+            .admin-header .btn {
+                width: 100%;
+            }
+
+            .finanzas-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .finanzas-card {
+                margin-bottom: 15px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .admin-container {
+                padding: 10px;
+            }
+
+            .finanzas-card {
+                padding: 15px;
+            }
+
+            .finanzas-card h3 {
+                font-size: 1.5em;
+            }
+        }
     </style>
 </head>
 

@@ -105,7 +105,7 @@
       }
     }
 
-    /* Evita que celdas/inputs se “aplasten” en tablet */
+    /* Evita que celdas/inputs se "aplasten" en tablet */
     @media (min-width: 577px) and (max-width: 992px) {
 
       .form-control,
@@ -113,29 +113,151 @@
         height: 40px;
       }
     }
+
+    /* ====== NAVEGACIÓN POR SECCIONES EN MÓVIL/TABLET ====== */
+    
+    /* Desktop: todo visible, sin navegación por pasos */
+    @media (min-width: 993px) {
+      .mobile-section-nav {
+        display: none !important;
+      }
+      .form-section-step {
+        display: block !important;
+      }
+    }
+
+    /* Móvil y Tablet: navegación por secciones */
+    @media (max-width: 992px) {
+      /* Header fijo arriba */
+      .report-header-fixed {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        background: #fff;
+        padding: 15px;
+        margin: -16px -16px 0 -16px;
+        border-bottom: 1px solid #e0e0e0;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      }
+
+      /* Ocultar todas las secciones por defecto */
+      .form-section-step {
+        display: none;
+      }
+
+      /* Mostrar solo la sección activa */
+      .form-section-step.active {
+        display: block;
+        animation: fadeInSection 0.3s ease;
+      }
+
+      @keyframes fadeInSection {
+        from { opacity: 0; transform: translateX(10px); }
+        to { opacity: 1; transform: translateX(0); }
+      }
+
+      /* Barra de navegación inferior */
+      .mobile-section-nav {
+        display: flex !important;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: #fff;
+        padding: 12px 15px;
+        border-top: 1px solid #e0e0e0;
+        box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+        z-index: 1000;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .mobile-section-nav .btn {
+        flex: 1;
+        max-width: 140px;
+      }
+
+      .mobile-section-nav .section-indicator {
+        font-weight: 600;
+        color: #666;
+        font-size: 0.9em;
+        text-align: center;
+        white-space: nowrap;
+      }
+
+      .mobile-section-nav .btn-prev:disabled {
+        opacity: 0.4;
+      }
+
+      /* Espacio inferior para no tapar contenido con la nav fija */
+      .mobile-form-container {
+        padding-bottom: 80px;
+      }
+
+      /* Título de sección en móvil */
+      .mobile-section-title {
+        background: linear-gradient(135deg, #d20000, #ff4444);
+        color: white;
+        padding: 12px 15px;
+        margin: -16px -16px 20px -16px;
+        font-weight: 600;
+        font-size: 1.1em;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .mobile-section-title .section-number {
+        background: rgba(255,255,255,0.2);
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.9em;
+      }
+
+      /* Ocultar botones finales en móvil (se usa el nav) */
+      .desktop-only-buttons {
+        display: none !important;
+      }
+    }
+
+    /* Tablet específico */
+    @media (min-width: 577px) and (max-width: 992px) {
+      .mobile-section-nav .btn {
+        max-width: 180px;
+        padding: 12px 20px;
+      }
+    }
   </style>
 </head>
 
 <body>
   <div class="container py-4">
-    <div class="card p-3 mb-4">
-      <div class="d-flex align-items-center justify-content-between gap-3">
-        <div class="d-flex align-items-center gap-3">
-          <img src="{{ url_for('static', filename='img/logo_inair.png') }}" alt="InAIR" style="height:40px">
-          <div>
-            <div class="fw-bold">REPORTE TÉCNICO</div>
-            <div class="text-muted small">
-              Folio: <span class="text-danger fw-bold">{{ folio }}</span>
+    <div class="card p-3 mb-4 mobile-form-container">
+      <!-- Header fijo en móvil -->
+      <div class="report-header-fixed">
+        <div class="d-flex align-items-center justify-content-between gap-3 flex-wrap">
+          <div class="d-flex align-items-center gap-3">
+            <img src="{{ url_for('static', filename='img/logo_inair.png') }}" alt="InAIR" style="height:40px">
+            <div>
+              <div class="fw-bold">REPORTE TÉCNICO</div>
+              <div class="text-muted small">
+                Folio: <span class="text-danger fw-bold">{{ folio }}</span>
+              </div>
             </div>
           </div>
-        </div>
-        <div class="d-flex gap-2">
-          <form action="{{ url_for('nuevo_folio') }}" method="post" class="d-inline">
-            <button class="btn btn-primary btn-sm" type="submit">Nuevo reporte</button>
-          </form>
-          <button type="button" class="btn btn-outline-secondary btn-sm" onclick="history.back()">Atrás</button>
-          <a href="{{ url_for('dashboard_redirect') }}" class="btn btn-secondary btn-sm">Volver al Panel</a>
-          <a href="{{ url_for('logout') }}" class="btn btn-danger btn-sm">Cerrar Sesión</a>
+          <div class="d-flex gap-2 flex-wrap">
+            <form action="{{ url_for('nuevo_folio') }}" method="post" class="d-inline">
+              <button class="btn btn-primary btn-sm" type="submit">Nuevo reporte</button>
+            </form>
+            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="history.back()">Atrás</button>
+            <a href="{{ url_for('dashboard_redirect') }}" class="btn btn-secondary btn-sm">Volver al Panel</a>
+            <a href="{{ url_for('logout') }}" class="btn btn-danger btn-sm">Cerrar Sesión</a>
+          </div>
         </div>
       </div>
 
@@ -149,167 +271,189 @@
         <input type="hidden" name="deal_id" value="{{ deal_id }}">
         {% endif %}
 
-        <!-- Fecha + Localidad -->
-        <div class="row g-3 mb-3">
-          <div class="col-12 col-sm-4">
-            <label class="form-label fw-bold">Fecha</label>
-            <input type="date" class="form-control" name="fecha" required>
+        <!-- ========== SECCIÓN 1: Fecha, Localidad, Datos del cliente ========== -->
+        <div class="form-section-step active" data-section="1">
+          <div class="mobile-section-title d-none d-block d-lg-none">
+            <span class="section-number">1</span> Información General
           </div>
-          <div class="col-12 col-sm-4">
-            <label class="form-label fw-bold">Localidad</label>
-            <select class="form-select" name="localidad" required>
-              <option value="Mexicali">Mexicali</option>
-              <option value="Tijuana">Tijuana</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- Datos del cliente -->
-        <div class="mb-4">
-          <div class="section-title mb-2">Datos del cliente</div>
-          <div class="row g-3">
-            <div class="col-12 col-md-6">
-              <label class="form-label">Cliente</label>
-              <input type="hidden" id="cliente_id" name="cliente_id">
-              <div class="d-flex gap-2">
-                <select class="form-select" id="cliente_select" name="cliente_select">
-                  <option value="">Seleccione un cliente...</option>
-                </select>
-                <input class="form-control" id="cliente_input" name="cliente" style="display:none;" disabled
-                  placeholder="Escriba el nombre del cliente">
-                <button type="button" class="btn btn-outline-secondary" id="toggle_manual_client"
-                  title="Entrada Manual">✏️</button>
-              </div>
+          
+          <!-- Fecha + Localidad -->
+          <div class="row g-3 mb-3">
+            <div class="col-12 col-sm-4">
+              <label class="form-label fw-bold">Fecha</label>
+              <input type="date" class="form-control" name="fecha" required>
             </div>
-            <div class="col-12 col-md-6">
-              <label class="form-label">Contacto</label>
-              <div class="d-flex gap-2">
-                <input class="form-control" id="contacto" name="contacto" readonly>
-                <button type="button" class="btn btn-outline-secondary" id="toggle_contacto" title="Editar"
-                  onclick="toggleReadOnly('contacto')">🔒</button>
-              </div>
-            </div>
-            <div class="col-12 col-md-4">
-              <label class="form-label">Teléfono</label>
-              <div class="d-flex gap-2">
-                <input class="form-control" id="telefono" name="telefono" readonly>
-                <button type="button" class="btn btn-outline-secondary" id="toggle_telefono" title="Editar"
-                  onclick="toggleReadOnly('telefono')">🔒</button>
-              </div>
-            </div>
-            <div class="col-12 col-md-8">
-              <label class="form-label">Email</label>
-              <div class="d-flex gap-2">
-                <input class="form-control" id="email" name="email" readonly>
-                <button type="button" class="btn btn-outline-secondary" id="toggle_email" title="Editar"
-                  onclick="toggleReadOnly('email')">🔒</button>
-              </div>
-            </div>
-            <div class="col-12">
-              <label class="form-label">Dirección</label>
-              <div class="d-flex gap-2">
-                <input class="form-control" id="direccion" name="direccion" readonly>
-                <button type="button" class="btn btn-outline-secondary" id="toggle_direccion" title="Editar"
-                  onclick="toggleReadOnly('direccion')">🔒</button>
-              </div>
-            </div>
-            <div class="col-12 col-md-6">
-              <label class="form-label">Vincular a Trato (Opcional)</label>
-              <select class="form-select" id="deal_select" name="deal_id">
-                <option value="">No vincular a ningún trato</option>
-              </select>
-              <div class="form-text">Seleccione un trato para vincular este reporte. Solo se muestran tratos del cliente
-                seleccionado.</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Servicio -->
-        <div class="mb-4">
-          <div class="section-title mb-2">Servicio</div>
-          <div class="row g-3">
-            <div class="col-12 col-md-4">
-              <label class="form-label">Tipo de servicio</label>
-              <select class="form-select" name="tipo_servicio" id="tipo_servicio">
-                <option>Preventivo</option>
-                <option>Correctivo</option>
-                <option>Diagnóstico</option>
-                <option>Revisión</option>
-                <option>Bitácora</option>
+            <div class="col-12 col-sm-4">
+              <label class="form-label fw-bold">Localidad</label>
+              <select class="form-select" name="localidad" required>
+                <option value="Mexicali">Mexicali</option>
+                <option value="Tijuana">Tijuana</option>
               </select>
             </div>
-            <div class="col-12 col-md-8">
-              <label class="form-label">Descripción del servicio</label>
-              <select class="form-select" name="descripcion_servicio" id="descripcion_servicio"></select>
-              <div class="form-text">Se precarga según el tipo de servicio.</div>
-            </div>
           </div>
-        </div>
 
-        <!-- Equipo -->
-        <div class="mb-4">
-          <div class="section-title mb-2">Datos del equipo</div>
-          <div class="row g-3">
-            <div class="col-12 col-md-6">
-              <label class="form-label">Tipo de equipo</label>
-              <div class="d-flex gap-2">
-                <select class="form-select" id="tipo_equipo_select" name="tipo_equipo_select">
-                  <option value="">Seleccione tipo de equipo...</option>
-                  {% for eq in lista_equipos %}<option value="{{ eq }}">{{ eq }}</option>{% endfor %}
+          <!-- Datos del cliente -->
+          <div class="mb-4">
+            <div class="section-title mb-2">Datos del cliente</div>
+            <div class="row g-3">
+              <div class="col-12 col-md-6">
+                <label class="form-label">Cliente</label>
+                <input type="hidden" id="cliente_id" name="cliente_id">
+                <div class="d-flex gap-2">
+                  <select class="form-select" id="cliente_select" name="cliente_select">
+                    <option value="">Seleccione un cliente...</option>
+                  </select>
+                  <input class="form-control" id="cliente_input" name="cliente" style="display:none;" disabled
+                    placeholder="Escriba el nombre del cliente">
+                  <button type="button" class="btn btn-outline-secondary" id="toggle_manual_client"
+                    title="Entrada Manual">✏️</button>
+                </div>
+              </div>
+              <div class="col-12 col-md-6">
+                <label class="form-label">Contacto</label>
+                <div class="d-flex gap-2">
+                  <input class="form-control" id="contacto" name="contacto" readonly>
+                  <button type="button" class="btn btn-outline-secondary" id="toggle_contacto" title="Editar"
+                    onclick="toggleReadOnly('contacto')">🔒</button>
+                </div>
+              </div>
+              <div class="col-12 col-md-4">
+                <label class="form-label">Teléfono</label>
+                <div class="d-flex gap-2">
+                  <input class="form-control" id="telefono" name="telefono" readonly>
+                  <button type="button" class="btn btn-outline-secondary" id="toggle_telefono" title="Editar"
+                    onclick="toggleReadOnly('telefono')">🔒</button>
+                </div>
+              </div>
+              <div class="col-12 col-md-8">
+                <label class="form-label">Email</label>
+                <div class="d-flex gap-2">
+                  <input class="form-control" id="email" name="email" readonly>
+                  <button type="button" class="btn btn-outline-secondary" id="toggle_email" title="Editar"
+                    onclick="toggleReadOnly('email')">🔒</button>
+                </div>
+              </div>
+              <div class="col-12">
+                <label class="form-label">Dirección</label>
+                <div class="d-flex gap-2">
+                  <input class="form-control" id="direccion" name="direccion" readonly>
+                  <button type="button" class="btn btn-outline-secondary" id="toggle_direccion" title="Editar"
+                    onclick="toggleReadOnly('direccion')">🔒</button>
+                </div>
+              </div>
+              <div class="col-12 col-md-6">
+                <label class="form-label">Vincular a Trato (Opcional)</label>
+                <select class="form-select" id="deal_select" name="deal_id">
+                  <option value="">No vincular a ningún trato</option>
                 </select>
-                <input class="form-control" id="tipo_equipo_input" name="tipo_equipo" style="display:none;" disabled
-                  placeholder="Tipo de equipo">
-                <button type="button" class="btn btn-outline-secondary" id="toggle_tipo_equipo"
-                  title="Entrada Manual">✏️</button>
-              </div>
-            </div>
-            <div class="col-12 col-md-3">
-              <label class="form-label">Modelo</label>
-              <div class="d-flex gap-2">
-                <select class="form-select" id="modelo_select" name="modelo_select">
-                  <option value="">Seleccione modelo...</option>
-                </select>
-                <input class="form-control" id="modelo_input" name="modelo" style="display:none;" disabled
-                  placeholder="Modelo">
-                <button type="button" class="btn btn-outline-secondary" id="toggle_modelo"
-                  title="Entrada Manual">✏️</button>
-              </div>
-            </div>
-            <div class="col-12 col-md-3">
-              <label class="form-label">Serie</label>
-              <div class="d-flex gap-2">
-                <input class="form-control" id="serie_input" name="serie" placeholder="Escriba la serie">
-                <select class="form-select" id="serie_select" name="serie_select" style="display:none;" disabled>
-                  <option value="">Seleccione serie...</option>
-                </select>
-                <button type="button" class="btn btn-outline-secondary" id="toggle_serie_manual"
-                  title="Seleccionar de Lista">✏️</button>
-              </div>
-            </div>
-            <div class="col-12 col-md-3">
-              <label class="form-label">Marca</label>
-              <select class="form-select" name="marca" id="marca_select">
-                <option value="INGERSOLL RAND">Ingersoll Rand</option>
-                <option value="ATLAS COPCO">Atlas Copco</option>
-                <option value="QUINCY">Quincy</option>
-                <option value="OTROS">OTROS</option>
-              </select>
-              <div id="otra_marca_wrap" class="mt-2" style="display:none;">
-                <input class="form-control" type="text" name="otra_marca" placeholder="Escribe la marca">
-              </div>
-            </div>
-            <div class="col-12 col-md-3">
-              <label class="form-label">Potencia</label>
-              <input class="form-control" name="potencia" placeholder="Ej. 200">
-              <div class="form-text">
-                En el PDF saldrá como <span id="potencia_unidad_hint">“HP”</span>.
+                <div class="form-text">Seleccione un trato para vincular este reporte. Solo se muestran tratos del cliente
+                  seleccionado.</div>
               </div>
             </div>
           </div>
         </div>
+        <!-- ========== FIN SECCIÓN 1 ========== -->
 
-        <!-- Preventivo -->
-        <div id="bloque_preventivo" class="mb-4">
+        <!-- ========== SECCIÓN 2: Servicio + Datos del equipo ========== -->
+        <div class="form-section-step" data-section="2">
+          <div class="mobile-section-title d-none d-block d-lg-none">
+            <span class="section-number">2</span> Servicio y Equipo
+          </div>
+
+          <!-- Servicio -->
+          <div class="mb-4">
+            <div class="section-title mb-2">Servicio</div>
+            <div class="row g-3">
+              <div class="col-12 col-md-4">
+                <label class="form-label">Tipo de servicio</label>
+                <select class="form-select" name="tipo_servicio" id="tipo_servicio">
+                  <option>Preventivo</option>
+                  <option>Correctivo</option>
+                  <option>Diagnóstico</option>
+                  <option>Revisión</option>
+                  <option>Bitácora</option>
+                </select>
+              </div>
+              <div class="col-12 col-md-8">
+                <label class="form-label">Descripción del servicio</label>
+                <select class="form-select" name="descripcion_servicio" id="descripcion_servicio"></select>
+                <div class="form-text">Se precarga según el tipo de servicio.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Equipo -->
+          <div class="mb-4">
+            <div class="section-title mb-2">Datos del equipo</div>
+            <div class="row g-3">
+              <div class="col-12 col-md-6">
+                <label class="form-label">Tipo de equipo</label>
+                <div class="d-flex gap-2">
+                  <select class="form-select" id="tipo_equipo_select" name="tipo_equipo_select">
+                    <option value="">Seleccione tipo de equipo...</option>
+                    {% for eq in lista_equipos %}<option value="{{ eq }}">{{ eq }}</option>{% endfor %}
+                  </select>
+                  <input class="form-control" id="tipo_equipo_input" name="tipo_equipo" style="display:none;" disabled
+                    placeholder="Tipo de equipo">
+                  <button type="button" class="btn btn-outline-secondary" id="toggle_tipo_equipo"
+                    title="Entrada Manual">✏️</button>
+                </div>
+              </div>
+              <div class="col-12 col-md-3">
+                <label class="form-label">Modelo</label>
+                <div class="d-flex gap-2">
+                  <select class="form-select" id="modelo_select" name="modelo_select">
+                    <option value="">Seleccione modelo...</option>
+                  </select>
+                  <input class="form-control" id="modelo_input" name="modelo" style="display:none;" disabled
+                    placeholder="Modelo">
+                  <button type="button" class="btn btn-outline-secondary" id="toggle_modelo"
+                    title="Entrada Manual">✏️</button>
+                </div>
+              </div>
+              <div class="col-12 col-md-3">
+                <label class="form-label">Serie</label>
+                <div class="d-flex gap-2">
+                  <input class="form-control" id="serie_input" name="serie" placeholder="Escriba la serie">
+                  <select class="form-select" id="serie_select" name="serie_select" style="display:none;" disabled>
+                    <option value="">Seleccione serie...</option>
+                  </select>
+                  <button type="button" class="btn btn-outline-secondary" id="toggle_serie_manual"
+                    title="Seleccionar de Lista">✏️</button>
+                </div>
+              </div>
+              <div class="col-12 col-md-3">
+                <label class="form-label">Marca</label>
+                <select class="form-select" name="marca" id="marca_select">
+                  <option value="INGERSOLL RAND">Ingersoll Rand</option>
+                  <option value="ATLAS COPCO">Atlas Copco</option>
+                  <option value="QUINCY">Quincy</option>
+                  <option value="OTROS">OTROS</option>
+                </select>
+                <div id="otra_marca_wrap" class="mt-2" style="display:none;">
+                  <input class="form-control" type="text" name="otra_marca" placeholder="Escribe la marca">
+                </div>
+              </div>
+              <div class="col-12 col-md-3">
+                <label class="form-label">Potencia</label>
+                <input class="form-control" name="potencia" placeholder="Ej. 200">
+                <div class="form-text">
+                  En el PDF saldrá como <span id="potencia_unidad_hint">"HP"</span>.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- ========== FIN SECCIÓN 2 ========== -->
+
+        <!-- ========== SECCIÓN 3: Actividades ========== -->
+        <div class="form-section-step" data-section="3">
+          <div class="mobile-section-title d-none d-block d-lg-none">
+            <span class="section-number">3</span> Actividades
+          </div>
+
+          <!-- Preventivo -->
+          <div id="bloque_preventivo" class="mb-4">
           <div class="section-title mb-2">Actividades (Preventivo)</div>
           <div class="row row-cols-1 row-cols-md-2 g-2">
             {% set acts = [
@@ -691,6 +835,13 @@
                 class="form-control" name="cond_entrega" rows="2"></textarea></div>
           </div>
         </div>
+        <!-- ========== FIN SECCIÓN 3 ========== -->
+
+        <!-- ========== SECCIÓN 4: Lecturas del equipo ========== -->
+        <div class="form-section-step" data-section="4">
+          <div class="mobile-section-title d-none d-block d-lg-none">
+            <span class="section-number">4</span> Lecturas del Equipo
+          </div>
 
         <!-- LECTURAS DEL EQUIPO -->
         <div class="mb-4">
@@ -1002,6 +1153,14 @@
               </div>
             </div>
           </div>
+        </div>
+        <!-- ========== FIN SECCIÓN 4 ========== -->
+
+        <!-- ========== SECCIÓN 5: Datos eléctricos ========== -->
+        <div class="form-section-step" data-section="5">
+          <div class="mobile-section-title d-none d-block d-lg-none">
+            <span class="section-number">5</span> Datos Eléctricos
+          </div>
 
           <!-- Datos eléctricos · COMPRESOR (vista normal) -->
           <div class="card p-3 mt-3" id="card_electrico_compresor">
@@ -1166,7 +1325,13 @@
             </div>
           </div>
         </div>
+        <!-- ========== FIN SECCIÓN 5 ========== -->
 
+        <!-- ========== SECCIÓN 6: Observaciones, Fotos, Firmas ========== -->
+        <div class="form-section-step" data-section="6">
+          <div class="mobile-section-title d-none d-block d-lg-none">
+            <span class="section-number">6</span> Finalizar Reporte
+          </div>
 
         <!-- Observaciones -->
         <div class="mb-4">
@@ -1216,12 +1381,29 @@
         </div>
 
         <!-- ✅ Botón para limpiar borrador + Generar PDF -->
-        <div class="d-flex justify-content-end gap-2">
+        <div class="d-flex justify-content-end gap-2 desktop-only-buttons">
           <button type="button" id="btn-clear-draft" class="btn btn-outline-secondary">Borrar borrador</button>
           <button class="btn btn-primary px-4">Generar PDF</button>
         </div>
+        </div>
+        <!-- ========== FIN SECCIÓN 6 ========== -->
+
       </form>
     </div>
+
+    <!-- Navegación por secciones (solo móvil/tablet) -->
+    <div class="mobile-section-nav" style="display:flex !important; position:fixed !important; bottom:0 !important; left:0 !important; right:0 !important; background:#fff !important; padding:15px !important; border-top:2px solid #d20000 !important; z-index:99999 !important;">
+      <button type="button" class="btn btn-outline-secondary" id="btn-prev-section" onclick="navigateSection(-1)" disabled style="flex:1; max-width:120px;">
+        ← Anterior
+      </button>
+      <span style="font-weight:600; color:#333;">
+        <span id="currentSectionNum">1</span> / <span id="totalSections">6</span>
+      </span>
+      <button type="button" class="btn btn-primary" id="btn-next-section" onclick="navigateSection(1)" style="flex:1; max-width:120px;">
+        Siguiente →
+      </button>
+    </div>
+  </div>
 
     <!-- Exponemos el folio para el JS (auto-guardado/borradores) -->
     <script>
@@ -1236,6 +1418,102 @@
     <!-- Scripts (orden importante) -->
     <script src="{{ url_for('static', filename='js/cliente_autofill.js') }}"></script>
     <script src="{{ url_for('static', filename='js/interactividad.js') }}"></script>
+
+    <!-- Navegación por secciones (SOLO vista móvil/tablet, no afecta lógica) -->
+    <script>
+    (function() {
+      // Solo activar en móvil/tablet
+      const MOBILE_BREAKPOINT = 992;
+      let currentSection = 1;
+      const totalSections = 6;
+
+      function isMobileView() {
+        return window.innerWidth <= MOBILE_BREAKPOINT;
+      }
+
+      function updateNavBar() {
+        // El CSS ya maneja la visibilidad con media queries
+        // No necesitamos hacer nada aquí
+      }
+
+      function updateSectionVisibility() {
+        updateNavBar();
+        
+        if (!isMobileView()) {
+          // Desktop: mostrar todas las secciones
+          document.querySelectorAll('.form-section-step').forEach(s => {
+            s.classList.add('active');
+            s.style.display = '';
+          });
+          return;
+        }
+
+        // Móvil: mostrar solo la sección actual
+        document.querySelectorAll('.form-section-step').forEach(s => {
+          const sectionNum = parseInt(s.dataset.section);
+          if (sectionNum === currentSection) {
+            s.classList.add('active');
+          } else {
+            s.classList.remove('active');
+          }
+        });
+
+        // Actualizar indicador
+        const currentNumEl = document.getElementById('currentSectionNum');
+        if (currentNumEl) currentNumEl.textContent = currentSection;
+
+        // Actualizar botones
+        const btnPrev = document.getElementById('btn-prev-section');
+        const btnNext = document.getElementById('btn-next-section');
+        
+        if (btnPrev) btnPrev.disabled = currentSection === 1;
+        
+        if (btnNext) {
+          if (currentSection === totalSections) {
+            btnNext.textContent = 'Generar PDF';
+            btnNext.classList.remove('btn-primary');
+            btnNext.classList.add('btn-success');
+          } else {
+            btnNext.textContent = 'Siguiente →';
+            btnNext.classList.remove('btn-success');
+            btnNext.classList.add('btn-primary');
+          }
+        }
+
+        // Scroll al inicio de la sección
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      window.navigateSection = function(direction) {
+        if (!isMobileView()) return;
+
+        const newSection = currentSection + direction;
+        
+        // Si está en la última sección y presiona "Generar PDF"
+        if (currentSection === totalSections && direction === 1) {
+          // Enviar el formulario
+          const form = document.getElementById('frm-reporte');
+          if (form) form.submit();
+          return;
+        }
+
+        if (newSection >= 1 && newSection <= totalSections) {
+          currentSection = newSection;
+          updateSectionVisibility();
+        }
+      };
+
+      // Inicializar al cargar
+      document.addEventListener('DOMContentLoaded', function() {
+        updateSectionVisibility();
+      });
+
+      // Re-evaluar al cambiar tamaño de ventana
+      window.addEventListener('resize', function() {
+        updateSectionVisibility();
+      });
+    })();
+    </script>
 </body>
 
 </html>

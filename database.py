@@ -379,7 +379,7 @@ def init_db():
         except sqlite3.OperationalError:
             try:
                 cursor.execute("ALTER TABLE inventory_movements ADD COLUMN remision_id INTEGER")
-                print("✅ Added remision_id to inventory_movements")
+                print("[OK] Added remision_id to inventory_movements")
             except sqlite3.OperationalError:
                 pass
 
@@ -389,7 +389,7 @@ def init_db():
         except sqlite3.OperationalError:
             try:
                 cursor.execute("ALTER TABLE crm_deals ADD COLUMN ocu_id INTEGER")
-                print("✅ Added ocu_id to crm_deals")
+                print("[OK] Added ocu_id to crm_deals")
             except sqlite3.OperationalError:
                 pass
 
@@ -399,7 +399,7 @@ def init_db():
         except sqlite3.OperationalError:
             try:
                 cursor.execute("ALTER TABLE almacen_reservas ADD COLUMN ocu_id INTEGER")
-                print("✅ Added ocu_id to almacen_reservas")
+                print("[OK] Added ocu_id to almacen_reservas")
             except sqlite3.OperationalError:
                 pass
         
@@ -409,7 +409,7 @@ def init_db():
         except sqlite3.OperationalError:
             try:
                 cursor.execute("ALTER TABLE notifications ADD COLUMN ocu_id INTEGER")
-                print("✅ Added ocu_id to notifications")
+                print("[OK] Added ocu_id to notifications")
             except sqlite3.OperationalError:
                 pass
         
@@ -419,7 +419,7 @@ def init_db():
         except sqlite3.OperationalError:
             try:
                 cursor.execute("ALTER TABLE crm_deals ADD COLUMN oc_cliente_file_path TEXT")
-                print("✅ Added oc_cliente_file_path to crm_deals")
+                print("[OK] Added oc_cliente_file_path to crm_deals")
             except sqlite3.OperationalError:
                 pass
         
@@ -429,7 +429,7 @@ def init_db():
         except sqlite3.OperationalError:
             try:
                 cursor.execute("ALTER TABLE crm_deals ADD COLUMN folio TEXT")
-                print("✅ Added folio to crm_deals")
+                print("[OK] Added folio to crm_deals")
             except sqlite3.OperationalError:
                 pass
 
@@ -908,7 +908,7 @@ def init_db():
                     else:
                         cursor.execute(f'ALTER TABLE email_history ADD COLUMN {col_name} {col_type}')
                     conn.commit()  # CRÍTICO: Hacer commit después de cada ALTER TABLE
-                    print(f"✅ Columna {col_name} agregada a email_history")
+                    print(f"[OK] Columna {col_name} agregada a email_history")
                 except sqlite3.OperationalError as e:
                     print(f"⚠️ Error agregando columna {col_name}: {e}")
         
@@ -982,7 +982,7 @@ def run_migrations():
                         continue
                 
                 conn.commit()
-                print(f"✅ Generated folios for {len(deals_without_folio)} existing deals")
+                print(f"[OK] Generated folios for {len(deals_without_folio)} existing deals")
         except sqlite3.OperationalError as e:
             if "locked" in str(e).lower():
                 print(f"⚠️ Database locked, skipping folio generation. Will retry on next startup.")
@@ -994,26 +994,26 @@ def run_migrations():
         # Migration: Add email, firma_vendedor, mensaje_envio to crm_deals
         try:
             cursor.execute("ALTER TABLE crm_deals ADD COLUMN email TEXT")
-            print("✅ Added 'email' column to crm_deals")
+            print("[OK] Added 'email' column to crm_deals")
         except sqlite3.OperationalError:
             pass  # Column already exists
             
         try:
             cursor.execute("ALTER TABLE crm_deals ADD COLUMN firma_vendedor TEXT")
-            print("✅ Added 'firma_vendedor' column to crm_deals")
+            print("[OK] Added 'firma_vendedor' column to crm_deals")
         except sqlite3.OperationalError:
             pass
             
         try:
             cursor.execute("ALTER TABLE crm_deals ADD COLUMN mensaje_envio TEXT")
-            print("✅ Added 'mensaje_envio' column to crm_deals")
+            print("[OK] Added 'mensaje_envio' column to crm_deals")
         except sqlite3.OperationalError:
             pass
         
         # Add auto_send_email toggle (1 = ON, 0 = OFF, default 1)
         try:
             cursor.execute("ALTER TABLE crm_deals ADD COLUMN auto_send_email INTEGER DEFAULT 1")
-            print("✅ Added 'auto_send_email' column to crm_deals")
+            print("[OK] Added 'auto_send_email' column to crm_deals")
         except sqlite3.OperationalError:
             pass
         
@@ -1034,34 +1034,34 @@ def run_migrations():
         # Add email_provider to users (outlook, gmail, other)
         try:
             cursor.execute("ALTER TABLE users ADD COLUMN email_provider TEXT")
-            print("✅ Added 'email_provider' column to users")
+            print("[OK] Added 'email_provider' column to users")
         except sqlite3.OperationalError:
             pass
         
         # Migration: Add SMTP credentials to users table
         try:
             cursor.execute("ALTER TABLE users ADD COLUMN email_smtp TEXT")
-            print("✅ Added 'email_smtp' column to users")
+            print("[OK] Added 'email_smtp' column to users")
         except sqlite3.OperationalError:
             pass
             
         try:
             cursor.execute("ALTER TABLE users ADD COLUMN password_smtp TEXT")
-            print("✅ Added 'password_smtp' column to users")
+            print("[OK] Added 'password_smtp' column to users")
         except sqlite3.OperationalError:
             pass
         
         # Migration: Add email signature to users table
         try:
             cursor.execute("ALTER TABLE users ADD COLUMN firma_email TEXT")
-            print("✅ Added 'firma_email' column to users")
+            print("[OK] Added 'firma_email' column to users")
         except sqlite3.OperationalError:
             pass
         
         # Migration: Add signature image (base64) to users table
         try:
             cursor.execute("ALTER TABLE users ADD COLUMN firma_imagen TEXT")
-            print("✅ Added 'firma_imagen' column to users")
+            print("[OK] Added 'firma_imagen' column to users")
         except sqlite3.OperationalError:
             pass
         
@@ -1097,7 +1097,7 @@ def run_migrations():
             )
         ''')
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_first_email_drafts_deal_id ON first_email_drafts(deal_id)')
-        print("✅ Tabla first_email_drafts creada/verificada")
+        print("[OK] Tabla first_email_drafts creada/verificada")
         
         # Create email_log table (trazabilidad de correos enviados)
         cursor.execute('''
@@ -1151,7 +1151,7 @@ def run_migrations():
             pass  # Column might not exist yet
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_email_log_created_at ON email_log(created_at)')
         
-        print("✅ Tabla email_log creada/verificada")
+        print("[OK] Tabla email_log creada/verificada")
         
         # Create deal_email_messages table (mensajes personalizados por trato + módulo)
         cursor.execute('''
@@ -1171,13 +1171,13 @@ def run_migrations():
         # Add module and tipo_documento columns to email_history (opcional, para filtrado)
         try:
             cursor.execute("ALTER TABLE email_history ADD COLUMN module TEXT")
-            print("✅ Added 'module' column to email_history")
+            print("[OK] Added 'module' column to email_history")
         except sqlite3.OperationalError:
             pass
         
         try:
             cursor.execute("ALTER TABLE email_history ADD COLUMN tipo_documento TEXT")
-            print("✅ Added 'tipo_documento' column to email_history")
+            print("[OK] Added 'tipo_documento' column to email_history")
         except sqlite3.OperationalError:
             pass
         
@@ -1198,7 +1198,7 @@ def run_migrations():
                 FOREIGN KEY (created_by) REFERENCES users (id) ON DELETE SET NULL
             )
         ''')
-        print("✅ Tabla email_drafts creada/verificada")
+        print("[OK] Tabla email_drafts creada/verificada")
         
         # Initialize default templates if they don't exist
         default_templates = [
@@ -1225,7 +1225,7 @@ def run_migrations():
                 VALUES (?, ?, ?, ?)
             ''', (module, template_type, content, description))
         
-        print("✅ Email templates tables created and initialized")
+        print("[OK] Email templates tables created and initialized")
         
         # Migrate existing messages from crm_deals to deal_email_messages
         try:
@@ -1258,7 +1258,7 @@ def run_migrations():
                 migrated_count += 1
             
             if migrated_count > 0:
-                print(f"✅ Migrated {migrated_count} existing messages to deal_email_messages (module='ventas')")
+                print(f"[OK] Migrated {migrated_count} existing messages to deal_email_messages (module='ventas')")
         except Exception as e:
             print(f"⚠️ Error during migration: {e}")
         
@@ -1311,7 +1311,7 @@ def run_migrations():
         
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_crm_email_attachments_email_id ON crm_email_attachments(email_id)')
         
-        print("✅ CRM Email Log tables created")
+        print("[OK] CRM Email Log tables created")
         
         conn.commit()
 

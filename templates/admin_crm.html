@@ -408,6 +408,132 @@
         .stage-8 .kanban-header {
             background: linear-gradient(135deg, #d20000, #a00000);
         }
+
+        /* ==================== MOBILE RESPONSIVE ==================== */
+        @media (max-width: 992px) {
+            .admin-header {
+                flex-direction: column;
+                gap: 15px;
+                padding: 15px;
+            }
+
+            .admin-header > div:first-child {
+                flex-direction: column;
+                gap: 10px;
+                width: 100%;
+                text-align: center;
+            }
+
+            .admin-header h1 {
+                font-size: 1.2em;
+            }
+
+            #puesto-selector {
+                width: 100%;
+            }
+
+            .header-actions {
+                flex-wrap: wrap;
+                justify-content: center;
+                width: 100%;
+            }
+
+            .header-actions .btn {
+                flex: 1 1 45%;
+                min-width: 140px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .admin-container {
+                padding: 10px;
+            }
+
+            .admin-header {
+                padding: 12px;
+            }
+
+            .header-actions {
+                flex-direction: column;
+            }
+
+            .header-actions .btn {
+                width: 100%;
+                flex: none;
+            }
+
+            /* Kanban horizontal scroll con snap */
+            .kanban-container {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                scroll-snap-type: x mandatory;
+                gap: 12px;
+                padding-bottom: 15px;
+            }
+
+            .kanban-column {
+                min-width: 280px;
+                max-width: 280px;
+                scroll-snap-align: start;
+                flex-shrink: 0;
+            }
+
+            .kanban-body {
+                max-height: 50vh;
+            }
+
+            .deal-card {
+                padding: 10px;
+            }
+
+            .deal-title {
+                font-size: 0.9em;
+            }
+
+            .deal-value {
+                font-size: 1em;
+            }
+
+            /* Activities panel */
+            .activities-panel {
+                padding: 15px;
+            }
+
+            .activity-item {
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+
+            /* Notifications dropdown full width */
+            .notifications-dropdown {
+                position: fixed !important;
+                top: auto !important;
+                bottom: 0 !important;
+                right: 0 !important;
+                left: 0 !important;
+                width: 100% !important;
+                max-height: 70vh;
+                border-radius: 16px 16px 0 0;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .kanban-column {
+                min-width: 260px;
+                max-width: 260px;
+            }
+
+            .deal-card {
+                padding: 8px;
+                margin-bottom: 6px;
+            }
+
+            .deal-meta {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+        }
     </style>
 </head>
 

@@ -20,6 +20,45 @@
         .badge.in_progress { background: #d1ecf1; color: #0c5460; }
         .badge.ordered { background: #cfe2ff; color: #084298; }
         .badge.received { background: #d4edda; color: #155724; }
+
+        /* ==================== MOBILE RESPONSIVE ==================== */
+        @media (max-width: 768px) {
+            .admin-header {
+                flex-direction: column !important;
+                gap: 15px;
+                text-align: center;
+            }
+
+            .admin-header h1 {
+                font-size: 1.3em;
+            }
+
+            .admin-header > div {
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+                width: 100%;
+            }
+
+            .admin-header .btn {
+                width: 100%;
+            }
+
+            .table-responsive {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            table {
+                min-width: 700px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .admin-container {
+                padding: 10px;
+            }
+        }
     </style>
 </head>
 <body>

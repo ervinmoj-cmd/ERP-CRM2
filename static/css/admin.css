@@ -76,6 +76,10 @@ body {
     text-decoration: none;
     display: inline-block;
     transition: all 0.3s ease;
+    min-height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .btn-primary {
@@ -119,6 +123,33 @@ body {
 .btn-sm {
     padding: 6px 12px;
     font-size: 12px;
+    min-height: 36px;
+}
+
+.btn-outline-secondary {
+    background: transparent;
+    color: var(--secondary-color);
+    border: 1px solid var(--secondary-color);
+}
+
+.btn-outline-secondary:hover {
+    background: var(--secondary-color);
+    color: white;
+}
+
+/* Touch-friendly buttons en móvil */
+@media (max-width: 768px) {
+    .btn {
+        min-height: 44px;
+        padding: 12px 20px;
+        font-size: 15px;
+    }
+
+    .btn-sm {
+        min-height: 40px;
+        padding: 8px 15px;
+        font-size: 14px;
+    }
 }
 
 /* Dashboard Cards */
@@ -199,6 +230,42 @@ body {
 
 .nav-card:hover p {
     color: rgba(255, 255, 255, 0.9);
+}
+
+/* Responsive para nav-cards */
+@media (max-width: 768px) {
+    .nav-card {
+        padding: 20px;
+    }
+
+    .nav-card div[style*="font-size: 48px"] {
+        font-size: 40px !important;
+    }
+
+    .nav-card h3 {
+        font-size: 17px;
+    }
+}
+
+@media (max-width: 480px) {
+    .nav-card {
+        padding: 15px;
+    }
+
+    .nav-card div[style*="font-size: 48px"],
+    .nav-card div[style*="font-size: 40px"] {
+        font-size: 36px !important;
+        margin-bottom: 10px !important;
+    }
+
+    .nav-card h3 {
+        font-size: 15px;
+        margin-bottom: 5px;
+    }
+
+    .nav-card p {
+        font-size: 12px;
+    }
 }
 
 /* Tables */
@@ -420,14 +487,58 @@ tbody tr:hover {
 }
 
 /* Responsive */
-@media (max-width: 768px) {
+@media (max-width: 992px) {
+
+    /* Header en tablet */
     .admin-header {
-        flex-direction: column;
-        gap: 15px;
+        padding: 15px 20px;
     }
 
+    .admin-header h1 {
+        font-size: 24px;
+    }
+}
+
+@media (max-width: 768px) {
+
+    /* Header en móvil */
+    .admin-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+        padding: 15px;
+    }
+
+    .admin-header h1 {
+        font-size: 20px;
+        width: 100%;
+    }
+
+    /* User info se apila verticalmente */
+    .admin-header .user-info {
+        flex-direction: column;
+        align-items: flex-start;
+        width: 100%;
+        gap: 10px;
+    }
+
+    /* Texto del usuario con mejor espaciado */
+    .admin-header .user-info>span {
+        font-size: 14px;
+        word-break: break-word;
+        max-width: 100%;
+    }
+
+    /* Botones en user-info se apilan */
+    .admin-header .user-info .btn {
+        width: 100%;
+        text-align: center;
+    }
+
+    /* Dashboard grid optimizado para móvil */
     .dashboard-grid {
         grid-template-columns: 1fr;
+        gap: 15px;
     }
 
     .filter-row {
@@ -438,13 +549,51 @@ tbody tr:hover {
         grid-template-columns: 1fr;
     }
 
+    /* Tablas más compactas */
     table {
         font-size: 12px;
     }
 
     th,
     td {
+        padding: 8px 10px;
+    }
+
+    /* Container con menos padding */
+    .admin-container {
         padding: 10px;
+    }
+
+    /* Botones más grandes para touch */
+    .btn {
+        padding: 12px 20px;
+        font-size: 15px;
+    }
+
+    .btn-sm {
+        padding: 8px 15px;
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 480px) {
+
+    /* Extra pequeño - móviles muy pequeños */
+    .admin-header h1 {
+        font-size: 18px;
+    }
+
+    /* Nav cards más compactas */
+    .nav-card {
+        padding: 20px 15px;
+    }
+
+    .nav-card h3 {
+        font-size: 16px;
+    }
+
+    .nav-card p {
+        font-size: 13px;
     }
 }
 

@@ -275,6 +275,118 @@
             border-radius: 4px;
             cursor: pointer;
         }
+
+        /* ==================== MOBILE RESPONSIVE ==================== */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .form-container {
+                border-radius: 12px;
+            }
+
+            .form-header {
+                flex-direction: column;
+                gap: 15px;
+                padding: 20px;
+                text-align: center;
+            }
+
+            .form-header h1 {
+                font-size: 1.2em;
+            }
+
+            .form-header > div {
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+                width: 100%;
+            }
+
+            .form-header .btn {
+                width: 100%;
+            }
+
+            .form-body {
+                padding: 20px;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr !important;
+                gap: 15px;
+            }
+
+            .form-group input,
+            .form-group select,
+            .form-group textarea {
+                font-size: 16px; /* Evita zoom en iOS */
+            }
+
+            .form-actions {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .form-actions .btn {
+                width: 100%;
+            }
+
+            /* Activities */
+            .add-activity-form {
+                flex-direction: column;
+            }
+
+            .add-activity-form select,
+            .add-activity-form input,
+            .add-activity-form button {
+                width: 100%;
+            }
+
+            /* Link selector */
+            .link-selector {
+                flex-direction: column;
+            }
+
+            .link-selector select,
+            .link-selector button {
+                width: 100%;
+            }
+
+            /* Linked items */
+            .linked-items {
+                flex-direction: column;
+            }
+
+            .linked-item {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            /* Notas section */
+            #imagenesPreview {
+                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)) !important;
+            }
+
+            /* Drop zone */
+            #correoDropZone {
+                padding: 15px !important;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 5px;
+            }
+
+            .form-body {
+                padding: 15px;
+            }
+
+            .form-section h3 {
+                font-size: 1em;
+            }
+        }
     </style>
 </head>
 

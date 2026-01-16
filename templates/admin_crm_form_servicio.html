@@ -334,6 +334,77 @@
             background: #e3f2fd;
             color: #1976d2;
         }
+
+        /* ==================== MOBILE RESPONSIVE ==================== */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .form-container {
+                border-radius: 12px;
+            }
+
+            .form-header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+
+            .form-header h1 {
+                font-size: 1.2em;
+            }
+
+            .form-body {
+                padding: 20px;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr !important;
+            }
+
+            .form-actions {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .form-actions .btn {
+                width: 100%;
+            }
+
+            /* Equipment table */
+            .client-equipment-table {
+                overflow-x: auto;
+            }
+
+            .client-equipment-table table {
+                min-width: 500px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            body {
+                padding: 5px;
+            }
+
+            .form-header {
+                padding: 15px;
+            }
+
+            .form-body {
+                padding: 15px;
+            }
+
+            .form-section h3 {
+                font-size: 1em;
+            }
+
+            .form-group input,
+            .form-group select,
+            .form-group textarea {
+                font-size: 16px; /* Evita zoom en iOS */
+            }
+        }
     </style>
 </head>
 

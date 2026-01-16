@@ -175,6 +175,82 @@
         .btn-alta:hover {
             background: #218838;
         }
+
+        /* ==================== MOBILE RESPONSIVE ==================== */
+        @media (max-width: 768px) {
+            .admin-header {
+                flex-direction: column !important;
+                gap: 15px;
+                text-align: center;
+            }
+
+            .admin-header h1 {
+                font-size: 1.2em;
+            }
+
+            .admin-header > div {
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+                width: 100%;
+            }
+
+            .admin-header .btn {
+                width: 100%;
+            }
+
+            .admin-container {
+                padding: 10px;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr !important;
+            }
+
+            /* Table responsive */
+            .table-responsive,
+            .items-container {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            table.items-table,
+            .partidas-table {
+                min-width: 700px;
+            }
+
+            .totals-section {
+                width: 100%;
+            }
+
+            .form-actions {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .form-actions .btn {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 576px) {
+            body {
+                padding: 5px;
+            }
+
+            .form-section {
+                padding: 12px;
+            }
+
+            .form-section h3 {
+                font-size: 1em;
+            }
+
+            .form-group input,
+            .form-group select {
+                font-size: 16px; /* Evita zoom en iOS */
+            }
+        }
     </style>
 </head>
 

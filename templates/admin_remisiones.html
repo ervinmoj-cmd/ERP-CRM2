@@ -30,6 +30,54 @@
             background: #f8d7da;
             color: #721c24;
         }
+
+        /* ==================== MOBILE RESPONSIVE ==================== */
+        @media (max-width: 768px) {
+            .admin-header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+
+            .admin-header h1 {
+                font-size: 1.3em;
+            }
+
+            .header-actions {
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+                width: 100%;
+            }
+
+            .header-actions .btn,
+            .header-actions a {
+                width: 100%;
+                margin: 0 !important;
+            }
+
+            /* Table scroll */
+            .admin-content {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .data-table {
+                min-width: 600px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .admin-container {
+                padding: 10px;
+            }
+
+            .data-table th,
+            .data-table td {
+                padding: 8px 6px;
+                font-size: 0.9em;
+            }
+        }
     </style>
 </head>
 <body>

@@ -76,6 +76,84 @@
             #tabla-equipos {
                 min-width: 800px;
             }
+
+            /* Modal responsive */
+            .modal-content {
+                max-width: 95% !important;
+                max-height: 90vh;
+                margin: 10px;
+                overflow-y: auto;
+            }
+
+            .modal-content .form-row {
+                flex-direction: column;
+            }
+
+            .modal-content .form-row .form-group {
+                width: 100%;
+                margin-bottom: 15px;
+            }
+
+            .modal-content .row {
+                flex-direction: column;
+            }
+
+            .modal-content .col-md-6 {
+                width: 100%;
+            }
+
+            .modal-footer {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .modal-footer .btn {
+                width: 100%;
+            }
+
+            /* Kits section responsive */
+            .kits-section .row {
+                flex-direction: column;
+            }
+
+            .kits-section .col-md-6 {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+
+            .kits-section .text-end {
+                text-align: center !important;
+            }
+
+            .kits-section table {
+                font-size: 0.85em;
+            }
+
+            .kits-section table input {
+                padding: 4px 6px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .admin-container {
+                padding: 10px;
+            }
+
+            .admin-header h1 {
+                font-size: 1.2em;
+            }
+
+            .modal-header h2 {
+                font-size: 1.1em;
+            }
+
+            .modal-body {
+                padding: 15px;
+            }
+
+            .form-control {
+                font-size: 16px; /* Evita zoom en iOS */
+            }
         }
     </style>
 </head>
